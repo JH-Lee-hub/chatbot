@@ -4,471 +4,1019 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
-<title>롤플레잉 0단계 검증</title>
+<title>롤플레잉</title>
 <style>
   :root{
-    --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2a2f3a;
-    --tx:#e6e8ee; --tx2:#9aa3b2; --acc:#7c9cff; --ok:#5fd08a; --warn:#ffb454; --err:#ff6b6b;
+    --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2a2f3a; --line2:#363c49;
+    --tx:#e6e8ee; --tx2:#9aa3b2; --tx3:#6b7280;
+    --acc:#7c9cff; --ok:#5fd08a; --warn:#ffb454; --err:#ff6b6b;
     --user:#243044; --ai:#1c2029;
+    --safe-t:env(safe-area-inset-top); --safe-b:env(safe-area-inset-bottom);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%;margin:0}
+  html,body{height:100%;margin:0;overflow:hidden}
   body{
     background:var(--bg); color:var(--tx);
     font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
-    display:flex; flex-direction:column;
-    padding-bottom:env(safe-area-inset-bottom);
   }
-  header{
-    display:flex; align-items:center; gap:8px; padding:10px 12px;
-    background:var(--panel); border-bottom:1px solid var(--line); flex:0 0 auto;
-    padding-top:calc(10px + env(safe-area-inset-top));
-  }
-  header h1{font-size:14px;margin:0;font-weight:600;flex:1;letter-spacing:-.2px}
-  header .badge{font-size:11px;color:var(--tx2);background:var(--panel2);border:1px solid var(--line);padding:2px 7px;border-radius:99px}
-  button{
-    font:inherit; font-size:13px; color:var(--tx); background:var(--panel2);
-    border:1px solid var(--line); border-radius:8px; padding:7px 12px; cursor:pointer;
-  }
-  button:active{background:#262b36}
-  button.primary{background:var(--acc);border-color:var(--acc);color:#0b1020;font-weight:600}
-  button:disabled{opacity:.45;cursor:default}
-
-  /* ── 설정 패널 ── */
-  #settings{
-    background:var(--panel); border-bottom:1px solid var(--line);
-    padding:12px; display:none; flex:0 0 auto; max-height:62vh; overflow-y:auto;
-  }
-  #settings.open{display:block}
-  .fld{margin-bottom:12px}
-  .fld:last-child{margin-bottom:0}
-  label{display:block;font-size:12px;color:var(--tx2);margin-bottom:5px;font-weight:600}
-  input[type=text],input[type=password],input[type=number],select,textarea{
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;padding:0}
+  input,select,textarea{
     width:100%; font:inherit; font-size:14px; color:var(--tx);
-    background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:9px 10px;
+    background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:10px 11px;
   }
-  textarea{resize:vertical; line-height:1.6}
+  input:focus,select,textarea:focus{outline:none;border-color:var(--line2)}
+  textarea{resize:vertical;line-height:1.6}
+  .btn{
+    background:var(--panel2); border:1px solid var(--line); border-radius:9px;
+    padding:9px 14px; font-size:13.5px; text-align:center; display:inline-block;
+  }
+  .btn:active{background:#262b36}
+  .btn.pri{background:var(--acc);border-color:var(--acc);color:#0b1020;font-weight:600}
+  .btn.dan{color:var(--err);border-color:#4a2b30}
+  .btn[disabled]{opacity:.4}
   .row{display:flex;gap:8px}
   .row>*{flex:1;min-width:0}
-  .hint{font-size:11px;color:var(--tx2);margin-top:5px;line-height:1.5}
-  .chk{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--tx2);margin-top:7px}
-  .chk input{width:auto}
+  .sp{flex:1}
+
+  /* ── 레이아웃 ── */
+  #app{height:100%;display:flex;flex-direction:column}
+  .view{display:none;flex:1;min-height:0;flex-direction:column}
+  .view.on{display:flex}
+  .bar{
+    display:flex;align-items:center;gap:6px;padding:10px 12px;
+    padding-top:calc(10px + var(--safe-t));
+    background:var(--panel);border-bottom:1px solid var(--line);flex:0 0 auto;
+  }
+  .bar h2{font-size:15px;margin:0;font-weight:600;flex:1;letter-spacing:-.2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar .sub{font-size:11px;color:var(--tx2);font-weight:400;display:block;margin-top:1px}
+  .ico{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:17px;color:var(--tx2)}
+  .ico:active{background:var(--panel2)}
+  .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px}
+
+  /* ── 하단 탭 ── */
+  #nav{
+    display:flex;flex:0 0 auto;background:var(--panel);border-top:1px solid var(--line);
+    padding-bottom:var(--safe-b);
+  }
+  #nav button{flex:1;padding:9px 0 8px;font-size:10.5px;color:var(--tx3);display:grid;gap:3px;justify-items:center}
+  #nav button i{font-style:normal;font-size:18px;line-height:1}
+  #nav button.on{color:var(--acc)}
+
+  /* ── 카드 ── */
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:13px; margin-bottom:9px; display:flex; gap:11px; align-items:center;
+  }
+  .card:active{background:var(--panel2)}
+  .av{width:40px;height:40px;border-radius:11px;flex:0 0 auto;display:grid;place-items:center;
+      font-weight:700;font-size:16px;color:#0b1020}
+  .card .t{flex:1;min-width:0}
+  .card .t b{display:block;font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .t span{display:block;font-size:11.5px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+  .empty{text-align:center;color:var(--tx3);font-size:13px;padding:44px 20px;line-height:1.9}
+
+  /* ── 폼 ── */
+  .fld{margin-bottom:13px}
+  .fld label{display:block;font-size:12px;color:var(--tx2);margin-bottom:5px;font-weight:600}
+  .hint{font-size:11px;color:var(--tx3);margin-top:5px;line-height:1.55}
+  .sect{font-size:11px;color:var(--tx3);font-weight:700;letter-spacing:.4px;
+        margin:22px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .sect:first-child{margin-top:0}
+  .sw{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--tx2)}
+  .sw input{width:auto;flex:0 0 auto}
 
   /* ── 대화 ── */
-  #chat{flex:1 1 auto; overflow-y:auto; padding:14px 12px 4px; -webkit-overflow-scrolling:touch}
-  .msg{margin-bottom:12px; display:flex; flex-direction:column}
-  .msg .who{font-size:11px;color:var(--tx2);margin-bottom:4px;font-weight:600}
-  .msg .body{
-    padding:10px 13px; border-radius:12px; white-space:pre-wrap; word-break:break-word;
-    border:1px solid var(--line);
-  }
+  #msgs{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 12px 6px}
+  .msg{margin-bottom:13px;display:flex;flex-direction:column}
+  .msg .who{font-size:10.5px;color:var(--tx3);margin-bottom:4px;font-weight:600}
+  .msg .body{padding:10px 13px;border-radius:13px;white-space:pre-wrap;word-break:break-word;
+             border:1px solid var(--line)}
   .msg.user{align-items:flex-end}
-  .msg.user .body{background:var(--user); border-bottom-right-radius:4px; max-width:88%}
-  .msg.ai .body{background:var(--ai); border-bottom-left-radius:4px}
-  .msg.sys .body{background:transparent;border-style:dashed;color:var(--tx2);font-size:13px}
+  .msg.user .body{background:var(--user);border-bottom-right-radius:4px;max-width:88%}
+  .msg.assistant .body{background:var(--ai);border-bottom-left-radius:4px}
+  .msg.sys .body{background:transparent;border-style:dashed;color:var(--tx3);font-size:12.5px}
   .msg.err .body{background:#2a1a1c;border-color:#5c2b2f;color:#ffc9c9;font-size:13px}
-  .cursor{display:inline-block;width:7px;height:15px;background:var(--acc);vertical-align:-2px;animation:bl .9s steps(1) infinite}
+  .msg .act{display:flex;gap:12px;margin-top:5px;font-size:11px;color:var(--tx3)}
+  .msg.user .act{justify-content:flex-end}
+  .msg .act button{font-size:11px;color:var(--tx3)}
+  .cursor{display:inline-block;width:7px;height:15px;background:var(--acc);vertical-align:-2px;
+          animation:bl .9s steps(1) infinite}
   @keyframes bl{50%{opacity:0}}
+  em.na{font-style:italic;color:var(--tx2)}
 
-  /* ── 측정 로그 ── */
-  #metrics{
-    flex:0 0 auto; background:var(--panel); border-top:1px solid var(--line);
-    padding:7px 12px; font-size:11px; color:var(--tx2); display:flex; gap:14px; flex-wrap:wrap;
-  }
-  #metrics b{color:var(--tx);font-weight:600}
-  #metrics .g{color:var(--ok)} #metrics .y{color:var(--warn)} #metrics .r{color:var(--err)}
+  #meter{flex:0 0 auto;background:var(--panel);border-top:1px solid var(--line);
+         padding:6px 12px;font-size:10.5px;color:var(--tx3);display:flex;gap:13px;flex-wrap:wrap}
+  #meter b{color:var(--tx2);font-weight:600}
+  #meter .g{color:var(--ok)} #meter .y{color:var(--warn)} #meter .r{color:var(--err)}
 
-  /* ── 입력 ── */
-  footer{
-    flex:0 0 auto; display:flex; gap:8px; padding:10px 12px;
-    background:var(--panel); border-top:1px solid var(--line); align-items:flex-end;
-  }
-  #input{max-height:34vh}
-  footer button{flex:0 0 auto;height:41px}
+  #composer{flex:0 0 auto;display:flex;gap:8px;padding:9px 12px;align-items:flex-end;
+            background:var(--panel);border-top:1px solid var(--line);padding-bottom:calc(9px + var(--safe-b))}
+  #inp{max-height:32vh}
+  #composer .btn{flex:0 0 auto;height:42px;padding:0 16px;line-height:42px}
+
+  /* ── 시트 / 토스트 ── */
+  #sheet{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;z-index:50}
+  #sheet.on{display:flex}
+  #sheetIn{background:var(--panel);width:100%;border-radius:16px 16px 0 0;padding:8px 12px calc(14px + var(--safe-b));
+           border-top:1px solid var(--line2);max-height:80vh;overflow-y:auto}
+  #sheetIn h3{font-size:13px;color:var(--tx2);margin:10px 4px 8px;font-weight:600}
+  .sitem{display:block;width:100%;text-align:left;padding:13px 12px;border-radius:10px;font-size:14.5px}
+  .sitem:active{background:var(--panel2)}
+  .sitem.dan{color:var(--err)}
+  #toast{position:fixed;left:50%;bottom:calc(76px + var(--safe-b));transform:translateX(-50%);
+         background:#2b3140;border:1px solid var(--line2);color:var(--tx);padding:9px 15px;border-radius:10px;
+         font-size:13px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s;max-width:86vw;text-align:center}
+  #toast.on{opacity:1}
 </style>
 </head>
 <body>
+<div id="app">
 
-<header>
-  <h1>롤플레잉 0단계 검증</h1>
-  <span class="badge" id="tagCost">$0</span>
-  <button id="btnSettings">설정</button>
-</header>
+  <!-- ══════════ 대화 목록 ══════════ -->
+  <section class="view on" id="vChats">
+    <div class="bar"><h2>대화</h2><button class="ico" id="bNewChat">＋</button></div>
+    <div class="scroll" id="chatList"></div>
+  </section>
 
-<div id="settings">
-  <div class="fld">
-    <label for="apiKey">OpenRouter API 키</label>
-    <input type="password" id="apiKey" placeholder="sk-or-v1-..." autocomplete="off">
-    <div class="hint">이 기기의 브라우저에만 저장되며 외부로 전송되지 않습니다(OpenRouter 호출 제외).</div>
-  </div>
+  <!-- ══════════ 캐릭터 ══════════ -->
+  <section class="view" id="vChars">
+    <div class="bar"><h2>캐릭터</h2>
+      <button class="ico" id="bImportChar" title="가져오기">⇩</button>
+      <button class="ico" id="bNewChar">＋</button></div>
+    <div class="scroll" id="charList"></div>
+  </section>
 
-  <div class="fld">
-    <label for="modelFilter">모델 검색</label>
-    <input type="text" id="modelFilter" placeholder="deepseek, llama, qwen ...">
-    <div class="chk">
-      <input type="checkbox" id="onlyFree" checked>
-      <label for="onlyFree" style="margin:0;color:var(--tx2)">무료 모델만 보기</label>
-      <button id="btnReload" style="margin-left:auto;padding:4px 9px;font-size:12px">목록 새로고침</button>
+  <!-- ══════════ 페르소나 ══════════ -->
+  <section class="view" id="vPersonas">
+    <div class="bar"><h2>페르소나<span class="sub">롤플레잉 안에서의 내 모습</span></h2>
+      <button class="ico" id="bNewPersona">＋</button></div>
+    <div class="scroll" id="personaList"></div>
+  </section>
+
+  <!-- ══════════ 설정 ══════════ -->
+  <section class="view" id="vSettings">
+    <div class="bar"><h2>설정</h2></div>
+    <div class="scroll">
+      <div class="sect">연결</div>
+      <div class="fld">
+        <label>OpenRouter API 키</label>
+        <input type="password" id="sKey" placeholder="sk-or-v1-..." autocomplete="off">
+        <div class="hint">이 기기에만 저장되며, 데이터 내보내기 파일에도 포함되지 않습니다.</div>
+      </div>
+      <div class="fld">
+        <label>모델 검색</label>
+        <input type="text" id="sFilter" placeholder="glm, nemotron, gemma ...">
+        <div class="sw" style="margin-top:8px">
+          <input type="checkbox" id="sFree" checked><label for="sFree" style="margin:0">무료만</label>
+          <div class="sp"></div>
+          <button class="btn" id="sReload" style="padding:5px 11px;font-size:12px">목록 새로고침</button>
+        </div>
+      </div>
+      <div class="fld">
+        <label>기본 모델 <span id="sCount" style="color:var(--tx3);font-weight:400"></span></label>
+        <select id="sModel"><option value="">— API 키를 입력하세요 —</option></select>
+        <div class="hint" id="sModelInfo">캐릭터별로 다른 모델을 지정할 수도 있습니다.</div>
+      </div>
+
+      <div class="sect">생성 파라미터</div>
+      <div class="fld row">
+        <div><label>온도</label><input type="number" id="sTemp" step="0.05" min="0" max="2"></div>
+        <div><label>최대 출력</label><input type="number" id="sMaxTok" step="32" min="64" max="8192"></div>
+      </div>
+      <div class="fld">
+        <label>전송할 최근 턴 수</label>
+        <input type="number" id="sWindow" step="2" min="4" max="100">
+        <div class="hint">
+          대화 원문은 전부 보존되며, 이 값은 <b>매 요청에 실어 보낼 분량</b>만 정합니다.
+          2단계에서 요약과 과거 장면 소환을 갖춘 컨텍스트 매니저로 대체될 임시 설정입니다.
+        </div>
+      </div>
+
+      <div class="sect">데이터</div>
+      <div class="fld row">
+        <button class="btn" id="sExport">전체 내보내기</button>
+        <button class="btn" id="sImport">가져오기</button>
+      </div>
+      <div class="hint">
+        브라우저 데이터를 지우면 대화가 사라집니다. 자동 백업 구현 전까지 주 1회 내보내기를 권장합니다.
+      </div>
+      <div style="height:24px"></div>
+      <div class="hint" style="text-align:center">1단계 · 캐릭터와 저장소</div>
     </div>
-  </div>
+  </section>
 
-  <div class="fld">
-    <label for="model">모델 <span id="modelCount" style="color:var(--tx2);font-weight:400"></span></label>
-    <select id="model"><option value="">— API 키를 먼저 입력하세요 —</option></select>
-    <div class="hint" id="modelInfo">컨텍스트 길이가 짧은 모델은 긴 롤플레잉에 불리합니다.</div>
-  </div>
-
-  <div class="fld row">
-    <div>
-      <label for="temp">온도</label>
-      <input type="number" id="temp" value="0.9" min="0" max="2" step="0.05">
+  <!-- ══════════ 채팅 ══════════ -->
+  <section class="view" id="vChat">
+    <div class="bar">
+      <button class="ico" id="cBack">‹</button>
+      <h2 id="cTitle">대화<span class="sub" id="cSub"></span></h2>
+      <button class="ico" id="cMenu">⋯</button>
     </div>
-    <div>
-      <label for="maxTok">최대 출력 토큰</label>
-      <input type="number" id="maxTok" value="600" min="64" max="4096" step="32">
+    <div id="msgs"></div>
+    <div id="meter">
+      <span>첫 토큰 <b id="mTtft">—</b></span>
+      <span>총 <b id="mTotal">—</b></span>
+      <span>토큰 <b id="mTok">—</b></span>
+      <span>전송 <b id="mCtx">—</b></span>
     </div>
-  </div>
+    <div id="composer">
+      <textarea id="inp" rows="1" placeholder="메시지"></textarea>
+      <button class="btn pri" id="cSend">전송</button>
+    </div>
+  </section>
 
-  <div class="fld">
-    <label for="sysPrompt">시스템 프롬프트 (캐릭터 설정)</label>
-    <textarea id="sysPrompt" rows="7"></textarea>
-    <div class="hint">검열 강도를 확인하려면 실제로 쓸 시나리오를 그대로 넣어보십시오.</div>
-  </div>
+  <!-- ══════════ 캐릭터 편집 ══════════ -->
+  <section class="view" id="vCharEdit">
+    <div class="bar">
+      <button class="ico" id="ceBack">‹</button><h2 id="ceTitle">캐릭터</h2>
+      <button class="ico" id="ceMenu">⋯</button>
+      <button class="btn pri" id="ceSave" style="padding:7px 14px">저장</button>
+    </div>
+    <div class="scroll">
+      <div class="fld"><label>이름 *</label><input type="text" id="ceName" placeholder="서하"></div>
+      <div class="fld"><label>설정 (description)</label>
+        <textarea id="ceDesc" rows="4" placeholder="외형, 배경, 직업 등"></textarea></div>
+      <div class="fld"><label>성격 (personality)</label>
+        <textarea id="cePers" rows="3" placeholder="침착하고 말수가 적다..."></textarea></div>
+      <div class="fld"><label>상황 (scenario)</label>
+        <textarea id="ceScen" rows="3" placeholder="지금 어떤 상황에서 만나는가"></textarea></div>
+      <div class="fld"><label>첫 대사 (first_mes)</label>
+        <textarea id="ceFirst" rows="3" placeholder="대화를 열 때 캐릭터가 먼저 하는 말"></textarea>
+        <div class="hint">비워두면 내가 먼저 말을 겁니다.</div></div>
+      <div class="fld"><label>예시 대화 (mes_example)</label>
+        <textarea id="ceEx" rows="4" placeholder="{{user}}: 안녕하세요&#10;{{char}}: *고개만 끄덕인다* 왔어요."></textarea>
+        <div class="hint">말투를 잡는 데 가장 효과가 큽니다. <code>{{char}}</code>, <code>{{user}}</code>를 쓸 수 있습니다.</div></div>
 
-  <div class="fld row">
-    <button id="btnClear">대화 초기화</button>
-    <button id="btnExport">기록 내보내기</button>
-  </div>
-  <div class="hint" style="margin-top:10px">
-    0단계 프로토타입입니다. <b>대화는 저장되지 않으며</b> 새로고침하면 사라집니다.
-    설정값(키·모델·프롬프트)만 보존됩니다.
-  </div>
+      <div class="sect">고급</div>
+      <div class="fld"><label>전용 시스템 규칙</label>
+        <textarea id="ceSys" rows="4" placeholder="비우면 앱 기본 규칙을 사용합니다"></textarea></div>
+      <div class="fld"><label>전용 모델</label>
+        <select id="ceModel"><option value="">기본 모델 사용</option></select>
+        <div class="hint">검증된 모델을 캐릭터에 묶어두면, 기본 모델이 바뀌어도 말투가 유지됩니다.</div></div>
+      <div class="fld"><label>전용 온도</label>
+        <input type="number" id="ceTemp" step="0.05" min="0" max="2" placeholder="비우면 기본값"></div>
+      <div class="fld"><label>색상</label>
+        <div class="row" id="ceColors"></div></div>
+      <div style="height:20px"></div>
+    </div>
+  </section>
+
+  <!-- ══════════ 페르소나 편집 ══════════ -->
+  <section class="view" id="vPersonaEdit">
+    <div class="bar">
+      <button class="ico" id="peBack">‹</button><h2 id="peTitle">페르소나</h2>
+      <button class="ico" id="peMenu">⋯</button>
+      <button class="btn pri" id="peSave" style="padding:7px 14px">저장</button>
+    </div>
+    <div class="scroll">
+      <div class="fld"><label>이름 *</label><input type="text" id="peName" placeholder="캐릭터가 나를 부를 이름"></div>
+      <div class="fld"><label>설명</label>
+        <textarea id="peDesc" rows="5" placeholder="나이, 성격, 캐릭터와의 관계 등"></textarea>
+        <div class="hint">캐릭터가 나를 어떻게 인식할지 정합니다.</div></div>
+      <div class="fld"><div class="sw"><input type="checkbox" id="peDef">
+        <label for="peDef" style="margin:0">새 대화에서 기본으로 사용</label></div></div>
+    </div>
+  </section>
+
+  <nav id="nav">
+    <button data-v="vChats" class="on"><i>💬</i>대화</button>
+    <button data-v="vChars"><i>🎭</i>캐릭터</button>
+    <button data-v="vPersonas"><i>🙂</i>페르소나</button>
+    <button data-v="vSettings"><i>⚙️</i>설정</button>
+  </nav>
 </div>
 
-<main id="chat"></main>
-
-<div id="metrics">
-  <span>첫 토큰 <b id="mTtft">—</b></span>
-  <span>총 시간 <b id="mTotal">—</b></span>
-  <span>속도 <b id="mTps">—</b></span>
-  <span>토큰 <b id="mTokens">—</b></span>
-  <span>세션 <b id="mTurns">0</b>턴</span>
-</div>
-
-<footer>
-  <textarea id="input" rows="1" placeholder="메시지를 입력하세요"></textarea>
-  <button id="btnSend" class="primary">전송</button>
-</footer>
+<div id="sheet"><div id="sheetIn"></div></div>
+<div id="toast"></div>
+<input type="file" id="filePick" accept=".json" style="display:none">
 
 <script>
 'use strict';
 
+/* ═══════════════ 상수 ═══════════════ */
 const API = 'https://openrouter.ai/api/v1';
+const DB_NAME = 'rpapp', DB_VER = 1;
+const STORES = ['characters','personas','chats','messages','memory','searchIndex','outbox'];
 const LS = {
-  key:'rp0_apikey', model:'rp0_model', sys:'rp0_sys',
-  temp:'rp0_temp', maxTok:'rp0_maxtok', onlyFree:'rp0_onlyfree'
+  key:'rp_apikey', model:'rp_model', temp:'rp_temp', maxTok:'rp_maxtok',
+  window:'rp_windowTurns', free:'rp_free', lastChat:'rp_lastChatId'
 };
-
-const DEFAULT_SYS = `너는 롤플레잉 상대역이다. 아래 설정을 끝까지 유지한다.
-
-[캐릭터]
-이름: 서하
-나이: 27세
-성격: 침착하고 말수가 적지만, 상대에게는 은근히 다정하다. 감정을 직접 말하기보다 행동으로 드러낸다.
-말투: 존댓말과 반말을 섞어 쓴다. 문장이 짧고 담백하다.
-배경: 오래된 서점을 혼자 운영한다. 상대와는 알고 지낸 지 2년쯤 됐다.
-
-[규칙]
-- 항상 서하로서만 말한다. 해설자나 AI로 빠져나오지 않는다.
+const PALETTE = ['#7c9cff','#5fd08a','#ffb454','#ff8fa3','#b088f9','#4ecdc4'];
+const DEFAULT_RULES =
+`- 항상 {{char}}로서만 말한다. 해설자나 AI로 빠져나오지 않는다.
 - 행동과 표정은 *별표* 안에 서술한다.
-- 상대의 대사나 행동을 대신 지어내지 않는다.
-- 한 번에 2~4문장 분량으로 답한다. 장면을 앞서가지 않는다.`;
+- {{user}}의 대사나 행동을 대신 지어내지 않는다.
+- 한 번에 2~4문장 분량으로 답한다. 장면을 혼자 앞서가지 않는다.`;
 
 const $ = id => document.getElementById(id);
-const el = {
-  settings:$('settings'), btnSettings:$('btnSettings'),
-  apiKey:$('apiKey'), modelFilter:$('modelFilter'), onlyFree:$('onlyFree'),
-  btnReload:$('btnReload'), model:$('model'), modelCount:$('modelCount'), modelInfo:$('modelInfo'),
-  temp:$('temp'), maxTok:$('maxTok'), sysPrompt:$('sysPrompt'),
-  btnClear:$('btnClear'), btnExport:$('btnExport'),
-  chat:$('chat'), input:$('input'), btnSend:$('btnSend'), tagCost:$('tagCost'),
-  mTtft:$('mTtft'), mTotal:$('mTotal'), mTps:$('mTps'), mTokens:$('mTokens'), mTurns:$('mTurns')
+const uid = () => (crypto.randomUUID ? crypto.randomUUID()
+  : Date.now().toString(36) + Math.random().toString(36).slice(2));
+const now = () => Date.now();
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ═══════════════ IndexedDB ═══════════════ */
+let db = null;
+
+function openDB(){
+  return new Promise((res, rej) => {
+    const r = indexedDB.open(DB_NAME, DB_VER);
+    r.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('characters'))
+        d.createObjectStore('characters', {keyPath:'id'}).createIndex('updatedAt','updatedAt');
+      if (!d.objectStoreNames.contains('personas'))
+        d.createObjectStore('personas', {keyPath:'id'});
+      if (!d.objectStoreNames.contains('chats')){
+        const s = d.createObjectStore('chats', {keyPath:'id'});
+        s.createIndex('characterId','characterId');
+        s.createIndex('lastMessageAt','lastMessageAt');
+      }
+      if (!d.objectStoreNames.contains('messages')){
+        const s = d.createObjectStore('messages', {keyPath:'id'});
+        s.createIndex('chatId','chatId');
+        s.createIndex('chatTurn',['chatId','turnIndex']);
+      }
+      if (!d.objectStoreNames.contains('memory'))
+        d.createObjectStore('memory', {keyPath:'chatId'});
+      if (!d.objectStoreNames.contains('searchIndex')){
+        const s = d.createObjectStore('searchIndex', {keyPath:['chatId','term']});
+        s.createIndex('chatId','chatId');
+      }
+      if (!d.objectStoreNames.contains('outbox'))
+        d.createObjectStore('outbox', {keyPath:'id'}).createIndex('syncedAt','syncedAt');
+    };
+    r.onsuccess = () => { db = r.result; res(db); };
+    r.onerror  = () => rej(r.error);
+  });
+}
+const wrap = r => new Promise((res,rej) => { r.onsuccess = ()=>res(r.result); r.onerror = ()=>rej(r.error); });
+const st   = (s, m='readonly') => db.transaction(s, m).objectStore(s);
+const dbGet = (s,k)   => wrap(st(s).get(k));
+const dbAll = s       => wrap(st(s).getAll());
+const dbPut = (s,v)   => wrap(st(s,'readwrite').put(v));
+const dbDel = (s,k)   => wrap(st(s,'readwrite').delete(k));
+const dbBy  = (s,i,q) => wrap(st(s).index(i).getAll(q));
+async function dbClear(s){ await wrap(st(s,'readwrite').clear()); }
+
+/* ═══════════════ 상태 ═══════════════ */
+const S = {
+  chats:[], characters:[], personas:[], models:[],
+  chat:null, character:null, persona:null, messages:[],
+  editingChar:null, editingPersona:null,
+  streaming:false, abort:null, view:'vChats'
 };
 
-let allModels = [];      // OpenRouter 모델 목록 원본
-let turns = [];          // {role, content} — 메모리에만 존재
-let streaming = false;
-let abortCtl = null;
-let sessionCost = 0;
-
-/* ─────────── 설정 저장/복원 ─────────── */
-function loadSettings(){
-  el.apiKey.value   = localStorage.getItem(LS.key) || '';
-  el.sysPrompt.value= localStorage.getItem(LS.sys) ?? DEFAULT_SYS;
-  el.temp.value     = localStorage.getItem(LS.temp) || '0.9';
-  el.maxTok.value   = localStorage.getItem(LS.maxTok) || '600';
-  el.onlyFree.checked = (localStorage.getItem(LS.onlyFree) ?? '1') === '1';
+/* ═══════════════ 공통 UI ═══════════════ */
+let toastT;
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove('on'), 2200);
 }
-function saveSettings(){
-  localStorage.setItem(LS.key, el.apiKey.value.trim());
-  localStorage.setItem(LS.sys, el.sysPrompt.value);
-  localStorage.setItem(LS.temp, el.temp.value);
-  localStorage.setItem(LS.maxTok, el.maxTok.value);
-  localStorage.setItem(LS.onlyFree, el.onlyFree.checked ? '1' : '0');
-  if (el.model.value) localStorage.setItem(LS.model, el.model.value);
+function sheet(title, items){
+  const box = $('sheetIn');
+  box.innerHTML = (title ? `<h3>${esc(title)}</h3>` : '') +
+    items.map((it,i)=>`<button class="sitem ${it.danger?'dan':''}" data-i="${i}">${esc(it.label)}</button>`).join('');
+  box.querySelectorAll('.sitem').forEach(b => b.onclick = () => {
+    closeSheet(); items[+b.dataset.i].run?.();
+  });
+  $('sheet').classList.add('on');
 }
-['apiKey','sysPrompt','temp','maxTok'].forEach(k =>
-  el[k].addEventListener('change', saveSettings));
-el.onlyFree.addEventListener('change', ()=>{ saveSettings(); renderModels(); });
-el.model.addEventListener('change', ()=>{ saveSettings(); showModelInfo(); });
-el.modelFilter.addEventListener('input', renderModels);
+const closeSheet = () => $('sheet').classList.remove('on');
+$('sheet').onclick = e => { if (e.target.id === 'sheet') closeSheet(); };
 
-/* ─────────── 모델 목록 (동적 로드) ─────────── */
-const isFree = m => {
-  const p = m.pricing || {};
-  return parseFloat(p.prompt || 0) === 0 && parseFloat(p.completion || 0) === 0;
-};
-const priceOf = m => ({
-  in:  parseFloat(m.pricing?.prompt || 0) * 1e6,
-  out: parseFloat(m.pricing?.completion || 0) * 1e6
+function show(v){
+  document.querySelectorAll('.view').forEach(x => x.classList.toggle('on', x.id === v));
+  S.view = v;
+  const tabbed = ['vChats','vChars','vPersonas','vSettings'];
+  $('nav').style.display = tabbed.includes(v) ? 'flex' : 'none';
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+}
+document.querySelectorAll('#nav button').forEach(b => b.onclick = () => {
+  show(b.dataset.v);
+  if (b.dataset.v === 'vChats')    renderChats();
+  if (b.dataset.v === 'vChars')    renderChars();
+  if (b.dataset.v === 'vPersonas') renderPersonas();
 });
 
-async function fetchModels(){
-  const key = el.apiKey.value.trim();
-  el.model.innerHTML = '<option value="">— 불러오는 중 —</option>';
-  try{
-    const headers = key ? {Authorization:`Bearer ${key}`} : {};
-    const res = await fetch(`${API}/models`, {headers});
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    allModels = (json.data || []).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
-    renderModels();
-  }catch(e){
-    el.model.innerHTML = `<option value="">— 목록 로드 실패: ${e.message} —</option>`;
+const initial = n => (n||'?').trim().charAt(0).toUpperCase();
+const relTime = t => {
+  const d = (now() - t) / 1000;
+  if (d < 60)    return '방금';
+  if (d < 3600)  return `${Math.floor(d/60)}분 전`;
+  if (d < 86400) return `${Math.floor(d/3600)}시간 전`;
+  if (d < 604800)return `${Math.floor(d/86400)}일 전`;
+  return new Date(t).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'});
+};
+
+/* ═══════════════ 프롬프트 조립 ═══════════════ */
+function fill(tpl, charName, userName){
+  return String(tpl||'').replaceAll('{{char}}', charName||'캐릭터').replaceAll('{{user}}', userName||'나');
+}
+function buildSystem(char, persona){
+  const cn = char.name, un = persona?.name || '나';
+  const P = [];
+  P.push(`너는 롤플레잉 상대역 "${cn}"이다. 아래 설정을 대화 내내 유지한다.`);
+
+  const c = [];
+  if (char.description) c.push(char.description);
+  if (char.personality) c.push(`성격: ${char.personality}`);
+  if (char.scenario)    c.push(`상황: ${char.scenario}`);
+  if (c.length) P.push(`\n[${cn}]\n` + c.join('\n'));
+
+  if (char.mes_example) P.push(`\n[말투 예시]\n${char.mes_example}`);
+
+  if (persona){
+    const u = [`이름: ${persona.name}`];
+    if (persona.description) u.push(persona.description);
+    P.push(`\n[상대 (${un})]\n` + u.join('\n'));
   }
+
+  P.push(`\n[규칙]\n` + (char.system_prompt?.trim() || DEFAULT_RULES));
+  if (char.post_history_instructions) P.push(`\n${char.post_history_instructions}`);
+
+  return fill(P.join('\n'), cn, un);
+}
+/* 한국어는 문자당 약 0.7토큰으로 근사한다 */
+const estTok = s => Math.round(String(s||'').length * 0.7);
+
+/* ═══════════════ 대화 목록 ═══════════════ */
+async function loadAll(){
+  S.characters = (await dbAll('characters')).sort((a,b)=>b.updatedAt-a.updatedAt);
+  S.personas   = await dbAll('personas');
+  S.chats      = (await dbAll('chats')).sort((a,b)=>(b.lastMessageAt||0)-(a.lastMessageAt||0));
+}
+function renderChats(){
+  const box = $('chatList');
+  if (!S.chats.length){
+    box.innerHTML = `<div class="empty">아직 대화가 없습니다.<br>우측 상단 <b>＋</b>로 시작하십시오.</div>`;
+    return;
+  }
+  box.innerHTML = S.chats.map(ch => {
+    const c = S.characters.find(x=>x.id===ch.characterId);
+    const color = c?.accent || PALETTE[0];
+    return `<div class="card" data-id="${ch.id}">
+      <div class="av" style="background:${color}">${esc(initial(c?.name))}</div>
+      <div class="t"><b>${esc(ch.title || c?.name || '이름 없음')}</b>
+        <span>${esc(c?.name||'삭제된 캐릭터')} · ${ch.messageCount||0}개 · ${relTime(ch.lastMessageAt||ch.createdAt)}</span></div>
+      <button class="ico" data-menu="${ch.id}">⋯</button></div>`;
+  }).join('');
+  box.querySelectorAll('.card').forEach(el => el.onclick = e => {
+    if (e.target.dataset.menu) return chatMenu(e.target.dataset.menu);
+    openChat(el.dataset.id);
+  });
+}
+function chatMenu(id){
+  const ch = S.chats.find(x=>x.id===id); if (!ch) return;
+  sheet(ch.title, [
+    {label:'이름 변경', run: async () => {
+      const t = prompt('대화 이름', ch.title || ''); if (t===null) return;
+      ch.title = t.trim(); await dbPut('chats', ch); renderChats();
+    }},
+    {label:'대화 삭제', danger:true, run: async () => {
+      if (!confirm(`"${ch.title}" 대화를 삭제합니다.\n원문이 모두 사라지며 되돌릴 수 없습니다.`)) return;
+      for (const m of await dbBy('messages','chatId',id)) await dbDel('messages', m.id);
+      await dbDel('memory', id); await dbDel('chats', id);
+      await loadAll(); renderChats(); toast('삭제했습니다');
+    }}
+  ]);
 }
 
-function renderModels(){
-  const q = el.modelFilter.value.trim().toLowerCase();
-  let list = allModels;
-  if (el.onlyFree.checked) list = list.filter(isFree);
-  if (q) list = list.filter(m =>
-    (m.id + ' ' + (m.name||'')).toLowerCase().includes(q));
+$('bNewChat').onclick = () => {
+  if (!S.characters.length) return toast('캐릭터를 먼저 만드십시오');
+  sheet('어떤 캐릭터와 대화할까요', S.characters.map(c => ({
+    label: c.name, run: () => newChat(c.id)
+  })));
+};
 
-  el.modelCount.textContent = `(${list.length}개)`;
-  const saved = localStorage.getItem(LS.model) || '';
-  el.model.innerHTML = list.length
-    ? list.map(m=>{
-        const ctx = m.context_length ? `${Math.round(m.context_length/1000)}k` : '?';
-        const p = priceOf(m);
-        const tag = isFree(m) ? '무료' : `$${p.in.toFixed(2)}/$${p.out.toFixed(2)}`;
-        return `<option value="${m.id}">${m.name||m.id} · ${ctx} · ${tag}</option>`;
-      }).join('')
-    : '<option value="">— 조건에 맞는 모델 없음 —</option>';
+async function newChat(characterId){
+  const c = S.characters.find(x=>x.id===characterId);
+  const p = S.personas.find(x=>x.isDefault) || S.personas[0] || null;
+  const chat = {
+    id: uid(), characterId, personaId: p?.id || null,
+    title: c.name, model: c.preferredModel || localStorage.getItem(LS.model) || '',
+    messageCount: 0, createdAt: now(), lastMessageAt: now()
+  };
+  await dbPut('chats', chat);
 
-  if (list.some(m=>m.id===saved)) el.model.value = saved;
-  showModelInfo();
-}
-
-function showModelInfo(){
-  const m = allModels.find(x=>x.id===el.model.value);
-  if (!m){ el.modelInfo.textContent = '컨텍스트 길이가 짧은 모델은 긴 롤플레잉에 불리합니다.'; return; }
-  const p = priceOf(m);
-  const ctx = (m.context_length||0).toLocaleString();
-  el.modelInfo.innerHTML = isFree(m)
-    ? `<b>${m.id}</b> · 컨텍스트 ${ctx} 토큰 · <span style="color:var(--ok)">무료</span>`
-    : `<b>${m.id}</b> · 컨텍스트 ${ctx} 토큰 · 입력 $${p.in.toFixed(3)} / 출력 $${p.out.toFixed(3)} (100만 토큰당)`;
-}
-
-el.btnReload.addEventListener('click', fetchModels);
-el.apiKey.addEventListener('change', ()=>{ if (el.apiKey.value.trim()) fetchModels(); });
-
-/* ─────────── 대화 렌더링 ─────────── */
-function addMsg(role, text){
-  const cls = role==='user' ? 'user' : role==='assistant' ? 'ai' : role;
-  const who = {user:'나', assistant:'캐릭터', sys:'시스템', err:'오류'}[role] || role;
-  const d = document.createElement('div');
-  d.className = `msg ${cls}`;
-  d.innerHTML = `<div class="who">${who}</div><div class="body"></div>`;
-  d.querySelector('.body').textContent = text;
-  el.chat.appendChild(d);
-  el.chat.scrollTop = el.chat.scrollHeight;
-  return d.querySelector('.body');
-}
-
-/* ─────────── 전송 ─────────── */
-async function send(){
-  if (streaming){ abortCtl?.abort(); return; }
-
-  const key = el.apiKey.value.trim();
-  const model = el.model.value;
-  const text = el.input.value.trim();
-  if (!key)  return addMsg('err','API 키를 먼저 입력하세요. (설정 → OpenRouter API 키)');
-  if (!model)return addMsg('err','모델을 먼저 선택하세요.');
-  if (!text) return;
-
-  el.input.value=''; el.input.style.height='auto';
-  addMsg('user', text);
-  turns.push({role:'user', content:text});
-
-  const target = addMsg('assistant','');
-  const cur = document.createElement('span'); cur.className='cursor';
-  target.appendChild(cur);
-
-  streaming = true;
-  el.btnSend.textContent = '중지';
-  abortCtl = new AbortController();
-
-  const t0 = performance.now();
-  let tFirst = null, out = '', usage = null;
-
-  try{
-    const res = await fetch(`${API}/chat/completions`,{
-      method:'POST',
-      headers:{
-        'Authorization':`Bearer ${key}`,
-        'Content-Type':'application/json',
-        'X-Title':'RP Stage0 Test'
-      },
-      signal: abortCtl.signal,
-      body: JSON.stringify({
-        model,
-        messages: [{role:'system', content:el.sysPrompt.value}, ...turns],
-        temperature: parseFloat(el.temp.value),
-        max_tokens: parseInt(el.maxTok.value,10),
-        stream: true
-      })
+  if (c.first_mes?.trim()){
+    await dbPut('messages', {
+      id: uid(), chatId: chat.id, turnIndex: 0, role:'assistant',
+      content: fill(c.first_mes, c.name, p?.name), variants: [], activeVariant: 0,
+      model: '', usage: null, createdAt: now()
     });
-
-    if (!res.ok){
-      const raw = await res.text();
-      let detail = raw;
-      try{ detail = JSON.parse(raw).error?.message || raw; }catch(_){}
-      throw new Error(`HTTP ${res.status} — ${detail}`);
-    }
-
-    const reader = res.body.getReader();
-    const dec = new TextDecoder();
-    let buf = '', done = false;
-
-    while(!done){
-      const {value, done:rd} = await reader.read();
-      if (rd) break;
-      buf += dec.decode(value, {stream:true});
-      const lines = buf.split('\n');
-      buf = lines.pop();
-
-      for (const line of lines){
-        const t = line.trim();
-        if (!t || t.startsWith(':')) continue;      // OPENROUTER PROCESSING 주석
-        if (!t.startsWith('data:')) continue;
-        const payload = t.slice(5).trim();
-        if (payload === '[DONE]'){ done = true; break; }
-
-        let j; try{ j = JSON.parse(payload); }catch(_){ continue; }
-        if (j.usage) usage = j.usage;
-        const delta = j.choices?.[0]?.delta?.content;
-        if (delta){
-          if (tFirst === null) tFirst = performance.now() - t0;
-          out += delta;
-          target.textContent = out;
-          target.appendChild(cur);
-          el.chat.scrollTop = el.chat.scrollHeight;
-        }
-      }
-    }
-
-    cur.remove();
-    if (!out.trim()){
-      target.parentElement.className = 'msg err';
-      target.textContent = '빈 응답입니다. 모델이 콘텐츠를 거부했거나 필터에 걸렸을 수 있습니다.';
-    }else{
-      turns.push({role:'assistant', content:out});
-      el.mTurns.textContent = turns.filter(m=>m.role==='user').length;
-    }
-
-    /* 측정치 반영 */
-    const total = performance.now() - t0;
-    const ttft = tFirst ?? total;
-    el.mTtft.innerHTML = `<span class="${ttft<1000?'g':ttft<2000?'y':'r'}">${(ttft/1000).toFixed(2)}초</span>`;
-    el.mTotal.textContent = `${(total/1000).toFixed(2)}초`;
-
-    if (usage){
-      const gen = usage.completion_tokens ?? 0;
-      const pr  = usage.prompt_tokens ?? 0;
-      const cached = usage.prompt_tokens_details?.cached_tokens ?? 0;
-      el.mTokens.textContent = cached ? `${pr}(캐시 ${cached}) → ${gen}` : `${pr} → ${gen}`;
-      const tps = gen / ((total - ttft)/1000 || 1);
-      el.mTps.textContent = `${tps.toFixed(1)} tok/s`;
-      if (typeof usage.cost === 'number'){
-        sessionCost += usage.cost;
-        el.tagCost.textContent = sessionCost === 0 ? '$0' : `$${sessionCost.toFixed(5)}`;
-      }
-    }else{
-      el.mTokens.textContent = `≈${Math.round(out.length*0.7)}`;
-      el.mTps.textContent = '—';
-    }
-
-  }catch(e){
-    cur.remove();
-    if (e.name === 'AbortError'){
-      target.textContent = out + ' [중지됨]';
-      if (out.trim()) turns.push({role:'assistant', content:out});
-    }else{
-      target.parentElement.className = 'msg err';
-      target.textContent = e.message;
-      // 실패한 사용자 발화만 되돌린다. 이미 응답이 기록됐다면 건드리지 않는다.
-      if (turns.at(-1)?.role === 'user') turns.pop();
-    }
-  }finally{
-    streaming = false;
-    el.btnSend.textContent = '전송';
-    abortCtl = null;
+    chat.messageCount = 1;
+    await dbPut('chats', chat);
   }
+  await loadAll();
+  openChat(chat.id);
 }
 
-/* ─────────── 입력 UX ─────────── */
-el.btnSend.addEventListener('click', send);
-el.input.addEventListener('input', ()=>{
-  el.input.style.height='auto';
-  el.input.style.height = Math.min(el.input.scrollHeight, window.innerHeight*0.34) + 'px';
+/* ═══════════════ 채팅 ═══════════════ */
+async function openChat(id){
+  const chat = await dbGet('chats', id);
+  if (!chat) return toast('대화를 찾을 수 없습니다');
+  S.chat = chat;
+  S.character = await dbGet('characters', chat.characterId) || {name:'삭제된 캐릭터'};
+  S.persona   = chat.personaId ? await dbGet('personas', chat.personaId) : null;
+  S.messages  = (await dbBy('messages','chatId',id)).sort((a,b)=>a.turnIndex-b.turnIndex);
+  localStorage.setItem(LS.lastChat, id);
+
+  $('cTitle').firstChild.textContent = S.character.name;
+  $('cSub').textContent = (S.persona ? `나: ${S.persona.name} · ` : '') +
+    (chat.model || localStorage.getItem(LS.model) || '모델 미지정');
+  renderMsgs();
+  show('vChat');
+}
+function fmt(t){
+  return esc(t).replace(/\*([^*\n]+)\*/g, '<em class="na">$1</em>');
+}
+function renderMsgs(){
+  const box = $('msgs');
+  box.innerHTML = S.messages.map(m => `
+    <div class="msg ${m.role}" data-id="${m.id}">
+      <div class="who">${m.role==='user' ? esc(S.persona?.name||'나') : esc(S.character.name)}</div>
+      <div class="body">${fmt(m.content)}</div>
+      <div class="act"><button data-act="copy">복사</button><button data-act="cut">여기부터 삭제</button></div>
+    </div>`).join('');
+  box.querySelectorAll('[data-act]').forEach(b => b.onclick = () => {
+    const id = b.closest('.msg').dataset.id;
+    b.dataset.act === 'copy' ? copyMsg(id) : cutFrom(id);
+  });
+  box.scrollTop = box.scrollHeight;
+}
+function copyMsg(id){
+  const m = S.messages.find(x=>x.id===id);
+  navigator.clipboard?.writeText(m.content).then(()=>toast('복사했습니다'));
+}
+async function cutFrom(id){
+  const m = S.messages.find(x=>x.id===id); if (!m) return;
+  const drop = S.messages.filter(x => x.turnIndex >= m.turnIndex);
+  if (!confirm(`이 메시지부터 ${drop.length}개를 삭제합니다.`)) return;
+  for (const d of drop) await dbDel('messages', d.id);
+  S.messages = S.messages.filter(x => x.turnIndex < m.turnIndex);
+  S.chat.messageCount = S.messages.length;
+  await dbPut('chats', S.chat);
+  renderMsgs();
+}
+
+$('cBack').onclick = () => { show('vChats'); loadAll().then(renderChats); };
+$('cMenu').onclick = () => sheet(S.character?.name, [
+  {label:'페르소나 변경', run: () => sheet('페르소나', [
+    {label:'(사용 안 함)', run: () => setPersona(null)},
+    ...S.personas.map(p => ({label:p.name, run: () => setPersona(p.id)}))
+  ])},
+  {label:'이 대화의 모델 변경', run: () => sheet('모델', [
+    {label:'(기본 모델 사용)', run: () => setChatModel('')},
+    ...filtered().slice(0,40).map(m => ({label:modelLabel(m), run: () => setChatModel(m.id)}))
+  ])},
+  {label:'캐릭터 편집', run: () => editChar(S.character.id)}
+]);
+async function setPersona(pid){
+  S.chat.personaId = pid; await dbPut('chats', S.chat); openChat(S.chat.id);
+}
+async function setChatModel(mid){
+  S.chat.model = mid; await dbPut('chats', S.chat); openChat(S.chat.id);
+}
+
+/* ═══════════════ 전송 ═══════════════ */
+$('cSend').onclick = () => send();
+$('inp').addEventListener('input', e => {
+  e.target.style.height = 'auto';
+  e.target.style.height = Math.min(e.target.scrollHeight, innerHeight*0.32) + 'px';
 });
-el.input.addEventListener('keydown', e=>{
-  // 데스크탑에서만 Enter 전송. 모바일 키보드는 줄바꿈 유지.
+$('inp').addEventListener('keydown', e => {
   if (e.key==='Enter' && !e.shiftKey && !/Android|iPhone|iPad/i.test(navigator.userAgent)){
     e.preventDefault(); send();
   }
 });
 
-el.btnSettings.addEventListener('click', ()=> el.settings.classList.toggle('open'));
+async function send(){
+  if (S.streaming){ S.abort?.abort(); return; }
+  const key = localStorage.getItem(LS.key) || '';
+  const model = S.chat.model || S.character.preferredModel || localStorage.getItem(LS.model) || '';
+  const text = $('inp').value.trim();
+  if (!key)   { show('vSettings'); return toast('API 키를 먼저 입력하십시오'); }
+  if (!model) { show('vSettings'); return toast('모델을 먼저 선택하십시오'); }
+  if (!text) return;
 
-el.btnClear.addEventListener('click', ()=>{
-  if (streaming) abortCtl?.abort();
-  turns = []; sessionCost = 0;
-  el.chat.innerHTML = '';
-  el.mTtft.textContent = el.mTotal.textContent = el.mTps.textContent = el.mTokens.textContent = '—';
-  el.mTurns.textContent = '0'; el.tagCost.textContent = '$0';
-  addMsg('sys','대화를 초기화했습니다.');
-});
+  $('inp').value = ''; $('inp').style.height = 'auto';
 
-el.btnExport.addEventListener('click', ()=>{
-  const dump = {
-    model: el.model.value,
-    temperature: parseFloat(el.temp.value),
-    system: el.sysPrompt.value,
-    turns
+  const uMsg = {
+    id: uid(), chatId: S.chat.id, turnIndex: S.messages.length, role:'user',
+    content: text, variants: [], activeVariant: 0, model:'', usage:null, createdAt: now()
   };
-  const t = JSON.stringify(dump, null, 2);
-  navigator.clipboard?.writeText(t)
-    .then(()=> addMsg('sys','대화 기록을 클립보드에 복사했습니다. 검증 보고서에 붙여넣으십시오.'))
-    .catch(()=> addMsg('sys', t));
+  await dbPut('messages', uMsg);
+  S.messages.push(uMsg);
+  renderMsgs();
+
+  /* 1단계 임시 컨텍스트: 최근 N턴만 전송. 원문은 전량 보존된다. */
+  const win = parseInt(localStorage.getItem(LS.window) || '20', 10);
+  const sys = buildSystem(S.character, S.persona);
+  const recent = S.messages.slice(-win).map(m => ({role:m.role, content:m.content}));
+  const ctxTok = estTok(sys) + recent.reduce((a,m)=>a+estTok(m.content), 0);
+  $('mCtx').textContent = `≈${ctxTok}`;
+
+  const holder = document.createElement('div');
+  holder.className = 'msg assistant';
+  holder.innerHTML = `<div class="who">${esc(S.character.name)}</div><div class="body"></div>`;
+  const target = holder.querySelector('.body');
+  const cur = document.createElement('span'); cur.className = 'cursor';
+  target.appendChild(cur);
+  $('msgs').appendChild(holder);
+  $('msgs').scrollTop = $('msgs').scrollHeight;
+
+  S.streaming = true; $('cSend').textContent = '중지';
+  S.abort = new AbortController();
+  const t0 = performance.now();
+  let tFirst = null, out = '', usage = null;
+
+  try{
+    const res = await fetch(`${API}/chat/completions`, {
+      method:'POST',
+      headers:{'Authorization':`Bearer ${key}`,'Content-Type':'application/json','X-Title':'RP App'},
+      signal: S.abort.signal,
+      body: JSON.stringify({
+        model,
+        messages: [{role:'system', content:sys}, ...recent],
+        temperature: parseFloat(S.character.temperature ?? localStorage.getItem(LS.temp) ?? 0.9),
+        max_tokens: parseInt(localStorage.getItem(LS.maxTok) || '600', 10),
+        stream: true
+      })
+    });
+    if (!res.ok){
+      const raw = await res.text();
+      let d = raw; try{ d = JSON.parse(raw).error?.message || raw; }catch(_){}
+      throw new Error(`HTTP ${res.status} — ${d}`);
+    }
+
+    const rd = res.body.getReader(), dec = new TextDecoder();
+    let buf = '', fin = false;
+    while(!fin){
+      const {value, done} = await rd.read();
+      if (done) break;
+      buf += dec.decode(value, {stream:true});
+      const lines = buf.split('\n'); buf = lines.pop();
+      for (const line of lines){
+        const t = line.trim();
+        if (!t || t.startsWith(':') || !t.startsWith('data:')) continue;
+        const pay = t.slice(5).trim();
+        if (pay === '[DONE]'){ fin = true; break; }
+        let j; try{ j = JSON.parse(pay); }catch(_){ continue; }
+        if (j.usage) usage = j.usage;
+        const d = j.choices?.[0]?.delta?.content;
+        if (d){
+          if (tFirst === null) tFirst = performance.now() - t0;
+          out += d;
+          target.innerHTML = fmt(out); target.appendChild(cur);
+          $('msgs').scrollTop = $('msgs').scrollHeight;
+        }
+      }
+    }
+    cur.remove();
+
+    if (!out.trim()) throw new Error('빈 응답입니다. 모델이 콘텐츠를 거부했을 수 있습니다.');
+
+    const aMsg = {
+      id: uid(), chatId: S.chat.id, turnIndex: S.messages.length, role:'assistant',
+      content: out, variants: [out], activeVariant: 0, model,
+      usage: usage ? {prompt_tokens:usage.prompt_tokens, completion_tokens:usage.completion_tokens, cost:usage.cost} : null,
+      createdAt: now()
+    };
+    await dbPut('messages', aMsg);
+    S.messages.push(aMsg);
+
+    S.chat.messageCount = S.messages.length;
+    S.chat.lastMessageAt = now();
+    S.chat.model = model;
+    await dbPut('chats', S.chat);
+    renderMsgs();
+
+    const total = performance.now() - t0, ttft = tFirst ?? total;
+    $('mTtft').innerHTML = `<span class="${ttft<1000?'g':ttft<2000?'y':'r'}">${(ttft/1000).toFixed(2)}s</span>`;
+    $('mTotal').textContent = `${(total/1000).toFixed(2)}s`;
+    $('mTok').textContent = usage ? `${usage.prompt_tokens}→${usage.completion_tokens}` : `≈${estTok(out)}`;
+
+  }catch(e){
+    cur.remove();
+    if (e.name === 'AbortError' && out.trim()){
+      const aMsg = {
+        id: uid(), chatId: S.chat.id, turnIndex: S.messages.length, role:'assistant',
+        content: out, variants:[out], activeVariant:0, model, usage:null, createdAt: now()
+      };
+      await dbPut('messages', aMsg); S.messages.push(aMsg);
+      S.chat.messageCount = S.messages.length; S.chat.lastMessageAt = now();
+      await dbPut('chats', S.chat);
+      renderMsgs();
+    }else{
+      holder.className = 'msg err';
+      target.textContent = e.name === 'AbortError' ? '중지됨' : e.message;
+      /* 응답이 없으므로 방금 보낸 사용자 발화를 되돌려 재시도할 수 있게 한다 */
+      await dbDel('messages', uMsg.id);
+      S.messages = S.messages.filter(x => x.id !== uMsg.id);
+      $('inp').value = text;
+    }
+  }finally{
+    S.streaming = false; $('cSend').textContent = '전송'; S.abort = null;
+  }
+}
+
+/* ═══════════════ 캐릭터 ═══════════════ */
+function renderChars(){
+  const box = $('charList');
+  if (!S.characters.length){
+    box.innerHTML = `<div class="empty">캐릭터가 없습니다.<br>우측 상단 <b>＋</b>로 만드십시오.</div>`;
+    return;
+  }
+  box.innerHTML = S.characters.map(c => `
+    <div class="card" data-id="${c.id}">
+      <div class="av" style="background:${c.accent||PALETTE[0]}">${esc(initial(c.name))}</div>
+      <div class="t"><b>${esc(c.name)}</b><span>${esc((c.personality||c.description||'설명 없음').slice(0,44))}</span></div>
+      <button class="btn" data-go="${c.id}" style="padding:6px 11px;font-size:12px">대화</button>
+    </div>`).join('');
+  box.querySelectorAll('.card').forEach(el => el.onclick = e => {
+    if (e.target.dataset.go) return newChat(e.target.dataset.go);
+    editChar(el.dataset.id);
+  });
+}
+$('bNewChar').onclick = () => editChar(null);
+
+function editChar(id){
+  const c = id ? S.characters.find(x=>x.id===id) : null;
+  S.editingChar = c ? {...c} : {
+    id: uid(), spec:'chara_card_v2', name:'', description:'', personality:'', scenario:'',
+    first_mes:'', mes_example:'', system_prompt:'', post_history_instructions:'',
+    tags:[], accent: PALETTE[Math.floor(Math.random()*PALETTE.length)],
+    preferredModel:'', temperature:null, createdAt: now(), updatedAt: now()
+  };
+  const e = S.editingChar;
+  $('ceTitle').textContent = c ? c.name : '새 캐릭터';
+  $('ceName').value  = e.name;      $('ceDesc').value  = e.description;
+  $('cePers').value  = e.personality; $('ceScen').value = e.scenario;
+  $('ceFirst').value = e.first_mes; $('ceEx').value    = e.mes_example;
+  $('ceSys').value   = e.system_prompt;
+  $('ceTemp').value  = e.temperature ?? '';
+  fillModelSelect($('ceModel'), e.preferredModel, '기본 모델 사용');
+  $('ceColors').innerHTML = PALETTE.map(p =>
+    `<button class="btn" data-c="${p}" style="background:${p};border-color:${p};height:34px;
+      ${p===e.accent?'outline:2px solid var(--tx);outline-offset:2px':''}"></button>`).join('');
+  $('ceColors').querySelectorAll('[data-c]').forEach(b => b.onclick = () => {
+    e.accent = b.dataset.c;
+    $('ceColors').querySelectorAll('[data-c]').forEach(x =>
+      x.style.outline = x.dataset.c === e.accent ? '2px solid var(--tx)' : '');
+  });
+  $('ceMenu').style.display = c ? 'grid' : 'none';
+  show('vCharEdit');
+}
+$('ceBack').onclick = () => { show('vChars'); renderChars(); };
+$('ceSave').onclick = async () => {
+  const e = S.editingChar;
+  e.name = $('ceName').value.trim();
+  if (!e.name) return toast('이름은 필수입니다');
+  e.description = $('ceDesc').value; e.personality = $('cePers').value;
+  e.scenario    = $('ceScen').value; e.first_mes   = $('ceFirst').value;
+  e.mes_example = $('ceEx').value;   e.system_prompt = $('ceSys').value;
+  if (S.models.length) e.preferredModel = $('ceModel').value;  /* 목록 미로드 시 기존 값 보존 */
+  e.temperature = $('ceTemp').value === '' ? null : parseFloat($('ceTemp').value);
+  e.updatedAt = now();
+  await dbPut('characters', e);
+  await loadAll(); renderChars(); show('vChars'); toast('저장했습니다');
+};
+$('ceMenu').onclick = () => {
+  const e = S.editingChar;
+  sheet(e.name, [
+    {label:'카드 내보내기 (JSON)', run: () => {
+      const {id, createdAt, updatedAt, accent, preferredModel, temperature, ...card} = e;
+      download(`${e.name}.json`, JSON.stringify({spec:'chara_card_v2', data:card}, null, 2));
+    }},
+    {label:'복제', run: async () => {
+      const cp = {...e, id: uid(), name: e.name + ' 사본', createdAt: now(), updatedAt: now()};
+      await dbPut('characters', cp); await loadAll(); renderChars(); show('vChars'); toast('복제했습니다');
+    }},
+    {label:'삭제', danger:true, run: async () => {
+      const used = S.chats.filter(c => c.characterId === e.id).length;
+      if (!confirm(`"${e.name}"을 삭제합니다.${used?`\n연결된 대화 ${used}개는 남습니다.`:''}`)) return;
+      await dbDel('characters', e.id); await loadAll(); renderChars(); show('vChars'); toast('삭제했습니다');
+    }}
+  ]);
+};
+
+/* 캐릭터 카드 가져오기 — V2 표준과 평면 JSON 모두 수용 */
+$('bImportChar').onclick = () => pickFile(async txt => {
+  try{
+    const j = JSON.parse(txt);
+    const d = j.data || j;
+    if (!d.name) throw new Error('name 필드가 없습니다');
+    await dbPut('characters', {
+      id: uid(), spec:'chara_card_v2',
+      name:d.name, description:d.description||'', personality:d.personality||'',
+      scenario:d.scenario||'', first_mes:d.first_mes||'', mes_example:d.mes_example||'',
+      system_prompt:d.system_prompt||'', post_history_instructions:d.post_history_instructions||'',
+      tags:d.tags||[], accent:PALETTE[Math.floor(Math.random()*PALETTE.length)],
+      preferredModel:'', temperature:null, createdAt:now(), updatedAt:now()
+    });
+    await loadAll(); renderChars(); toast(`"${d.name}"을 가져왔습니다`);
+  }catch(err){ toast('가져오기 실패: ' + err.message); }
 });
 
-/* ─────────── 시작 ─────────── */
-loadSettings();
-addMsg('sys','0단계 검증 프로토타입입니다. 설정에서 API 키를 넣고 모델을 고른 뒤 대화를 시작하십시오.');
-if (el.apiKey.value.trim()) fetchModels();
-else el.settings.classList.add('open');
+/* ═══════════════ 페르소나 ═══════════════ */
+function renderPersonas(){
+  const box = $('personaList');
+  if (!S.personas.length){
+    box.innerHTML = `<div class="empty">페르소나가 없습니다.<br>캐릭터가 나를 어떻게 인식할지 정합니다.</div>`;
+    return;
+  }
+  box.innerHTML = S.personas.map(p => `
+    <div class="card" data-id="${p.id}">
+      <div class="av" style="background:var(--panel2);color:var(--tx2)">${esc(initial(p.name))}</div>
+      <div class="t"><b>${esc(p.name)}${p.isDefault?' · 기본':''}</b>
+        <span>${esc((p.description||'설명 없음').slice(0,44))}</span></div>
+    </div>`).join('');
+  box.querySelectorAll('.card').forEach(el => el.onclick = () => editPersona(el.dataset.id));
+}
+$('bNewPersona').onclick = () => editPersona(null);
+function editPersona(id){
+  const p = id ? S.personas.find(x=>x.id===id) : null;
+  S.editingPersona = p ? {...p} : {id:uid(), name:'', description:'', isDefault:!S.personas.length,
+                                    createdAt:now(), updatedAt:now()};
+  const e = S.editingPersona;
+  $('peTitle').textContent = p ? p.name : '새 페르소나';
+  $('peName').value = e.name; $('peDesc').value = e.description; $('peDef').checked = !!e.isDefault;
+  $('peMenu').style.display = p ? 'grid' : 'none';
+  show('vPersonaEdit');
+}
+$('peBack').onclick = () => { show('vPersonas'); renderPersonas(); };
+$('peSave').onclick = async () => {
+  const e = S.editingPersona;
+  e.name = $('peName').value.trim();
+  if (!e.name) return toast('이름은 필수입니다');
+  e.description = $('peDesc').value; e.isDefault = $('peDef').checked; e.updatedAt = now();
+  if (e.isDefault) for (const o of S.personas) if (o.id !== e.id && o.isDefault){
+    o.isDefault = false; await dbPut('personas', o);
+  }
+  await dbPut('personas', e);
+  await loadAll(); renderPersonas(); show('vPersonas'); toast('저장했습니다');
+};
+$('peMenu').onclick = () => sheet(S.editingPersona.name, [
+  {label:'삭제', danger:true, run: async () => {
+    if (!confirm('삭제합니다.')) return;
+    await dbDel('personas', S.editingPersona.id);
+    await loadAll(); renderPersonas(); show('vPersonas'); toast('삭제했습니다');
+  }}
+]);
+
+/* ═══════════════ 모델 목록 ═══════════════ */
+const isFree = m => parseFloat(m.pricing?.prompt||0)===0 && parseFloat(m.pricing?.completion||0)===0;
+const price  = m => ({in:parseFloat(m.pricing?.prompt||0)*1e6, out:parseFloat(m.pricing?.completion||0)*1e6});
+
+async function fetchModels(){
+  try{
+    const res = await fetch(`${API}/models`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    S.models = ((await res.json()).data||[]).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+    renderModelSelect();
+    fillModelSelect($('ceModel'), S.editingChar?.preferredModel, '기본 모델 사용');
+  }catch(e){
+    $('sModel').innerHTML = `<option value="">— 로드 실패: ${esc(e.message)} —</option>`;
+  }
+}
+function modelLabel(m){
+  const ctx = m.context_length ? `${Math.round(m.context_length/1000)}k` : '?';
+  const p = price(m);
+  return `${m.name||m.id} · ${ctx} · ${isFree(m)?'무료':`$${p.in.toFixed(2)}/$${p.out.toFixed(2)}`}`;
+}
+function filtered(){
+  const q = $('sFilter').value.trim().toLowerCase();
+  let l = S.models;
+  if ($('sFree').checked) l = l.filter(isFree);
+  if (q) l = l.filter(m => (m.id+' '+(m.name||'')).toLowerCase().includes(q));
+  return l;
+}
+function renderModelSelect(){
+  const l = filtered(), saved = localStorage.getItem(LS.model) || '';
+  $('sCount').textContent = `(${l.length})`;
+  $('sModel').innerHTML = l.length
+    ? l.map(m=>`<option value="${esc(m.id)}">${esc(modelLabel(m))}</option>`).join('')
+    : '<option value="">— 조건에 맞는 모델 없음 —</option>';
+  if (saved && !l.some(m=>m.id===saved)){
+    const cur = S.models.find(m=>m.id===saved);
+    $('sModel').insertAdjacentHTML('afterbegin',
+      `<option value="${esc(saved)}">${esc(cur?modelLabel(cur):saved)} (현재 사용 중)</option>`);
+  }
+  if (saved) $('sModel').value = saved;
+  showModelInfo();
+}
+function fillModelSelect(sel, val, placeholder){
+  if (!sel) return;
+  sel.innerHTML = `<option value="">${placeholder}</option>` +
+    S.models.map(m=>`<option value="${esc(m.id)}">${esc(modelLabel(m))}</option>`).join('');
+  sel.value = val || '';
+}
+function showModelInfo(){
+  const m = S.models.find(x=>x.id===$('sModel').value);
+  $('sModelInfo').textContent = m
+    ? `${m.id} · 컨텍스트 ${(m.context_length||0).toLocaleString()} 토큰`
+    : '캐릭터별로 다른 모델을 지정할 수도 있습니다.';
+}
+$('sReload').onclick = fetchModels;
+$('sFilter').oninput = renderModelSelect;
+$('sFree').onchange  = () => { localStorage.setItem(LS.free, $('sFree').checked?'1':'0'); renderModelSelect(); };
+$('sModel').onchange = () => { localStorage.setItem(LS.model, $('sModel').value); showModelInfo(); };
+
+/* ═══════════════ 설정 ═══════════════ */
+function loadSettings(){
+  $('sKey').value    = localStorage.getItem(LS.key) || '';
+  $('sTemp').value   = localStorage.getItem(LS.temp) || '0.9';
+  $('sMaxTok').value = localStorage.getItem(LS.maxTok) || '600';
+  $('sWindow').value = localStorage.getItem(LS.window) || '20';
+  $('sFree').checked = (localStorage.getItem(LS.free) ?? '1') === '1';
+}
+$('sKey').onchange = () => {
+  localStorage.setItem(LS.key, $('sKey').value.trim());
+  if ($('sKey').value.trim()) fetchModels();
+};
+$('sTemp').onchange   = () => localStorage.setItem(LS.temp, $('sTemp').value);
+$('sMaxTok').onchange = () => localStorage.setItem(LS.maxTok, $('sMaxTok').value);
+$('sWindow').onchange = () => localStorage.setItem(LS.window, $('sWindow').value);
+
+/* ═══════════════ 백업 ═══════════════ */
+function download(name, text){
+  const url = URL.createObjectURL(new Blob([text], {type:'application/json'}));
+  const a = document.createElement('a');
+  a.href = url; a.download = name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+function pickFile(cb){
+  const f = $('filePick');
+  f.value = '';
+  f.onchange = () => { const file = f.files[0]; if (!file) return;
+    const r = new FileReader(); r.onload = () => cb(r.result); r.readAsText(file); };
+  f.click();
+}
+$('sExport').onclick = async () => {
+  const dump = {app:'rpapp', version:DB_VER, exportedAt:new Date().toISOString(), stores:{}};
+  for (const s of STORES) dump.stores[s] = await dbAll(s);   /* API 키는 의도적으로 제외 */
+  const d = new Date();
+  const stamp = `${String(d.getFullYear()).slice(2)}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+  download(`rpapp_backup_${stamp}.json`, JSON.stringify(dump));
+  toast('내보냈습니다');
+};
+$('sImport').onclick = () => pickFile(async txt => {
+  try{
+    const j = JSON.parse(txt);
+    if (j.app !== 'rpapp') throw new Error('이 앱의 백업 파일이 아닙니다');
+    if (!confirm('가져오기를 진행합니다.\n같은 id의 항목은 더 최근 것으로 덮어씁니다.')) return;
+    let n = 0;
+    for (const s of STORES){
+      for (const rec of (j.stores?.[s] || [])){
+        const key = s==='memory' ? rec.chatId : s==='searchIndex' ? [rec.chatId, rec.term] : rec.id;
+        const cur = await dbGet(s, key);
+        if (!cur || (rec.updatedAt||rec.createdAt||0) >= (cur.updatedAt||cur.createdAt||0)){
+          await dbPut(s, rec); n++;
+        }
+      }
+    }
+    await loadAll(); renderChats(); renderChars(); renderPersonas();
+    toast(`${n}건을 가져왔습니다`);
+  }catch(e){ toast('가져오기 실패: ' + e.message); }
+});
+
+/* ═══════════════ 첫 실행 시드 ═══════════════ */
+async function seed(){
+  if ((await dbAll('characters')).length) return;
+  await dbPut('characters', {
+    id: uid(), spec:'chara_card_v2', name:'서하',
+    description:'27세. 오래된 서점을 혼자 운영한다. 상대와는 알고 지낸 지 2년쯤 됐다.',
+    personality:'침착하고 말수가 적지만 상대에게는 은근히 다정하다. 감정을 직접 말하기보다 행동으로 드러낸다.',
+    scenario:'늦은 밤, 문 닫을 무렵의 서점. 상대가 불쑥 찾아왔다.',
+    first_mes:'*문 열리는 소리에 고개만 든다*\n\n아직 안 닫았어요. 들어와요.',
+    mes_example:'{{user}}: 오늘 힘들었어요.\n{{char}}: *말없이 따뜻한 차를 내민다* 앉아요.',
+    system_prompt:'', post_history_instructions:'', tags:['샘플'],
+    accent: PALETTE[0], preferredModel:'', temperature:null, createdAt:now(), updatedAt:now()
+  });
+  await dbPut('personas', {
+    id: uid(), name:'나', description:'', isDefault:true, createdAt:now(), updatedAt:now()
+  });
+}
+
+/* ═══════════════ 시작 ═══════════════ */
+(async function init(){
+  try{
+    await openDB();
+    await seed();
+    await loadAll();
+    loadSettings();
+    renderChats(); renderChars(); renderPersonas();
+    if (localStorage.getItem(LS.key)) fetchModels();
+    else { show('vSettings'); toast('설정에서 API 키를 입력하십시오'); }
+  }catch(e){
+    document.body.innerHTML =
+      `<div style="padding:40px 20px;color:#ffc9c9;line-height:1.8">
+        저장소를 열지 못했습니다.<br><br>${esc(e.message)}<br><br>
+        <span style="color:#9aa3b2;font-size:13px">
+        시크릿 모드에서는 IndexedDB가 제한될 수 있습니다. 일반 탭에서 열어보십시오.</span></div>`;
+  }
+})();
 </script>
 </body>
 </html>
