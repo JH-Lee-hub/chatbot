@@ -185,11 +185,20 @@
         <div><label>최대 출력</label><input type="number" id="sMaxTok" step="32" min="64" max="8192"></div>
       </div>
       <div class="fld">
-        <label>전송할 최근 턴 수</label>
-        <input type="number" id="sWindow" step="2" min="4" max="100">
+        <label>컨텍스트 예산 (토큰)</label>
+        <input type="number" id="sBudget" step="250" min="1000" max="12000">
         <div class="hint">
-          대화 원문은 전부 보존되며, 이 값은 <b>매 요청에 실어 보낼 분량</b>만 정합니다.
-          2단계에서 요약과 과거 장면 소환을 갖춘 컨텍스트 매니저로 대체될 임시 설정입니다.
+          대화 원문은 전부 보존됩니다. 이 값은 <b>매 요청에 실어 보낼 분량의 상한</b>입니다.
+          대화가 길어져도 이 선에서 고정되므로 비용과 속도가 일정하게 유지됩니다.
+          기본 2500 정도가 적당하며, 캐릭터 설정이 길면 올리십시오.
+        </div>
+      </div>
+      <div class="fld">
+        <div class="sw"><input type="checkbox" id="sAutoSum">
+          <label for="sAutoSum" style="margin:0">자동 요약 사용</label></div>
+        <div class="hint">
+          단기 창 밖으로 밀려난 대화가 6턴 쌓이면 요약해 장기 기억에 병합합니다.
+          별도 API 호출이 발생하며, 전체 호출량의 약 5%입니다. 끄면 오래된 맥락이 유실됩니다.
         </div>
       </div>
 
@@ -202,7 +211,7 @@
         브라우저 데이터를 지우면 대화가 사라집니다. 자동 백업 구현 전까지 주 1회 내보내기를 권장합니다.
       </div>
       <div style="height:24px"></div>
-      <div class="hint" style="text-align:center">1단계 · 캐릭터와 저장소</div>
+      <div class="hint" style="text-align:center">2단계 · 컨텍스트 매니저</div>
     </div>
   </section>
 
@@ -219,6 +228,7 @@
       <span>총 <b id="mTotal">—</b></span>
       <span>토큰 <b id="mTok">—</b></span>
       <span>전송 <b id="mCtx">—</b></span>
+      <span><button id="mRecall" style="font-size:10.5px;color:var(--tx3)">소환 <b>—</b></button></span>
     </div>
     <div id="composer">
       <textarea id="inp" rows="1" placeholder="메시지"></textarea>
@@ -279,6 +289,38 @@
     </div>
   </section>
 
+  <!-- ══════════ 기억 ══════════ -->
+  <section class="view" id="vMemory">
+    <div class="bar">
+      <button class="ico" id="meBack">‹</button>
+      <h2>기억<span class="sub" id="meSub"></span></h2>
+      <button class="btn pri" id="meSave" style="padding:7px 14px">저장</button>
+    </div>
+    <div class="scroll">
+      <div class="fld">
+        <label>지금까지의 이야기</label>
+        <textarea id="meSummary" rows="9" placeholder="아직 요약이 없습니다."></textarea>
+        <div class="hint">
+          캐릭터의 장기 기억입니다. 자동 갱신되지만 <b>직접 고칠 수 있습니다.</b>
+          틀린 내용이 쌓이면 이후 대화가 계속 어긋나므로, 가끔 확인하시는 편이 좋습니다.
+        </div>
+      </div>
+      <div class="fld">
+        <label>현재 상태</label>
+        <textarea id="meState" rows="7" placeholder="관계: 알고 지낸 지 2년&#10;장소: 서점 2층&#10;시각: 늦은 밤"></textarea>
+        <div class="hint">
+          한 줄에 <code>항목: 내용</code> 하나씩 적습니다. 요약문에 섞이면 뭉개지기 쉬운
+          사실(관계 변화, 위치)을 따로 붙잡아 두는 칸입니다.
+        </div>
+      </div>
+      <div class="fld row">
+        <button class="btn" id="meRun">지금 요약하기</button>
+        <button class="btn dan" id="meReset">기억 초기화</button>
+      </div>
+      <div class="hint" id="meInfo"></div>
+    </div>
+  </section>
+
   <nav id="nav">
     <button data-v="vChats" class="on"><i>💬</i>대화</button>
     <button data-v="vChars"><i>🎭</i>캐릭터</button>
@@ -300,7 +342,8 @@ const DB_NAME = 'rpapp', DB_VER = 1;
 const STORES = ['characters','personas','chats','messages','memory','searchIndex','outbox'];
 const LS = {
   key:'rp_apikey', model:'rp_model', temp:'rp_temp', maxTok:'rp_maxtok',
-  window:'rp_windowTurns', free:'rp_free', lastChat:'rp_lastChatId'
+  window:'rp_windowTurns', free:'rp_free', lastChat:'rp_lastChatId',
+  budget:'rp_budget', autoSum:'rp_autoSummary'
 };
 const PALETTE = ['#7c9cff','#5fd08a','#ffb454','#ff8fa3','#b088f9','#4ecdc4'];
 const DEFAULT_RULES =
@@ -364,7 +407,7 @@ const S = {
   chats:[], characters:[], personas:[], models:[],
   chat:null, character:null, persona:null, messages:[],
   editingChar:null, editingPersona:null,
-  streaming:false, abort:null, view:'vChats'
+  streaming:false, abort:null, view:'vChats', lastCtx:null
 };
 
 /* ═══════════════ 공통 UI ═══════════════ */
@@ -439,6 +482,194 @@ function buildSystem(char, persona){
 }
 /* 한국어는 문자당 약 0.7토큰으로 근사한다 */
 const estTok = s => Math.round(String(s||'').length * 0.7);
+
+/* ═══════════════ 컨텍스트 매니저 ═══════════════
+   원문은 messages 스토어에 전량 보존된다. 여기서 하는 일은
+   "매 요청에 무엇을 실어 보낼지" 고르는 것뿐이다.       */
+
+const SUM_TRIGGER = 6;   /* 창 밖으로 밀려난 턴이 이만큼 쌓이면 요약 */
+
+function budgetOf(){
+  const total = Math.max(1000, parseInt(localStorage.getItem(LS.budget) || '2500', 10));
+  return { total, recall: Math.min(500, Math.round(total * 0.16)) };
+}
+
+/* 한국어는 조사가 붙어 어절 단위 매칭이 잘 안 된다.
+   문자 bigram으로 쪼개면 "카페에서"와 "카페"가 이어진다. */
+function toks(str){
+  const clean = String(str||'').toLowerCase().replace(/[^\uac00-\ud7a3a-z0-9]+/g, ' ');
+  const out = new Set();
+  for (const w of clean.split(/\s+/)){
+    if (!w) continue;
+    if (/^[a-z0-9]+$/.test(w)){ if (w.length >= 2) out.add(w); continue; }
+    if (w.length === 1){ out.add(w); continue; }
+    for (let i = 0; i < w.length - 1; i++) out.add(w.slice(i, i+2));
+  }
+  return out;
+}
+
+/* 지금 대화와 관련된 과거 메시지를 원문 그대로 찾아온다 (BM25 근사) */
+function recallScenes(query, pool, budget){
+  const q = toks(query);
+  if (!q.size || !pool.length) return [];
+
+  const df = new Map();
+  const docs = pool.map(m => {
+    const t = toks(m.content);
+    for (const x of t) df.set(x, (df.get(x)||0) + 1);
+    return {m, t};
+  });
+  const N = docs.length;
+  const avg = docs.reduce((a,d) => a + d.t.size, 0) / N || 1;
+
+  /* "까요" "네요" 같은 어미 bigram은 어디에나 나오므로 잡음이다 */
+  const maxDf = N >= 10 ? Math.max(2, N * 0.12) : N;
+  const terms = [...q].filter(x => df.has(x) && df.get(x) <= maxDf);
+  if (!terms.length) return [];
+
+  const scored = docs.map(d => {
+    let sc = 0;
+    for (const x of terms) if (d.t.has(x)){
+      const n = df.get(x);
+      sc += Math.log(1 + (N - n + 0.5) / (n + 0.5));
+    }
+    return {m: d.m, sc: sc / (0.75 + 0.25 * d.t.size / avg)};
+  }).filter(x => x.sc > 0).sort((a,b) => b.sc - a.sc);
+
+  if (!scored.length) return [];
+  const floor = scored[0].sc * 0.55;
+
+  const byIdx = new Map(pool.map(m => [m.turnIndex, m]));
+  const chosen = new Map(); let used = 0;
+  const take = m => {
+    if (!m || chosen.has(m.turnIndex)) return;
+    const c = estTok(m.content);
+    if (used + c > budget) return;
+    chosen.set(m.turnIndex, m); used += c;
+  };
+  for (const x of scored){
+    if (x.sc < floor || chosen.size >= 6) break;
+    take(x.m);
+    take(byIdx.get(x.m.turnIndex + 1));   /* 상대의 대답까지 넣어야 장면이 된다 */
+  }
+  return [...chosen.values()].sort((a,b) => a.turnIndex - b.turnIndex);
+}
+
+const parseState = txt => {
+  const o = {};
+  for (const line of String(txt||'').split('\n')){
+    const i = line.indexOf(':');
+    if (i > 0){
+      const k = line.slice(0,i).replace(/^[-*\s]+/,'').trim();
+      const v = line.slice(i+1).trim();
+      if (k && v) o[k] = v;
+    }
+  }
+  return o;
+};
+const fmtState = st => Object.entries(st||{})
+  .filter(([,v]) => v && String(v).trim())
+  .map(([k,v]) => `- ${k}: ${v}`).join('\n');
+
+const blankMem = id => ({chatId:id, summary:'', stateCard:{}, summarizedUpTo:-1, updatedAt:0});
+const getMem = async id => (await dbGet('memory', id)) || blankMem(id);
+
+/* 매 요청의 전송 내용을 조립한다 */
+async function buildContext(userText){
+  const B = budgetOf();
+  const sys = buildSystem(S.character, S.persona);
+  const mem = await getMem(S.chat.id);
+
+  const stateTxt = fmtState(mem.stateCard);
+  const fixed = estTok(sys) + estTok(stateTxt) + estTok(mem.summary);
+  /* 단기 창은 남는 예산 전부를 쓰되 최소선을 보장한다 */
+  const winBudget = Math.max(500, B.total - fixed - B.recall);
+
+  const recent = []; let used = 0;
+  for (let i = S.messages.length - 1; i >= 0; i--){
+    const c = estTok(S.messages[i].content);
+    if (used + c > winBudget && recent.length >= 2) break;
+    recent.unshift(S.messages[i]); used += c;
+  }
+  const oldestKept = recent.length ? recent[0].turnIndex : S.messages.length;
+
+  const pool = S.messages.filter(m => m.turnIndex < oldestKept);
+  const hits = recallScenes(userText, pool, B.recall);
+
+  const who = m => m.role === 'user' ? (S.persona?.name || '나') : S.character.name;
+  const blocks = [];
+  if (stateTxt)    blocks.push('[현재 상태]\n' + stateTxt);
+  if (mem.summary) blocks.push('[지금까지의 이야기]\n' + mem.summary);
+  if (hits.length) blocks.push(
+    '[관련된 과거 장면 — 원문]\n' + hits.map(m => who(m) + ': ' + m.content).join('\n'));
+
+  const systemFull = sys + (blocks.length ? '\n\n' + blocks.join('\n\n') : '');
+  return {
+    msgs: [{role:'system', content:systemFull}, ...recent.map(m => ({role:m.role, content:m.content}))],
+    hits, oldestKept, mem,
+    tokens: estTok(systemFull) + used
+  };
+}
+
+/* 창 밖으로 밀려난 대화를 요약해 장기 기억에 병합한다 */
+async function maybeSummarize(oldestKept, silent){
+  if ((localStorage.getItem(LS.autoSum) ?? '1') !== '1' && silent) return;
+  const chatId = S.chat.id;
+  const mem = await getMem(chatId);
+  const pending = S.messages.filter(m => m.turnIndex > mem.summarizedUpTo && m.turnIndex < oldestKept);
+  if (pending.length < (silent ? SUM_TRIGGER : 1)) return silent ? undefined : toast('요약할 새 대화가 없습니다');
+
+  const key = localStorage.getItem(LS.key);
+  const model = S.chat.model || S.character.preferredModel || localStorage.getItem(LS.model);
+  if (!key || !model) return;
+
+  const who = m => m.role === 'user' ? (S.persona?.name || '나') : S.character.name;
+  const prompt =
+    '너는 롤플레잉 대화의 기록 관리자다. [기존 요약]과 [새 대화]를 합쳐 갱신하라.\n\n' +
+    '규칙:\n' +
+    '- summary는 500자 이내. 사건의 흐름과 관계 변화 중심으로 쓴다.\n' +
+    '- 사소한 잡담은 버리고, 나중에 다시 언급될 만한 사실만 남긴다.\n' +
+    '- state는 현재 시점의 사실만 적는다. 과거형으로 쓰지 않는다.\n' +
+    '- 오직 JSON만 출력한다. 설명이나 인사를 덧붙이지 않는다.\n\n' +
+    '출력 형식:\n' +
+    '{"summary":"...","state":{"관계":"","장소":"","시각":"","분위기":"","미해결":""}}\n\n' +
+    '[기존 요약]\n' + (mem.summary || '(없음)') + '\n\n' +
+    '[기존 상태]\n' + (fmtState(mem.stateCard) || '(없음)') + '\n\n' +
+    '[새 대화]\n' + pending.map(m => who(m) + ': ' + m.content).join('\n');
+
+  try{
+    const res = await fetch(API + '/chat/completions', {
+      method:'POST',
+      headers:{'Authorization':'Bearer ' + key, 'Content-Type':'application/json', 'X-Title':'RP App'},
+      body: JSON.stringify({
+        model, messages:[{role:'user', content:prompt}],
+        temperature: 0.3, max_tokens: 900
+      })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const txt = (await res.json()).choices?.[0]?.message?.content || '';
+    const m = txt.match(/\{[\s\S]*\}/);
+    if (!m) throw new Error('요약 형식 오류');
+    const j = JSON.parse(m[0]);
+
+    const next = {
+      chatId,
+      summary: String(j.summary || mem.summary || '').trim(),
+      stateCard: (j.state && typeof j.state === 'object')
+        ? Object.fromEntries(Object.entries(j.state).filter(([,v]) => v && String(v).trim()))
+        : mem.stateCard,
+      summarizedUpTo: pending[pending.length-1].turnIndex,
+      updatedAt: now()
+    };
+    await dbPut('memory', next);
+    if (!silent) toast('기억을 갱신했습니다');
+    return next;
+  }catch(e){
+    /* 요약 실패가 대화를 막아서는 안 된다 */
+    if (!silent) toast('요약 실패: ' + e.message);
+    console.warn('요약 실패', e);
+  }
+}
 
 /* ═══════════════ 대화 목록 ═══════════════ */
 async function loadAll(){
@@ -570,6 +801,7 @@ $('cMenu').onclick = () => sheet(S.character?.name, [
     {label:'(기본 모델 사용)', run: () => setChatModel('')},
     ...filtered().slice(0,40).map(m => ({label:modelLabel(m), run: () => setChatModel(m.id)}))
   ])},
+  {label:'기억 보기 · 편집', run: () => openMemory()},
   {label:'캐릭터 편집', run: () => editChar(S.character.id)}
 ]);
 async function setPersona(pid){
@@ -610,12 +842,11 @@ async function send(){
   S.messages.push(uMsg);
   renderMsgs();
 
-  /* 1단계 임시 컨텍스트: 최근 N턴만 전송. 원문은 전량 보존된다. */
-  const win = parseInt(localStorage.getItem(LS.window) || '20', 10);
-  const sys = buildSystem(S.character, S.persona);
-  const recent = S.messages.slice(-win).map(m => ({role:m.role, content:m.content}));
-  const ctxTok = estTok(sys) + recent.reduce((a,m)=>a+estTok(m.content), 0);
-  $('mCtx').textContent = `≈${ctxTok}`;
+  /* 컨텍스트 매니저가 조립한 것만 전송된다. 원문은 전량 보존된다. */
+  const CTX = await buildContext(text);
+  S.lastCtx = CTX;
+  $('mCtx').textContent = '≈' + CTX.tokens;
+  $('mRecall').innerHTML = '소환 <b>' + CTX.hits.length + '</b>';
 
   const holder = document.createElement('div');
   holder.className = 'msg assistant';
@@ -638,7 +869,7 @@ async function send(){
       signal: S.abort.signal,
       body: JSON.stringify({
         model,
-        messages: [{role:'system', content:sys}, ...recent],
+        messages: CTX.msgs,
         temperature: parseFloat(S.character.temperature ?? localStorage.getItem(LS.temp) ?? 0.9),
         max_tokens: parseInt(localStorage.getItem(LS.maxTok) || '600', 10),
         stream: true
@@ -697,6 +928,9 @@ async function send(){
     $('mTotal').textContent = `${(total/1000).toFixed(2)}s`;
     $('mTok').textContent = usage ? `${usage.prompt_tokens}→${usage.completion_tokens}` : `≈${estTok(out)}`;
 
+    /* 창 밖으로 밀려난 대화가 쌓였으면 배경에서 요약한다 */
+    maybeSummarize(CTX.oldestKept, true);
+
   }catch(e){
     cur.remove();
     if (e.name === 'AbortError' && out.trim()){
@@ -720,6 +954,51 @@ async function send(){
     S.streaming = false; $('cSend').textContent = '전송'; S.abort = null;
   }
 }
+
+/* ═══════════════ 기억 ═══════════════ */
+async function openMemory(){
+  const mem = await getMem(S.chat.id);
+  $('meSub').textContent = S.character.name;
+  $('meSummary').value = mem.summary || '';
+  $('meState').value = fmtState(mem.stateCard);
+  const pend = S.messages.filter(m => m.turnIndex > mem.summarizedUpTo).length;
+  $('meInfo').textContent =
+    `전체 ${S.messages.length}턴 중 ${mem.summarizedUpTo + 1}턴까지 요약됨. 미반영 ${pend}턴.` +
+    (mem.updatedAt ? ` 최종 갱신 ${relTime(mem.updatedAt)}.` : '');
+  show('vMemory');
+}
+$('meBack').onclick = () => show('vChat');
+$('meSave').onclick = async () => {
+  const mem = await getMem(S.chat.id);
+  mem.summary = $('meSummary').value.trim();
+  mem.stateCard = parseState($('meState').value);
+  mem.updatedAt = now();
+  await dbPut('memory', mem);
+  toast('저장했습니다'); show('vChat');
+};
+$('meRun').onclick = async () => {
+  $('meRun').textContent = '요약 중...'; $('meRun').disabled = true;
+  const CTX = await buildContext('');
+  await maybeSummarize(CTX.oldestKept, false);
+  $('meRun').textContent = '지금 요약하기'; $('meRun').disabled = false;
+  openMemory();
+};
+$('meReset').onclick = async () => {
+  if (!confirm('장기 기억을 지웁니다.\n대화 원문은 그대로 남습니다.')) return;
+  await dbPut('memory', blankMem(S.chat.id));
+  toast('초기화했습니다'); openMemory();
+};
+
+/* 이번 요청에 무엇이 소환됐는지 확인 (연속성 검증용) */
+$('mRecall').onclick = () => {
+  const c = S.lastCtx;
+  if (!c) return toast('아직 요청을 보내지 않았습니다');
+  if (!c.hits.length) return toast('소환된 과거 장면이 없습니다');
+  const who = m => m.role === 'user' ? (S.persona?.name || '나') : S.character.name;
+  sheet(`소환된 과거 장면 ${c.hits.length}개`, c.hits.map(m => ({
+    label: `${m.turnIndex + 1}턴 · ${who(m)}: ${m.content.slice(0, 60)}`
+  })));
+};
 
 /* ═══════════════ 캐릭터 ═══════════════ */
 function renderChars(){
@@ -928,7 +1207,8 @@ function loadSettings(){
   $('sKey').value    = localStorage.getItem(LS.key) || '';
   $('sTemp').value   = localStorage.getItem(LS.temp) || '0.9';
   $('sMaxTok').value = localStorage.getItem(LS.maxTok) || '600';
-  $('sWindow').value = localStorage.getItem(LS.window) || '20';
+  $('sBudget').value = localStorage.getItem(LS.budget) || '2500';
+  $('sAutoSum').checked = (localStorage.getItem(LS.autoSum) ?? '1') === '1';
   $('sFree').checked = (localStorage.getItem(LS.free) ?? '1') === '1';
 }
 $('sKey').onchange = () => {
@@ -937,7 +1217,8 @@ $('sKey').onchange = () => {
 };
 $('sTemp').onchange   = () => localStorage.setItem(LS.temp, $('sTemp').value);
 $('sMaxTok').onchange = () => localStorage.setItem(LS.maxTok, $('sMaxTok').value);
-$('sWindow').onchange = () => localStorage.setItem(LS.window, $('sWindow').value);
+$('sBudget').onchange = () => localStorage.setItem(LS.budget, $('sBudget').value);
+$('sAutoSum').onchange = () => localStorage.setItem(LS.autoSum, $('sAutoSum').checked ? '1' : '0');
 
 /* ═══════════════ 백업 ═══════════════ */
 function download(name, text){
