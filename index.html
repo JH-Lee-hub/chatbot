@@ -2467,6 +2467,15 @@ function parseSections(txt){
   return out;
 }
 
+/* 인물 카드 생성은 LOOK · OUTFIT 항목을 의도적으로 영어로 받는다.
+   그 구간까지 통째로 외국어 검사에 걸면 정상적인 결과도 매번 오염으로 오판해
+   전체 모델 체인을 다 실패시킨다. 검사 전에 그 두 구간만 잘라낸다. */
+function stripEnglishSections(t){
+  return String(t || '')
+    .replace(/===LOOK===[\s\S]*?(?====[A-Z_]+===|$)/, '')
+    .replace(/===OUTFIT===[\s\S]*?(?====[A-Z_]+===|$)/, '');
+}
+
 async function askText(prompt, maxTok, temp){
   const key = localStorage.getItem(LS.key);
   const base = modelChain();
@@ -2486,9 +2495,9 @@ async function askText(prompt, maxTok, temp){
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const txt = scrubOut((await res.json()).choices?.[0]?.message?.content || '');
       if (!txt) throw new Error('빈 응답');
-      /* 채팅과 같은 기준으로 외국어 혼입을 검사한다. 여기엔 원래 이 검사가 없어서
-         프로필 생성 결과에 영어·러시아어·한자가 그대로 새어 나오고 있었다. */
-      if (txt.length > 40 && (hangulRatio(txt) < 0.12 || hasForeignContamination(txt)))
+      /* 채팅과 같은 기준으로 외국어 혼입을 검사한다. LOOK/OUTFIT의 의도적인 영어는 제외하고 본다. */
+      const checkTxt = stripEnglishSections(txt);
+      if (checkTxt.length > 40 && (hangulRatio(checkTxt) < 0.12 || hasForeignContamination(checkTxt)))
         throw new Error('한국어 응답이 아닙니다 — 외국어가 섞여 나왔습니다');
       return txt;
     }catch(e){ last = e; }
