@@ -124,6 +124,16 @@
   .sitem{display:block;width:100%;text-align:left;padding:13px 12px;border-radius:10px;font-size:14.5px}
   .sitem:active{background:var(--panel2)}
   .sitem.dan{color:var(--err)}
+  .vnav{display:inline-flex;align-items:center;gap:7px;color:var(--tx3)}
+  .vnav button{font-size:13px;color:var(--tx2);padding:0 3px}
+  .vnav button[disabled]{opacity:.25}
+  #editBox{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;
+           align-items:center;justify-content:center;z-index:55;padding:16px}
+  #editBox.on{display:flex}
+  #editIn{background:var(--panel);border:1px solid var(--line2);border-radius:14px;
+          padding:14px;width:100%;max-width:620px}
+  #editIn h3{font-size:13px;color:var(--tx2);margin:0 0 9px;font-weight:600}
+  #editTa{height:44vh}
   #toast{position:fixed;left:50%;bottom:calc(76px + var(--safe-b));transform:translateX(-50%);
          background:#2b3140;border:1px solid var(--line2);color:var(--tx);padding:9px 15px;border-radius:10px;
          font-size:13px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s;max-width:86vw;text-align:center}
@@ -179,6 +189,16 @@
         <div class="hint" id="sModelInfo">캐릭터별로 다른 모델을 지정할 수도 있습니다.</div>
       </div>
 
+      <div class="fld">
+        <label>폴백 모델</label>
+        <select id="sFb1"><option value="">(사용 안 함)</option></select>
+        <select id="sFb2" style="margin-top:7px"><option value="">(사용 안 함)</option></select>
+        <div class="hint">
+          기본 모델이 429나 장애로 실패하면 위에서부터 순서대로 자동 재시도합니다.
+          무료 모델은 거부가 잦으므로 최소 하나는 지정하시는 편이 좋습니다.
+        </div>
+      </div>
+
       <div class="sect">생성 파라미터</div>
       <div class="fld row">
         <div><label>온도</label><input type="number" id="sTemp" step="0.05" min="0" max="2"></div>
@@ -211,7 +231,7 @@
         브라우저 데이터를 지우면 대화가 사라집니다. 자동 백업 구현 전까지 주 1회 내보내기를 권장합니다.
       </div>
       <div style="height:24px"></div>
-      <div class="hint" style="text-align:center">2단계 · 컨텍스트 매니저</div>
+      <div class="hint" style="text-align:center">3단계 · 롤플레잉 품질</div>
     </div>
   </section>
 
@@ -229,6 +249,7 @@
       <span>토큰 <b id="mTok">—</b></span>
       <span>전송 <b id="mCtx">—</b></span>
       <span><button id="mRecall" style="font-size:10.5px;color:var(--tx3)">소환 <b>—</b></button></span>
+      <span id="mModel"></span>
     </div>
     <div id="composer">
       <textarea id="inp" rows="1" placeholder="메시지"></textarea>
@@ -330,6 +351,15 @@
 </div>
 
 <div id="sheet"><div id="sheetIn"></div></div>
+<div id="editBox"><div id="editIn">
+  <h3 id="editWho">메시지 편집</h3>
+  <textarea id="editTa"></textarea>
+  <div class="hint">고친 내용이 이후 대화의 맥락으로 그대로 쓰입니다.</div>
+  <div class="row" style="margin-top:11px">
+    <button class="btn" id="editCancel">취소</button>
+    <button class="btn pri" id="editOk">저장</button>
+  </div>
+</div></div>
 <div id="toast"></div>
 <input type="file" id="filePick" accept=".json" style="display:none">
 
@@ -343,7 +373,7 @@ const STORES = ['characters','personas','chats','messages','memory','searchIndex
 const LS = {
   key:'rp_apikey', model:'rp_model', temp:'rp_temp', maxTok:'rp_maxtok',
   window:'rp_windowTurns', free:'rp_free', lastChat:'rp_lastChatId',
-  budget:'rp_budget', autoSum:'rp_autoSummary'
+  budget:'rp_budget', autoSum:'rp_autoSummary', fallbacks:'rp_fallbacks'
 };
 const PALETTE = ['#7c9cff','#5fd08a','#ffb454','#ff8fa3','#b088f9','#4ecdc4'];
 const DEFAULT_RULES =
@@ -427,6 +457,8 @@ function sheet(title, items){
 }
 const closeSheet = () => $('sheet').classList.remove('on');
 $('sheet').onclick = e => { if (e.target.id === 'sheet') closeSheet(); };
+$('editCancel').onclick = () => $('editBox').classList.remove('on');
+$('editBox').onclick = e => { if (e.target.id === 'editBox') $('editBox').classList.remove('on'); };
 
 function show(v){
   document.querySelectorAll('.view').forEach(x => x.classList.toggle('on', x.id === v));
@@ -764,17 +796,66 @@ function fmt(t){
 }
 function renderMsgs(){
   const box = $('msgs');
-  box.innerHTML = S.messages.map(m => `
-    <div class="msg ${m.role}" data-id="${m.id}">
-      <div class="who">${m.role==='user' ? esc(S.persona?.name||'나') : esc(S.character.name)}</div>
+  const last = S.messages.length - 1;
+  box.innerHTML = S.messages.map((m, i) => {
+    const who = m.role === 'user' ? (S.persona?.name || '나') : S.character.name;
+    const vs = m.variants || [];
+    const nav = vs.length > 1
+      ? `<span class="vnav">
+           <button data-act="prev" ${m.activeVariant <= 0 ? 'disabled' : ''}>‹</button>
+           ${m.activeVariant + 1}/${vs.length}
+           <button data-act="next" ${m.activeVariant >= vs.length-1 ? 'disabled' : ''}>›</button>
+         </span>` : '';
+    const regen = (m.role === 'assistant' && i === last)
+      ? '<button data-act="regen">다시 생성</button>' : '';
+    return `<div class="msg ${m.role}" data-id="${m.id}">
+      <div class="who">${esc(who)}</div>
       <div class="body">${fmt(m.content)}</div>
-      <div class="act"><button data-act="copy">복사</button><button data-act="cut">여기부터 삭제</button></div>
-    </div>`).join('');
+      <div class="act">${nav}${regen}<button data-act="edit">편집</button>
+        <button data-act="copy">복사</button><button data-act="cut">여기부터</button></div>
+    </div>`;
+  }).join('');
+
+  const ACT = {
+    copy: copyMsg, cut: cutFrom, edit: editMsg, regen: () => regenerate(),
+    prev: id => swipe(id, -1), next: id => swipe(id, +1)
+  };
   box.querySelectorAll('[data-act]').forEach(b => b.onclick = () => {
-    const id = b.closest('.msg').dataset.id;
-    b.dataset.act === 'copy' ? copyMsg(id) : cutFrom(id);
+    ACT[b.dataset.act]?.(b.closest('.msg').dataset.id);
   });
   box.scrollTop = box.scrollHeight;
+}
+
+/* 다시 생성한 응답들 사이를 오간다 */
+async function swipe(id, dir){
+  const m = S.messages.find(x => x.id === id);
+  if (!m) return;
+  const i = (m.activeVariant || 0) + dir;
+  if (i < 0 || i >= m.variants.length) return;
+  m.activeVariant = i;
+  m.content = m.variants[i];
+  await dbPut('messages', m);
+  renderMsgs();
+}
+
+/* 응답을 손으로 고치면 이후 맥락에 그대로 반영된다 */
+function editMsg(id){
+  const m = S.messages.find(x => x.id === id);
+  if (!m) return;
+  $('editWho').textContent =
+    (m.role === 'user' ? (S.persona?.name || '나') : S.character.name) + ' — 메시지 편집';
+  $('editTa').value = m.content;
+  $('editBox').classList.add('on');
+  $('editTa').focus();
+  $('editOk').onclick = async () => {
+    const v = $('editTa').value;
+    m.content = v;
+    if (m.variants?.length) m.variants[m.activeVariant || 0] = v;
+    else m.variants = [v];
+    await dbPut('messages', m);
+    $('editBox').classList.remove('on');
+    renderMsgs(); toast('반영했습니다');
+  };
 }
 function copyMsg(id){
   const m = S.messages.find(x=>x.id===id);
@@ -811,6 +892,89 @@ async function setChatModel(mid){
   S.chat.model = mid; await dbPut('chats', S.chat); openChat(S.chat.id);
 }
 
+/* ═══════════════ 모델 호출 ═══════════════ */
+const RETRYABLE = [408, 409, 429, 500, 502, 503, 504];
+
+function modelChain(){
+  const primary = S.chat?.model || S.character?.preferredModel || localStorage.getItem(LS.model) || '';
+  let fb = [];
+  try{ fb = JSON.parse(localStorage.getItem(LS.fallbacks) || '[]'); }catch(_){}
+  return [primary, ...fb].filter((m, i, a) => m && a.indexOf(m) === i);
+}
+
+/* target 요소에 스트리밍하며, 실패하면 폴백 모델로 자동 재시도한다 */
+async function streamInto(target, msgs, signal){
+  const key = localStorage.getItem(LS.key);
+  const chain = modelChain();
+  if (!chain.length) throw new Error('모델이 지정되지 않았습니다');
+
+  const cur = document.createElement('span'); cur.className = 'cursor';
+  let lastErr = null;
+
+  for (let i = 0; i < chain.length; i++){
+    const model = chain[i];
+    let out = '', usage = null, tFirst = null;
+    const t0 = performance.now();
+    target.innerHTML = ''; target.appendChild(cur);
+    if (i > 0) toast(model.split('/').pop() + ' 로 전환');
+
+    try{
+      const res = await fetch(API + '/chat/completions', {
+        method:'POST', signal,
+        headers:{'Authorization':'Bearer ' + key, 'Content-Type':'application/json', 'X-Title':'RP App'},
+        body: JSON.stringify({
+          model, messages: msgs,
+          temperature: parseFloat(S.character.temperature ?? localStorage.getItem(LS.temp) ?? 0.9),
+          max_tokens: parseInt(localStorage.getItem(LS.maxTok) || '600', 10),
+          stream: true
+        })
+      });
+      if (!res.ok){
+        const raw = await res.text();
+        let d = raw; try{ d = JSON.parse(raw).error?.message || raw; }catch(_){}
+        const e = new Error('HTTP ' + res.status + ' — ' + d); e.status = res.status; throw e;
+      }
+
+      const rd = res.body.getReader(), dec = new TextDecoder();
+      let buf = '', fin = false;
+      while(!fin){
+        const {value, done} = await rd.read();
+        if (done) break;
+        buf += dec.decode(value, {stream:true});
+        const lines = buf.split('\n'); buf = lines.pop();
+        for (const line of lines){
+          const t = line.trim();
+          if (!t || t.startsWith(':') || !t.startsWith('data:')) continue;
+          const pay = t.slice(5).trim();
+          if (pay === '[DONE]'){ fin = true; break; }
+          let j; try{ j = JSON.parse(pay); }catch(_){ continue; }
+          if (j.usage) usage = j.usage;
+          const d = j.choices?.[0]?.delta?.content;
+          if (d){
+            if (tFirst === null) tFirst = performance.now() - t0;
+            out += d;
+            target.innerHTML = fmt(out); target.appendChild(cur);
+            $('msgs').scrollTop = $('msgs').scrollHeight;
+          }
+        }
+      }
+      cur.remove();
+      if (!out.trim()){ const e = new Error('빈 응답 — 모델이 콘텐츠를 거부했을 수 있습니다'); e.status = 502; throw e; }
+
+      return {out, usage, model, ttft: tFirst ?? (performance.now()-t0), total: performance.now()-t0};
+
+    }catch(e){
+      cur.remove();
+      if (e.name === 'AbortError'){ e.partial = out; throw e; }
+      lastErr = e;
+      /* 이미 일부가 출력됐다면 폴백 시 문장이 뒤섞이므로 중단한다 */
+      if (out.trim()){ e.partial = out; e.model = model; throw e; }
+      if (!RETRYABLE.includes(e.status) || i === chain.length - 1) throw e;
+    }
+  }
+  throw lastErr;
+}
+
 /* ═══════════════ 전송 ═══════════════ */
 $('cSend').onclick = () => send();
 $('inp').addEventListener('input', e => {
@@ -826,17 +990,16 @@ $('inp').addEventListener('keydown', e => {
 async function send(){
   if (S.streaming){ S.abort?.abort(); return; }
   const key = localStorage.getItem(LS.key) || '';
-  const model = S.chat.model || S.character.preferredModel || localStorage.getItem(LS.model) || '';
   const text = $('inp').value.trim();
-  if (!key)   { show('vSettings'); return toast('API 키를 먼저 입력하십시오'); }
-  if (!model) { show('vSettings'); return toast('모델을 먼저 선택하십시오'); }
+  if (!key){ show('vSettings'); return toast('API 키를 먼저 입력하십시오'); }
+  if (!modelChain().length){ show('vSettings'); return toast('모델을 먼저 선택하십시오'); }
   if (!text) return;
 
   $('inp').value = ''; $('inp').style.height = 'auto';
 
   const uMsg = {
     id: uid(), chatId: S.chat.id, turnIndex: S.messages.length, role:'user',
-    content: text, variants: [], activeVariant: 0, model:'', usage:null, createdAt: now()
+    content: text, variants:[text], activeVariant:0, model:'', usage:null, createdAt: now()
   };
   await dbPut('messages', uMsg);
   S.messages.push(uMsg);
@@ -850,106 +1013,100 @@ async function send(){
 
   const holder = document.createElement('div');
   holder.className = 'msg assistant';
-  holder.innerHTML = `<div class="who">${esc(S.character.name)}</div><div class="body"></div>`;
-  const target = holder.querySelector('.body');
-  const cur = document.createElement('span'); cur.className = 'cursor';
-  target.appendChild(cur);
+  holder.innerHTML = '<div class="who">' + esc(S.character.name) + '</div><div class="body"></div>';
   $('msgs').appendChild(holder);
-  $('msgs').scrollTop = $('msgs').scrollHeight;
+  const target = holder.querySelector('.body');
 
   S.streaming = true; $('cSend').textContent = '중지';
   S.abort = new AbortController();
-  const t0 = performance.now();
-  let tFirst = null, out = '', usage = null;
 
   try{
-    const res = await fetch(`${API}/chat/completions`, {
-      method:'POST',
-      headers:{'Authorization':`Bearer ${key}`,'Content-Type':'application/json','X-Title':'RP App'},
-      signal: S.abort.signal,
-      body: JSON.stringify({
-        model,
-        messages: CTX.msgs,
-        temperature: parseFloat(S.character.temperature ?? localStorage.getItem(LS.temp) ?? 0.9),
-        max_tokens: parseInt(localStorage.getItem(LS.maxTok) || '600', 10),
-        stream: true
-      })
-    });
-    if (!res.ok){
-      const raw = await res.text();
-      let d = raw; try{ d = JSON.parse(raw).error?.message || raw; }catch(_){}
-      throw new Error(`HTTP ${res.status} — ${d}`);
-    }
-
-    const rd = res.body.getReader(), dec = new TextDecoder();
-    let buf = '', fin = false;
-    while(!fin){
-      const {value, done} = await rd.read();
-      if (done) break;
-      buf += dec.decode(value, {stream:true});
-      const lines = buf.split('\n'); buf = lines.pop();
-      for (const line of lines){
-        const t = line.trim();
-        if (!t || t.startsWith(':') || !t.startsWith('data:')) continue;
-        const pay = t.slice(5).trim();
-        if (pay === '[DONE]'){ fin = true; break; }
-        let j; try{ j = JSON.parse(pay); }catch(_){ continue; }
-        if (j.usage) usage = j.usage;
-        const d = j.choices?.[0]?.delta?.content;
-        if (d){
-          if (tFirst === null) tFirst = performance.now() - t0;
-          out += d;
-          target.innerHTML = fmt(out); target.appendChild(cur);
-          $('msgs').scrollTop = $('msgs').scrollHeight;
-        }
-      }
-    }
-    cur.remove();
-
-    if (!out.trim()) throw new Error('빈 응답입니다. 모델이 콘텐츠를 거부했을 수 있습니다.');
-
-    const aMsg = {
-      id: uid(), chatId: S.chat.id, turnIndex: S.messages.length, role:'assistant',
-      content: out, variants: [out], activeVariant: 0, model,
-      usage: usage ? {prompt_tokens:usage.prompt_tokens, completion_tokens:usage.completion_tokens, cost:usage.cost} : null,
-      createdAt: now()
-    };
-    await dbPut('messages', aMsg);
-    S.messages.push(aMsg);
-
-    S.chat.messageCount = S.messages.length;
-    S.chat.lastMessageAt = now();
-    S.chat.model = model;
-    await dbPut('chats', S.chat);
-    renderMsgs();
-
-    const total = performance.now() - t0, ttft = tFirst ?? total;
-    $('mTtft').innerHTML = `<span class="${ttft<1000?'g':ttft<2000?'y':'r'}">${(ttft/1000).toFixed(2)}s</span>`;
-    $('mTotal').textContent = `${(total/1000).toFixed(2)}s`;
-    $('mTok').textContent = usage ? `${usage.prompt_tokens}→${usage.completion_tokens}` : `≈${estTok(out)}`;
-
-    /* 창 밖으로 밀려난 대화가 쌓였으면 배경에서 요약한다 */
+    const r = await streamInto(target, CTX.msgs, S.abort.signal);
+    await commitReply(r);
     maybeSummarize(CTX.oldestKept, true);
-
   }catch(e){
-    cur.remove();
-    if (e.name === 'AbortError' && out.trim()){
-      const aMsg = {
-        id: uid(), chatId: S.chat.id, turnIndex: S.messages.length, role:'assistant',
-        content: out, variants:[out], activeVariant:0, model, usage:null, createdAt: now()
-      };
-      await dbPut('messages', aMsg); S.messages.push(aMsg);
-      S.chat.messageCount = S.messages.length; S.chat.lastMessageAt = now();
-      await dbPut('chats', S.chat);
-      renderMsgs();
+    if (e.partial?.trim()){
+      await commitReply({out:e.partial, usage:null, model:e.model||'', ttft:0, total:0});
+      toast(e.name === 'AbortError' ? '중지했습니다' : '일부만 수신됨');
     }else{
       holder.className = 'msg err';
-      target.textContent = e.name === 'AbortError' ? '중지됨' : e.message;
-      /* 응답이 없으므로 방금 보낸 사용자 발화를 되돌려 재시도할 수 있게 한다 */
+      holder.querySelector('.body').textContent =
+        e.name === 'AbortError' ? '중지됨' : e.message;
+      /* 응답이 없으므로 방금 보낸 발화를 되돌려 바로 재시도할 수 있게 한다 */
       await dbDel('messages', uMsg.id);
       S.messages = S.messages.filter(x => x.id !== uMsg.id);
       $('inp').value = text;
     }
+  }finally{
+    S.streaming = false; $('cSend').textContent = '전송'; S.abort = null;
+  }
+}
+
+/* 수신한 응답을 저장하고 화면을 갱신한다 */
+async function commitReply(r){
+  const aMsg = {
+    id: uid(), chatId: S.chat.id, turnIndex: S.messages.length, role:'assistant',
+    content: r.out, variants:[r.out], activeVariant:0, model: r.model,
+    usage: r.usage ? {prompt_tokens:r.usage.prompt_tokens,
+                      completion_tokens:r.usage.completion_tokens, cost:r.usage.cost} : null,
+    createdAt: now()
+  };
+  await dbPut('messages', aMsg);
+  S.messages.push(aMsg);
+
+  S.chat.messageCount = S.messages.length;
+  S.chat.lastMessageAt = now();
+  if (r.model) S.chat.model = r.model;
+  await dbPut('chats', S.chat);
+  renderMsgs();
+
+  if (r.total){
+    $('mTtft').innerHTML = '<span class="' + (r.ttft<1000?'g':r.ttft<2000?'y':'r') + '">' +
+                           (r.ttft/1000).toFixed(2) + 's</span>';
+    $('mTotal').textContent = (r.total/1000).toFixed(2) + 's';
+  }
+  $('mTok').textContent = r.usage
+    ? r.usage.prompt_tokens + '→' + r.usage.completion_tokens
+    : '≈' + estTok(r.out);
+  $('mModel').textContent = r.model ? r.model.split('/').pop() : '';
+}
+
+/* 마지막 응답을 다시 생성해 스와이프 후보로 쌓는다 */
+async function regenerate(){
+  if (S.streaming){ S.abort?.abort(); return; }
+  const last = S.messages[S.messages.length - 1];
+  if (!last || last.role !== 'assistant') return toast('마지막 응답만 다시 생성할 수 있습니다');
+
+  const prevUser = [...S.messages].reverse().find(m => m.role === 'user');
+  const keep = S.messages;
+  S.messages = S.messages.slice(0, -1);          /* 이 응답을 뺀 상태로 컨텍스트를 조립한다 */
+  const CTX = await buildContext(prevUser?.content || '');
+  S.messages = keep;
+  S.lastCtx = CTX;
+  $('mCtx').textContent = '≈' + CTX.tokens;
+  $('mRecall').innerHTML = '소환 <b>' + CTX.hits.length + '</b>';
+
+  const holder = $('msgs').querySelector('.msg[data-id="' + last.id + '"]');
+  const target = holder.querySelector('.body');
+  const backup = last.content;
+
+  S.streaming = true; $('cSend').textContent = '중지';
+  S.abort = new AbortController();
+  try{
+    const r = await streamInto(target, CTX.msgs, S.abort.signal);
+    last.variants = [...(last.variants || [backup]), r.out];
+    last.activeVariant = last.variants.length - 1;
+    last.content = r.out;
+    last.model = r.model;
+    await dbPut('messages', last);
+    renderMsgs();
+    $('mTtft').innerHTML = '<span class="' + (r.ttft<1000?'g':r.ttft<2000?'y':'r') + '">' +
+                           (r.ttft/1000).toFixed(2) + 's</span>';
+    $('mTotal').textContent = (r.total/1000).toFixed(2) + 's';
+    $('mModel').textContent = r.model.split('/').pop();
+  }catch(e){
+    target.innerHTML = fmt(backup);            /* 실패하면 원래 응답을 되돌린다 */
+    toast(e.name === 'AbortError' ? '중지했습니다' : e.message);
   }finally{
     S.streaming = false; $('cSend').textContent = '전송'; S.abort = null;
   }
@@ -1155,6 +1312,7 @@ async function fetchModels(){
     S.models = ((await res.json()).data||[]).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
     renderModelSelect();
     fillModelSelect($('ceModel'), S.editingChar?.preferredModel, '기본 모델 사용');
+    renderFallbacks();
   }catch(e){
     $('sModel').innerHTML = `<option value="">— 로드 실패: ${esc(e.message)} —</option>`;
   }
@@ -1197,6 +1355,21 @@ function showModelInfo(){
     ? `${m.id} · 컨텍스트 ${(m.context_length||0).toLocaleString()} 토큰`
     : '캐릭터별로 다른 모델을 지정할 수도 있습니다.';
 }
+function getFallbacks(){
+  try{ return JSON.parse(localStorage.getItem(LS.fallbacks) || '[]'); }catch(_){ return []; }
+}
+function renderFallbacks(){
+  const fb = getFallbacks();
+  fillModelSelect($('sFb1'), fb[0], '(사용 안 함)');
+  fillModelSelect($('sFb2'), fb[1], '(사용 안 함)');
+}
+function saveFallbacks(){
+  const fb = [$('sFb1').value, $('sFb2').value].filter(Boolean);
+  localStorage.setItem(LS.fallbacks, JSON.stringify([...new Set(fb)]));
+}
+$('sFb1').onchange = saveFallbacks;
+$('sFb2').onchange = saveFallbacks;
+
 $('sReload').onclick = fetchModels;
 $('sFilter').oninput = renderModelSelect;
 $('sFree').onchange  = () => { localStorage.setItem(LS.free, $('sFree').checked?'1':'0'); renderModelSelect(); };
