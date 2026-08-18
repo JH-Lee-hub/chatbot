@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>롤플레잉 0단계 검증</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2a2f3a;
+    --tx:#e6e8ee; --tx2:#9aa3b2; --acc:#7c9cff; --ok:#5fd08a; --warn:#ffb454; --err:#ff6b6b;
+    --user:#243044; --ai:#1c2029;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;margin:0}
+  body{
+    background:var(--bg); color:var(--tx);
+    font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+    display:flex; flex-direction:column;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  header{
+    display:flex; align-items:center; gap:8px; padding:10px 12px;
+    background:var(--panel); border-bottom:1px solid var(--line); flex:0 0 auto;
+    padding-top:calc(10px + env(safe-area-inset-top));
+  }
+  header h1{font-size:14px;margin:0;font-weight:600;flex:1;letter-spacing:-.2px}
+  header .badge{font-size:11px;color:var(--tx2);background:var(--panel2);border:1px solid var(--line);padding:2px 7px;border-radius:99px}
+  button{
+    font:inherit; font-size:13px; color:var(--tx); background:var(--panel2);
+    border:1px solid var(--line); border-radius:8px; padding:7px 12px; cursor:pointer;
+  }
+  button:active{background:#262b36}
+  button.primary{background:var(--acc);border-color:var(--acc);color:#0b1020;font-weight:600}
+  button:disabled{opacity:.45;cursor:default}
+
+  /* ── 설정 패널 ── */
+  #settings{
+    background:var(--panel); border-bottom:1px solid var(--line);
+    padding:12px; display:none; flex:0 0 auto; max-height:62vh; overflow-y:auto;
+  }
+  #settings.open{display:block}
+  .fld{margin-bottom:12px}
+  .fld:last-child{margin-bottom:0}
+  label{display:block;font-size:12px;color:var(--tx2);margin-bottom:5px;font-weight:600}
+  input[type=text],input[type=password],input[type=number],select,textarea{
+    width:100%; font:inherit; font-size:14px; color:var(--tx);
+    background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:9px 10px;
+  }
+  textarea{resize:vertical; line-height:1.6}
+  .row{display:flex;gap:8px}
+  .row>*{flex:1;min-width:0}
+  .hint{font-size:11px;color:var(--tx2);margin-top:5px;line-height:1.5}
+  .chk{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--tx2);margin-top:7px}
+  .chk input{width:auto}
+
+  /* ── 대화 ── */
+  #chat{flex:1 1 auto; overflow-y:auto; padding:14px 12px 4px; -webkit-overflow-scrolling:touch}
+  .msg{margin-bottom:12px; display:flex; flex-direction:column}
+  .msg .who{font-size:11px;color:var(--tx2);margin-bottom:4px;font-weight:600}
+  .msg .body{
+    padding:10px 13px; border-radius:12px; white-space:pre-wrap; word-break:break-word;
+    border:1px solid var(--line);
+  }
+  .msg.user{align-items:flex-end}
+  .msg.user .body{background:var(--user); border-bottom-right-radius:4px; max-width:88%}
+  .msg.ai .body{background:var(--ai); border-bottom-left-radius:4px}
+  .msg.sys .body{background:transparent;border-style:dashed;color:var(--tx2);font-size:13px}
+  .msg.err .body{background:#2a1a1c;border-color:#5c2b2f;color:#ffc9c9;font-size:13px}
+  .cursor{display:inline-block;width:7px;height:15px;background:var(--acc);vertical-align:-2px;animation:bl .9s steps(1) infinite}
+  @keyframes bl{50%{opacity:0}}
+
+  /* ── 측정 로그 ── */
+  #metrics{
+    flex:0 0 auto; background:var(--panel); border-top:1px solid var(--line);
+    padding:7px 12px; font-size:11px; color:var(--tx2); display:flex; gap:14px; flex-wrap:wrap;
+  }
+  #metrics b{color:var(--tx);font-weight:600}
+  #metrics .g{color:var(--ok)} #metrics .y{color:var(--warn)} #metrics .r{color:var(--err)}
+
+  /* ── 입력 ── */
+  footer{
+    flex:0 0 auto; display:flex; gap:8px; padding:10px 12px;
+    background:var(--panel); border-top:1px solid var(--line); align-items:flex-end;
+  }
+  #input{max-height:34vh}
+  footer button{flex:0 0 auto;height:41px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>롤플레잉 0단계 검증</h1>
+  <span class="badge" id="tagCost">$0</span>
+  <button id="btnSettings">설정</button>
+</header>
+
+<div id="settings">
+  <div class="fld">
+    <label for="apiKey">OpenRouter API 키</label>
+    <input type="password" id="apiKey" placeholder="sk-or-v1-..." autocomplete="off">
+    <div class="hint">이 기기의 브라우저에만 저장되며 외부로 전송되지 않습니다(OpenRouter 호출 제외).</div>
+  </div>
+
+  <div class="fld">
+    <label for="modelFilter">모델 검색</label>
+    <input type="text" id="modelFilter" placeholder="deepseek, llama, qwen ...">
+    <div class="chk">
+      <input type="checkbox" id="onlyFree" checked>
+      <label for="onlyFree" style="margin:0;color:var(--tx2)">무료 모델만 보기</label>
+      <button id="btnReload" style="margin-left:auto;padding:4px 9px;font-size:12px">목록 새로고침</button>
+    </div>
+  </div>
+
+  <div class="fld">
+    <label for="model">모델 <span id="modelCount" style="color:var(--tx2);font-weight:400"></span></label>
+    <select id="model"><option value="">— API 키를 먼저 입력하세요 —</option></select>
+    <div class="hint" id="modelInfo">컨텍스트 길이가 짧은 모델은 긴 롤플레잉에 불리합니다.</div>
+  </div>
+
+  <div class="fld row">
+    <div>
+      <label for="temp">온도</label>
+      <input type="number" id="temp" value="0.9" min="0" max="2" step="0.05">
+    </div>
+    <div>
+      <label for="maxTok">최대 출력 토큰</label>
+      <input type="number" id="maxTok" value="600" min="64" max="4096" step="32">
+    </div>
+  </div>
+
+  <div class="fld">
+    <label for="sysPrompt">시스템 프롬프트 (캐릭터 설정)</label>
+    <textarea id="sysPrompt" rows="7"></textarea>
+    <div class="hint">검열 강도를 확인하려면 실제로 쓸 시나리오를 그대로 넣어보십시오.</div>
+  </div>
+
+  <div class="fld row">
+    <button id="btnClear">대화 초기화</button>
+    <button id="btnExport">기록 내보내기</button>
+  </div>
+  <div class="hint" style="margin-top:10px">
+    0단계 프로토타입입니다. <b>대화는 저장되지 않으며</b> 새로고침하면 사라집니다.
+    설정값(키·모델·프롬프트)만 보존됩니다.
+  </div>
+</div>
+
+<main id="chat"></main>
+
+<div id="metrics">
+  <span>첫 토큰 <b id="mTtft">—</b></span>
+  <span>총 시간 <b id="mTotal">—</b></span>
+  <span>속도 <b id="mTps">—</b></span>
+  <span>토큰 <b id="mTokens">—</b></span>
+  <span>세션 <b id="mTurns">0</b>턴</span>
+</div>
+
+<footer>
+  <textarea id="input" rows="1" placeholder="메시지를 입력하세요"></textarea>
+  <button id="btnSend" class="primary">전송</button>
+</footer>
+
+<script>
+'use strict';
+
+const API = 'https://openrouter.ai/api/v1';
+const LS = {
+  key:'rp0_apikey', model:'rp0_model', sys:'rp0_sys',
+  temp:'rp0_temp', maxTok:'rp0_maxtok', onlyFree:'rp0_onlyfree'
+};
+
+const DEFAULT_SYS = `너는 롤플레잉 상대역이다. 아래 설정을 끝까지 유지한다.
+
+[캐릭터]
+이름: 서하
+나이: 27세
+성격: 침착하고 말수가 적지만, 상대에게는 은근히 다정하다. 감정을 직접 말하기보다 행동으로 드러낸다.
+말투: 존댓말과 반말을 섞어 쓴다. 문장이 짧고 담백하다.
+배경: 오래된 서점을 혼자 운영한다. 상대와는 알고 지낸 지 2년쯤 됐다.
+
+[규칙]
+- 항상 서하로서만 말한다. 해설자나 AI로 빠져나오지 않는다.
+- 행동과 표정은 *별표* 안에 서술한다.
+- 상대의 대사나 행동을 대신 지어내지 않는다.
+- 한 번에 2~4문장 분량으로 답한다. 장면을 앞서가지 않는다.`;
+
+const $ = id => document.getElementById(id);
+const el = {
+  settings:$('settings'), btnSettings:$('btnSettings'),
+  apiKey:$('apiKey'), modelFilter:$('modelFilter'), onlyFree:$('onlyFree'),
+  btnReload:$('btnReload'), model:$('model'), modelCount:$('modelCount'), modelInfo:$('modelInfo'),
+  temp:$('temp'), maxTok:$('maxTok'), sysPrompt:$('sysPrompt'),
+  btnClear:$('btnClear'), btnExport:$('btnExport'),
+  chat:$('chat'), input:$('input'), btnSend:$('btnSend'), tagCost:$('tagCost'),
+  mTtft:$('mTtft'), mTotal:$('mTotal'), mTps:$('mTps'), mTokens:$('mTokens'), mTurns:$('mTurns')
+};
+
+let allModels = [];      // OpenRouter 모델 목록 원본
+let turns = [];          // {role, content} — 메모리에만 존재
+let streaming = false;
+let abortCtl = null;
+let sessionCost = 0;
+
+/* ─────────── 설정 저장/복원 ─────────── */
+function loadSettings(){
+  el.apiKey.value   = localStorage.getItem(LS.key) || '';
+  el.sysPrompt.value= localStorage.getItem(LS.sys) ?? DEFAULT_SYS;
+  el.temp.value     = localStorage.getItem(LS.temp) || '0.9';
+  el.maxTok.value   = localStorage.getItem(LS.maxTok) || '600';
+  el.onlyFree.checked = (localStorage.getItem(LS.onlyFree) ?? '1') === '1';
+}
+function saveSettings(){
+  localStorage.setItem(LS.key, el.apiKey.value.trim());
+  localStorage.setItem(LS.sys, el.sysPrompt.value);
+  localStorage.setItem(LS.temp, el.temp.value);
+  localStorage.setItem(LS.maxTok, el.maxTok.value);
+  localStorage.setItem(LS.onlyFree, el.onlyFree.checked ? '1' : '0');
+  if (el.model.value) localStorage.setItem(LS.model, el.model.value);
+}
+['apiKey','sysPrompt','temp','maxTok'].forEach(k =>
+  el[k].addEventListener('change', saveSettings));
+el.onlyFree.addEventListener('change', ()=>{ saveSettings(); renderModels(); });
+el.model.addEventListener('change', ()=>{ saveSettings(); showModelInfo(); });
+el.modelFilter.addEventListener('input', renderModels);
+
+/* ─────────── 모델 목록 (동적 로드) ─────────── */
+const isFree = m => {
+  const p = m.pricing || {};
+  return parseFloat(p.prompt || 0) === 0 && parseFloat(p.completion || 0) === 0;
+};
+const priceOf = m => ({
+  in:  parseFloat(m.pricing?.prompt || 0) * 1e6,
+  out: parseFloat(m.pricing?.completion || 0) * 1e6
+});
+
+async function fetchModels(){
+  const key = el.apiKey.value.trim();
+  el.model.innerHTML = '<option value="">— 불러오는 중 —</option>';
+  try{
+    const headers = key ? {Authorization:`Bearer ${key}`} : {};
+    const res = await fetch(`${API}/models`, {headers});
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    allModels = (json.data || []).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+    renderModels();
+  }catch(e){
+    el.model.innerHTML = `<option value="">— 목록 로드 실패: ${e.message} —</option>`;
+  }
+}
+
+function renderModels(){
+  const q = el.modelFilter.value.trim().toLowerCase();
+  let list = allModels;
+  if (el.onlyFree.checked) list = list.filter(isFree);
+  if (q) list = list.filter(m =>
+    (m.id + ' ' + (m.name||'')).toLowerCase().includes(q));
+
+  el.modelCount.textContent = `(${list.length}개)`;
+  const saved = localStorage.getItem(LS.model) || '';
+  el.model.innerHTML = list.length
+    ? list.map(m=>{
+        const ctx = m.context_length ? `${Math.round(m.context_length/1000)}k` : '?';
+        const p = priceOf(m);
+        const tag = isFree(m) ? '무료' : `$${p.in.toFixed(2)}/$${p.out.toFixed(2)}`;
+        return `<option value="${m.id}">${m.name||m.id} · ${ctx} · ${tag}</option>`;
+      }).join('')
+    : '<option value="">— 조건에 맞는 모델 없음 —</option>';
+
+  if (list.some(m=>m.id===saved)) el.model.value = saved;
+  showModelInfo();
+}
+
+function showModelInfo(){
+  const m = allModels.find(x=>x.id===el.model.value);
+  if (!m){ el.modelInfo.textContent = '컨텍스트 길이가 짧은 모델은 긴 롤플레잉에 불리합니다.'; return; }
+  const p = priceOf(m);
+  const ctx = (m.context_length||0).toLocaleString();
+  el.modelInfo.innerHTML = isFree(m)
+    ? `<b>${m.id}</b> · 컨텍스트 ${ctx} 토큰 · <span style="color:var(--ok)">무료</span>`
+    : `<b>${m.id}</b> · 컨텍스트 ${ctx} 토큰 · 입력 $${p.in.toFixed(3)} / 출력 $${p.out.toFixed(3)} (100만 토큰당)`;
+}
+
+el.btnReload.addEventListener('click', fetchModels);
+el.apiKey.addEventListener('change', ()=>{ if (el.apiKey.value.trim()) fetchModels(); });
+
+/* ─────────── 대화 렌더링 ─────────── */
+function addMsg(role, text){
+  const cls = role==='user' ? 'user' : role==='assistant' ? 'ai' : role;
+  const who = {user:'나', assistant:'캐릭터', sys:'시스템', err:'오류'}[role] || role;
+  const d = document.createElement('div');
+  d.className = `msg ${cls}`;
+  d.innerHTML = `<div class="who">${who}</div><div class="body"></div>`;
+  d.querySelector('.body').textContent = text;
+  el.chat.appendChild(d);
+  el.chat.scrollTop = el.chat.scrollHeight;
+  return d.querySelector('.body');
+}
+
+/* ─────────── 전송 ─────────── */
+async function send(){
+  if (streaming){ abortCtl?.abort(); return; }
+
+  const key = el.apiKey.value.trim();
+  const model = el.model.value;
+  const text = el.input.value.trim();
+  if (!key)  return addMsg('err','API 키를 먼저 입력하세요. (설정 → OpenRouter API 키)');
+  if (!model)return addMsg('err','모델을 먼저 선택하세요.');
+  if (!text) return;
+
+  el.input.value=''; el.input.style.height='auto';
+  addMsg('user', text);
+  turns.push({role:'user', content:text});
+
+  const target = addMsg('assistant','');
+  const cur = document.createElement('span'); cur.className='cursor';
+  target.appendChild(cur);
+
+  streaming = true;
+  el.btnSend.textContent = '중지';
+  abortCtl = new AbortController();
+
+  const t0 = performance.now();
+  let tFirst = null, out = '', usage = null;
+
+  try{
+    const res = await fetch(`${API}/chat/completions`,{
+      method:'POST',
+      headers:{
+        'Authorization':`Bearer ${key}`,
+        'Content-Type':'application/json',
+        'X-Title':'RP Stage0 Test'
+      },
+      signal: abortCtl.signal,
+      body: JSON.stringify({
+        model,
+        messages: [{role:'system', content:el.sysPrompt.value}, ...turns],
+        temperature: parseFloat(el.temp.value),
+        max_tokens: parseInt(el.maxTok.value,10),
+        stream: true
+      })
+    });
+
+    if (!res.ok){
+      const raw = await res.text();
+      let detail = raw;
+      try{ detail = JSON.parse(raw).error?.message || raw; }catch(_){}
+      throw new Error(`HTTP ${res.status} — ${detail}`);
+    }
+
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '', done = false;
+
+    while(!done){
+      const {value, done:rd} = await reader.read();
+      if (rd) break;
+      buf += dec.decode(value, {stream:true});
+      const lines = buf.split('\n');
+      buf = lines.pop();
+
+      for (const line of lines){
+        const t = line.trim();
+        if (!t || t.startsWith(':')) continue;      // OPENROUTER PROCESSING 주석
+        if (!t.startsWith('data:')) continue;
+        const payload = t.slice(5).trim();
+        if (payload === '[DONE]'){ done = true; break; }
+
+        let j; try{ j = JSON.parse(payload); }catch(_){ continue; }
+        if (j.usage) usage = j.usage;
+        const delta = j.choices?.[0]?.delta?.content;
+        if (delta){
+          if (tFirst === null) tFirst = performance.now() - t0;
+          out += delta;
+          target.textContent = out;
+          target.appendChild(cur);
+          el.chat.scrollTop = el.chat.scrollHeight;
+        }
+      }
+    }
+
+    cur.remove();
+    if (!out.trim()){
+      target.parentElement.className = 'msg err';
+      target.textContent = '빈 응답입니다. 모델이 콘텐츠를 거부했거나 필터에 걸렸을 수 있습니다.';
+    }else{
+      turns.push({role:'assistant', content:out});
+      el.mTurns.textContent = turns.filter(m=>m.role==='user').length;
+    }
+
+    /* 측정치 반영 */
+    const total = performance.now() - t0;
+    const ttft = tFirst ?? total;
+    el.mTtft.innerHTML = `<span class="${ttft<1000?'g':ttft<2000?'y':'r'}">${(ttft/1000).toFixed(2)}초</span>`;
+    el.mTotal.textContent = `${(total/1000).toFixed(2)}초`;
+
+    if (usage){
+      const gen = usage.completion_tokens ?? 0;
+      const pr  = usage.prompt_tokens ?? 0;
+      const cached = usage.prompt_tokens_details?.cached_tokens ?? 0;
+      el.mTokens.textContent = cached ? `${pr}(캐시 ${cached}) → ${gen}` : `${pr} → ${gen}`;
+      const tps = gen / ((total - ttft)/1000 || 1);
+      el.mTps.textContent = `${tps.toFixed(1)} tok/s`;
+      if (typeof usage.cost === 'number'){
+        sessionCost += usage.cost;
+        el.tagCost.textContent = sessionCost === 0 ? '$0' : `$${sessionCost.toFixed(5)}`;
+      }
+    }else{
+      el.mTokens.textContent = `≈${Math.round(out.length*0.7)}`;
+      el.mTps.textContent = '—';
+    }
+
+  }catch(e){
+    cur.remove();
+    if (e.name === 'AbortError'){
+      target.textContent = out + ' [중지됨]';
+      if (out.trim()) turns.push({role:'assistant', content:out});
+    }else{
+      target.parentElement.className = 'msg err';
+      target.textContent = e.message;
+      // 실패한 사용자 발화만 되돌린다. 이미 응답이 기록됐다면 건드리지 않는다.
+      if (turns.at(-1)?.role === 'user') turns.pop();
+    }
+  }finally{
+    streaming = false;
+    el.btnSend.textContent = '전송';
+    abortCtl = null;
+  }
+}
+
+/* ─────────── 입력 UX ─────────── */
+el.btnSend.addEventListener('click', send);
+el.input.addEventListener('input', ()=>{
+  el.input.style.height='auto';
+  el.input.style.height = Math.min(el.input.scrollHeight, window.innerHeight*0.34) + 'px';
+});
+el.input.addEventListener('keydown', e=>{
+  // 데스크탑에서만 Enter 전송. 모바일 키보드는 줄바꿈 유지.
+  if (e.key==='Enter' && !e.shiftKey && !/Android|iPhone|iPad/i.test(navigator.userAgent)){
+    e.preventDefault(); send();
+  }
+});
+
+el.btnSettings.addEventListener('click', ()=> el.settings.classList.toggle('open'));
+
+el.btnClear.addEventListener('click', ()=>{
+  if (streaming) abortCtl?.abort();
+  turns = []; sessionCost = 0;
+  el.chat.innerHTML = '';
+  el.mTtft.textContent = el.mTotal.textContent = el.mTps.textContent = el.mTokens.textContent = '—';
+  el.mTurns.textContent = '0'; el.tagCost.textContent = '$0';
+  addMsg('sys','대화를 초기화했습니다.');
+});
+
+el.btnExport.addEventListener('click', ()=>{
+  const dump = {
+    model: el.model.value,
+    temperature: parseFloat(el.temp.value),
+    system: el.sysPrompt.value,
+    turns
+  };
+  const t = JSON.stringify(dump, null, 2);
+  navigator.clipboard?.writeText(t)
+    .then(()=> addMsg('sys','대화 기록을 클립보드에 복사했습니다. 검증 보고서에 붙여넣으십시오.'))
+    .catch(()=> addMsg('sys', t));
+});
+
+/* ─────────── 시작 ─────────── */
+loadSettings();
+addMsg('sys','0단계 검증 프로토타입입니다. 설정에서 API 키를 넣고 모델을 고른 뒤 대화를 시작하십시오.');
+if (el.apiKey.value.trim()) fetchModels();
+else el.settings.classList.add('open');
+</script>
+</body>
+</html>
