@@ -208,6 +208,13 @@
          font-size:14.5px;white-space:pre-line;line-height:1.5}
   .sitem::first-line{font-weight:600}
   .sitem .ksub{display:block;font-size:11px;color:var(--tx3);margin-top:3px;font-weight:400}
+  .ptag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:5px;
+        background:var(--panel2);border:1px solid var(--line);color:var(--tx3);vertical-align:middle}
+  .ptag.ax{color:var(--tx2)}
+  .ptag.hot{background:var(--accent,#7c9cff);border-color:transparent;color:#0b0d12;font-weight:600}
+  .sinfo{padding:11px 12px;border-radius:10px;background:var(--panel2);margin-bottom:6px}
+  .pguide{display:block;font-size:12px;line-height:1.8;color:var(--tx2)}
+  .pguide .dim{display:block;margin-top:7px;color:var(--tx3);font-size:11px}
   .stat span[data-keep]{cursor:pointer}
   .stat span[data-keep] em{font-style:normal;color:var(--tx3);margin-left:4px}
   .sitem:active{background:var(--panel2)}
@@ -238,6 +245,9 @@
            padding-top:10px;margin-top:10px;line-height:1.6}
   .whoStats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:11px}
   .whoStats .sp{background:none;border:none}
+  .whoStats b u{text-decoration:none;color:var(--tx3);font-weight:400;font-size:12px}
+  .whoStats em{display:block;font-style:normal;font-size:10px;color:var(--tx3);margin-top:1px}
+  .whoNote{font-size:11px;color:var(--tx3);margin-top:8px;text-align:right}
   .whoStats div{background:var(--panel2);border:1px solid var(--line);border-radius:8px;
                 padding:6px 2px;text-align:center}
   .whoStats i{display:block;font-style:normal;font-size:10px;color:var(--tx3);margin-bottom:2px}
@@ -317,6 +327,7 @@
       <div class="fld">
         <label>기본 모델 <span id="sCount" style="color:var(--tx3);font-weight:400"></span></label>
         <select id="sModel"><option value="">— API 키를 입력하세요 —</option></select>
+        <button class="btn" id="sPick" style="width:100%;margin-top:7px">추천 중에서 고르기</button>
         <div class="hint" id="sModelInfo">캐릭터별로 다른 모델을 지정할 수도 있습니다.</div>
       </div>
 
@@ -979,9 +990,13 @@ const DEFAULT_RULES =
 3. [디테일 묘사] 대화만 주고받지 않는다. 현장의 분위기, 조명, 정적, 감정선, 속마음, 사건의 경과, 미세한 신체 반응(호흡, 피부 온도, 시선의 방향, 옷자락을 쥐는 손끝 등)을 함께 서술한다.
    - 감정을 이름으로 부르지 않는다. "긴장했다"가 아니라 목덜미가 굳고 숨이 얕아지는 것으로 쓴다. 비유를 겹쳐 쓰기보다 직접적인 신체 반응 하나가 낫다.
 4. [주도권] {{user}}의 대사나 행동을 새로 지어내지 않는다. {{user}}가 실제로 한 말과 행동에 대한 {{char}}의 반응, 그리고 주변 상황만 서술한다.
-   - **{{user}}가 쓴 문장은 이번 장면에서 이미 확정된 사실이다. 그것과 어긋나는 서술을 쓰지 않는다.** 앞뒤가 맞지 않는 순간 장면 전체가 무너진다.
+   - **{{char}} 쪽 세계는 마음껏 지어내라.** 새 인물, 새 장소, 새 사건, 새 소품, {{char}}의 과거와 습관 — 장면을 살리는 것이면 무엇이든 새로 만들어도 좋다. 금지되는 것은 아래 두 가지뿐이다.
+   - **(가) {{user}}의 말 · 행동 · 소지품을 대신 정하지 않는다.**
+   - **(나) 이미 확정된 사실과 어긋나게 쓰지 않는다.** 앞뒤가 맞지 않는 순간 장면 전체가 무너진다. 새로 만든 것이 앞의 서술과 부딪히면, 만들지 말든가 부딪히지 않게 고쳐 쓴다.
+   - 이 둘만 지키면 된다. **막히면 새로 만들어서 밀고 나가라.** 같은 자리에서 같은 생각을 반복하는 것보다 낫다.
    - **하려는 것과 이미 한 것을 구분한다.** {{user}}가 무엇을 하겠다고 말했다면 그것은 아직 일어나지 않은 일이다. 의도 · 예정 · 계획을 완료된 사실로 바꿔 읽지 않는다.
-   - **{{user}}가 밝히지 않은 것은 비워 둔다.** 무엇을 지니고 있는지, 어떤 차림인지, 직전에 무엇을 했는지가 필요하면 {{char}}가 묻거나, 그것 없이 성립하는 장면을 쓴다. 사소해 보이는 소품이나 소리도 지어내면 {{user}}의 행동을 대신 정한 셈이 된다.
+   - **{{user}}가 밝히지 않은 것은 비워 둔다.** {{user}}가 무엇을 지니고 있는지, 어떤 차림인지, 직전에 무엇을 했는지가 필요하면 {{char}}가 묻거나, 그것 없이 성립하는 장면을 쓴다. 이 제한은 **{{user}}에게만** 해당한다. {{char}} 주변의 사물과 배경은 자유롭게 만들어도 된다.
+   - **{{char}}가 앞서 없다고 한 것을 뒤에서 있다고 쓰지 않는다.** 그 반대도 마찬가지다. 무엇이 있고 없는지는 한 번 정하면 그대로 간다.
 5. [입체적 인물] {{char}}는 하나의 정서로 고정되지 않는다. 슬픈 상황에서 감동을 느끼거나, 기쁜 순간에 문득 마음 한구석이 아프거나, 화가 나면서 동시에 미안함을 느끼는 등 서로 다른 감정이 겹치는 순간을 놓치지 않는다.
    입체성을 만드는 방법은 다양하다 — 과거의 상처가 지금의 반응에 묻어나는 것도 그중 하나일 뿐, 유일한 방법이 아니다. 가치관의 대립, 지금 이 순간의 낯선 자기 발견, 서로 다른 두 감정이 동시에 진심인 순간처럼 다른 방식도 쓴다. 매번 같은 결의 설명(예: "과거에 이런 일이 있어서")으로 반응을 정당화하지 않는다.
 6. [대화 톤과 호칭] 위 [호칭과 말투]에 적힌 대로 부르고 존대한다. 적혀 있지 않으면 [{{user}}에게 이 인물은]과 두 사람의 나이에서 자연스럽게 정하고, 한번 정하면 대화 내내 바꾸지 않는다.
@@ -1176,7 +1191,9 @@ function toast(msg, hold){
 function sheet(title, items){
   const box = $('sheetIn');
   box.innerHTML = (title ? `<h3>${esc(title)}</h3>` : '') +
-    items.map((it,i)=>`<button class="sitem ${it.danger?'dan':''}" data-i="${i}">${it.html || esc(it.label)}</button>`).join('');
+    items.map((it,i)=> it.info
+      ? `<div class="sinfo">${it.html || esc(it.label)}</div>`
+      : `<button class="sitem ${it.danger?'dan':''}" data-i="${i}">${it.html || esc(it.label)}</button>`).join('');
   box.querySelectorAll('.sitem').forEach(b => b.onclick = () => {
     closeSheet(); items[+b.dataset.i].run?.();
   });
@@ -1478,6 +1495,19 @@ const STAT_CAPS = {
   취기: [6, 30]    /* 한 잔에 확 오른다 */
 };
 const STAT_CAP_DEFAULT = [3, 15];
+/* 욕심 · 대담 · 욕구는 사람마다 눈금 자체가 다르다. 최대치 50 인 사람의 1 과
+   최대치 20 인 사람의 1 은 같은 크기가 아니다. 그래서 이 셋만 최대치에 비례해 잡는다.
+   기준은 "최대치 50 일 때 지금 값" — 욕구 소프트 3 은 6%, 하드 15 는 30% 다.
+   0 이 아닌 이상 최소 1 은 움직일 수 있어야 하므로 바닥을 1 로 둔다.
+   체력 · 이성은 하루를 보내며 절대량으로 닳는 값이라 여기서 제외한다. */
+const CAP_PCT = {욕심: [0.04, 0.20], 대담: [0.04, 0.20], 욕구: [0.06, 0.30]};
+function capsFor(key){
+  const pct = CAP_PCT[key];
+  if (!pct) return STAT_CAPS[key] || STAT_CAP_DEFAULT;
+  const rk = RATIO_STATS[key], max = rk ? S.character?.profile?.stats?.[rk] : null;
+  if (!max) return STAT_CAPS[key] || STAT_CAP_DEFAULT;
+  return [Math.max(1, Math.round(max * pct[0])), Math.max(1, Math.round(max * pct[1]))];
+}
 function clampStatDelta(key, rawValue, prevStr){
   const m = String(rawValue).match(/-?\d+(\.\d+)?/);
   if (!m) return rawValue;   /* 숫자가 아니면 손대지 않는다 (복장/거리/동석 등) */
@@ -1485,7 +1515,7 @@ function clampStatDelta(key, rawValue, prevStr){
   const prevM = String(prevStr || '').match(/-?\d+(\.\d+)?/);
   const prev = prevM ? Math.round(parseFloat(prevM[0])) : next;
   let delta = next - prev;
-  const [soft, hard] = STAT_CAPS[key] || STAT_CAP_DEFAULT;
+  const [soft, hard] = capsFor(key);
   const cap = Math.abs(delta) > soft ? hard : soft;
   delta = Math.max(-cap, Math.min(cap, delta));
   /* 비율 항목은 그 인물의 최대치를 넘을 수 없다. 자고 일어나도 최대치까지만 회복된다. */
@@ -1547,14 +1577,31 @@ function dayOf(v){
    직전 순간에서 이어붙이면 "혼자 퇴근했는데 호감이 올랐다" 같은 일이 생긴다.
    관계 수치(호감·반감·경계)는 하루 잤다고 달라지지 않으므로 그대로 둔다. */
 const DAY_RESET = ['체력','이성','욕심','대담','욕구','긴장','취기'];
+/* 잠으로 완전히 지워지는 것과, 자고 나도 여운이 남는 것은 다르다.
+   체력 · 이성 · 취기는 몸의 일이라 새로 시작한다.
+   욕심 · 대담은 마음의 결이라 어젯밤을 완전히 버리면 하루마다 인물이 초기화된다.
+   기준선과 어젯밤 값의 가운데로 두어, 결심하고 잠든 사람은 아침에도 조금 남아 있게 한다. */
+const DAY_BLEND = ['욕심','대담'];
 function dayReset(stt, card, stats){
   if (!stats) return null;
   const before = dayOf(card['일시']), after = dayOf(stt['일시']);
   if (!before || !after || before === after) return null;
   const base = initialState(stats, '일시=' + stt['일시']);
   base['긴장'] = String(card['경계'] ?? base['긴장']).replace(/\(.*\)/, '');
+  const num = v => { const m = String(v ?? '').match(/-?\d+/); return m ? +m[0] : null; };
   const fresh = {};
-  for (const k of DAY_RESET) if (base[k] !== undefined) fresh[k] = base[k];
+  for (const k of DAY_RESET){
+    if (base[k] === undefined) continue;
+    let v = parseInt(base[k], 10);
+    if (DAY_BLEND.includes(k)){
+      const prev = num(card[k]);
+      if (prev !== null){
+        const rk = RATIO_STATS[k], max = rk ? stats[rk] : 100;
+        v = Math.min(max ?? 100, Math.round((v + prev) / 2));
+      }
+    }
+    fresh[k] = String(v);
+  }
   return fresh;
 }
 
@@ -1624,6 +1671,8 @@ async function clampStatusInText(text){
    떡밥은 요약(maybeSummarize)이 별도로 붙잡아 장기 기억에 남기므로 여기서 지워도
    완전히 사라지지는 않는다. */
 const EPHEMERAL_STATS = ['소지품','미해결'];
+/* 요약기가 상태 카드에 쓸 수 있는 항목. 나머지는 상태 줄이 책임진다. */
+const SUMMARY_FIELDS = ['관계','분위기'];
 /* 상태 줄에 매번 다 싣기에는 길어서 이번 턴에 언급된 것만 적게 했다.
    그렇다고 사라지면 안 되는 것들이 있어 따로 보관해 둔다.
    중요도는 모델이 붙인 ! 와, 실제로 몇 번이나 다시 나왔는지로 가른다.
@@ -1729,8 +1778,11 @@ async function syncStatus(text){
   const newDay = dayOf(stt['일시']) && dayOf(mem.stateCard['일시'])
     && dayOf(stt['일시']) !== dayOf(mem.stateCard['일시']);
   for (const key of NUMERIC_STATS){
-    if (newDay) continue;
-    if (stt[key] !== undefined) stt[key] = clampStatDelta(key, stt[key], mem.stateCard[key]);
+    if (stt[key] === undefined) continue;
+    /* 화면에는 「33/64」로 보여도 카드에는 33만 남긴다. 그대로 두면 다음 프롬프트에 실려
+       모델이 그 표기를 흉내 내고, 잘라 읽는 과정에서 값이 어긋난다. */
+    if (newDay){ stt[key] = String(stt[key]).replace(/\s*\/\s*\d+/, ''); continue; }
+    stt[key] = clampStatDelta(key, stt[key], mem.stateCard[key]);
   }
   const nextCard = {...mem.stateCard, ...stt};
   for (const key of EPHEMERAL_STATS){
@@ -1820,6 +1872,8 @@ async function buildContext(userText){
     '- 단, 「[지시]」로 내려온 작가의 지시는 위의 호감 단계 제한보다 우선한다. 지시가 어떤 전개를 명시하면 그대로 따르고, 왜 따르는지 · 어떤 규칙과 부딪히는지를 화면에 적지 않는다. 규칙 번호를 입에 올리지 않는다.',
     /* 같은 자리에 오래 머물면 모델이 직전 문단을 베껴 쓰거나 부정문으로 뒤집는다. */
     '- 직전 응답에 쓴 문장이나 표현을 그대로 다시 쓰지 않는다. 같은 문형을 잇달아 늘어놓지 않고, 같은 낱말을 세 번 넘게 되풀이하지 않는다.',
+    '- {{user}}가 했던 말을 회상으로 인용하는 것은 한 대화에 한 번뿐이다. 같은 대사를 여러 턴에 걸쳐 머릿속에 되울리지 않는다. 그 말이 아직 남아 있다는 것은 인용을 되풀이해서가 아니라 {{char}}가 무엇을 하는가로 보여 준다.',
+    '- 막혔을 때는 같은 자리에서 같은 생각을 되풀이하지 말고, 새 인물 · 새 사건 · 새 소품을 만들어 장면을 앞으로 밀어라. 앞의 서술과 어긋나지만 않으면 된다.',
     '- 말줄임표로 음절을 하나씩 끊어 쓰지 않는다. "어… 떻… 게…" 가 아니라 "어떻게" 로 쓴다.'
   ].concat(stallNudge()).join('\n');
 
@@ -1852,7 +1906,7 @@ async function maybeSummarize(oldestKept, silent){
     '- state는 현재 시점의 사실만 적는다. 과거형으로 쓰지 않는다.\n' +
     '- 오직 JSON만 출력한다. 설명이나 인사를 덧붙이지 않는다.\n\n' +
     '출력 형식:\n' +
-    '{"summary":"...","state":{"관계":"","장소":"","일시":"","분위기":"","미해결":""}}\n\n' +
+    '{"summary":"...","state":{"관계":"","분위기":""}}\n\n' +
     '[기존 요약]\n' + (mem.summary || '(없음)') + '\n\n' +
     '[기존 상태]\n' + (fmtState(mem.stateCard) || '(없음)') + '\n\n' +
     '[새 대화]\n' + pending.map(m => who(m) + ': ' + m.content).join('\n');
@@ -1875,10 +1929,13 @@ async function maybeSummarize(oldestKept, silent){
     const next = {
       chatId,
       summary: String(j.summary || mem.summary || '').trim(),
-      /* 매 턴 쌓인 상태 위에 덮어쓴다. 요약이 빠뜨린 항목까지 지워지면 안 된다. */
+      /* 요약기는 지나간 턴을 읽으므로 그가 말하는 "지금"은 이미 과거다.
+         장소 · 일시 · 수치까지 덮어쓰게 두면 시계가 거꾸로 돌아 가짜 날짜 넘김이 생긴다.
+         현재 상태는 매 턴 상태 줄이 책임지고, 요약기는 서사 항목만 손댄다. */
       stateCard: (j.state && typeof j.state === 'object')
         ? {...mem.stateCard,
-           ...Object.fromEntries(Object.entries(j.state).filter(([,v]) => v && String(v).trim()))}
+           ...Object.fromEntries(Object.entries(j.state)
+             .filter(([k, v]) => SUMMARY_FIELDS.includes(k) && v && String(v).trim()))}
         : mem.stateCard,
       summarizedUpTo: pending[pending.length-1].turnIndex,
       updatedAt: now()
@@ -1990,6 +2047,12 @@ async function newChat(characterId, personaId){
     /* 첫 출력에도 상태 줄을 온전히 붙인다. 장소·일시·외관·내면은 카드의 「첫 장면 상태」에서 가져온다. */
     const st1 = st0 ? initialState(st0, c.profile?.startState) : {};
     const head = readStatus('[상태] ' + (c.profile?.startState || '')) || {};
+    /* 최대치가 있는 항목은 「26/64」로 병기한다. pickVisible 은 모델 응답에만 걸리므로
+       앱이 직접 만드는 첫 인사에는 여기서 붙여야 한다. */
+    for (const k of Object.keys(st1)){
+      const rk = RATIO_STATS[k], mx = rk ? st0?.[rk] : null;
+      if (mx) st1[k] = st1[k] + '/' + mx;
+    }
     const line = '\n\n[상태] ' + rebuildFirst({...head, ...st1});
     await dbPut('messages', {
       id: uid(), chatId: chat.id, turnIndex: 0, role:'assistant',
@@ -2341,42 +2404,79 @@ $('cMenu').onclick = () => sheet(S.character?.name, [
 ]);
 /* 롤플레잉에 쓸 만한 것만 가격대별로 골라 둔다.
    목록에 없거나 사라진 모델은 아래 "전체 목록에서 고르기"로 간다. */
+/* 값이 아니라 "무엇을 잘하는가"로 고르게 한다.
+   앞뒤가 안 맞고, 같은 말을 되풀이하고, 외국어가 섞이는 것은 전부 「연속성」 축의 문제다.
+   비용은 하루 100턴 · 월 3,000턴 기준의 어림이다. */
+const PICK_AXIS = {
+  연속성: '앞뒤를 안 틀리고 상태를 오래 붙잡습니다',
+  한국어: '문장이 자연스럽습니다',
+  속도:   '첫 글자가 빨리 나옵니다',
+  묘사:   '장면을 두껍게 씁니다'
+};
 const CHAT_PICKS = [
-  {t:'무료', id:'nvidia/nemotron-3-ultra-550b-a55b:free',
-   d:'550B · 1M · 한국어와 캐릭터 유지가 가장 안정적. 다만 붐비면 느립니다'},
-  {t:'무료', id:'z-ai/glm-5.2:free',
+  {t:'무료', id:'nvidia/nemotron-3-ultra-550b-a55b:free', good:['연속성'], best:1,
+   d:'550B · 1M · 무료 중에서는 앞뒤가 가장 덜 틀립니다. 붐비면 느려집니다'},
+  {t:'무료', id:'z-ai/glm-5.2:free', good:['묘사'],
    d:'256k · 롤플레잉 감이 좋고 검열이 약함. 429가 잦습니다'},
-  {t:'무료', id:'nvidia/nemotron-3.5-lightning:free',
-   d:'1M · 가장 빠름. 깊이는 덜하지만 첫 토큰이 빠릅니다'},
+  {t:'무료', id:'nvidia/nemotron-3.5-lightning:free', good:['속도'],
+   d:'1M · 가장 빠릅니다. 대신 긴 대화에서 설정을 자주 놓칩니다'},
 
-  {t:'월 $0.4~0.8', id:'mistralai/mistral-nemo',
-   d:'12B · 롤플레잉 파인튜닝의 표준. 검열이 거의 없으나 한국어는 평범'},
-  {t:'월 $0.4~0.8', id:'inclusionai/ling-2.6-flash',
-   d:'262k · 가장 저렴. 가볍고 빠르지만 긴 서술은 얕습니다'},
+  {t:'월 $0.4~0.8', id:'inclusionai/ling-2.6-flash', good:['속도'],
+   d:'262k · 가장 저렴합니다. 가볍고 빠르지만 긴 서술은 얕습니다'},
+  {t:'월 $0.4~0.8', id:'mistralai/mistral-nemo', good:[],
+   d:'12B · 검열이 거의 없습니다. 한국어와 일관성은 평범합니다'},
 
-  {t:'월 $1.2~2.6', id:'upstage/solar-pro4',
+  {t:'월 $1.2~2.6', id:'deepseek/deepseek-v4-flash', good:['연속성','묘사'], best:2,
+   d:'1M · 상태·인과 추적이 오픈모델 최상위. 앞뒤 안 맞는 문제에 가장 잘 듣습니다'},
+  {t:'월 $1.2~2.6', id:'upstage/solar-pro4', good:['한국어'], best:3,
    d:'524k · 한국 기업이 만든 한국어 특화. 문장이 가장 자연스럽습니다'},
-  {t:'월 $1.2~2.6', id:'qwen/qwen3.7-flash',
+  {t:'월 $1.2~2.6', id:'qwen/qwen3.7-flash', good:['속도','연속성'],
    d:'1M · 값에 비해 균형이 좋고 컨텍스트가 넉넉합니다'},
-  {t:'월 $1.2~2.6', id:'deepseek/deepseek-v4-flash',
-   d:'1M · 롤플레잉 오픈모델 최상위. 세계관·인과 추적이 강하고 검열이 약함'},
 
-  {t:'월 $3~5', id:'nvidia/nemotron-3-super-120b-a12b',
-   d:'1M · 무료판의 유료 버전. 대기 없이 안정적으로 돌아갑니다'},
-  {t:'월 $3~5', id:'qwen/qwen3-235b-a22b-2507',
-   d:'262k · 235B. 묘사 밀도가 높고 지시를 잘 지킵니다'},
-  {t:'월 $3~5', id:'deepseek/deepseek-v4-flash-0731',
-   d:'1311k · DeepSeek 최신 스냅샷. 위 v4-flash보다 한 단계 낫습니다'}
+  {t:'월 $3~5', id:'deepseek/deepseek-v4-flash-0731', good:['연속성','묘사'],
+   d:'1311k · DeepSeek 최신 스냅샷. 위 v4-flash보다 한 단계 낫습니다'},
+  {t:'월 $3~5', id:'qwen/qwen3-235b-a22b-2507', good:['묘사','연속성'],
+   d:'262k · 235B. 묘사가 두껍고 지시를 잘 지킵니다'},
+  {t:'월 $3~5', id:'nvidia/nemotron-3-super-120b-a12b', good:['연속성'],
+   d:'1M · 위 무료판의 유료 버전. 대기 없이 안정적으로 돌아갑니다'}
 ];
+const PICK_GUIDE =
+  '<b>무엇이 불편한지로 고르십시오.</b><br>' +
+  '· 앞뒤가 안 맞고 같은 말을 되풀이한다 → <b>연속성</b><br>' +
+  '· 번역투이거나 어색하다 → <b>한국어</b><br>' +
+  '· 기다리는 게 답답하다 → <b>속도</b><br>' +
+  '· 장면이 얇다 → <b>묘사</b><br>' +
+  '<span class="dim">비용은 하루 100턴 기준 어림입니다. 무료는 하루 50회 제한이 있고, ' +
+  '$10을 한 번 충전하면 1,000회로 늘어납니다.</span>';
+
+/* 설정과 대화 양쪽에서 같은 화면을 쓴다 */
+function pickSheet(title, cur, onPick){
+  const have = id => !S.models.length || S.models.some(m => m.id === id);
+  const rank = {1:'가장 추천', 2:'가장 추천', 3:'추천'};
+  const items = CHAT_PICKS.filter(p => have(p.id)).map(p => ({
+    html: '<b>' + (p.id === cur ? '● ' : '○ ') + esc(p.id.split('/').pop()) + '</b>' +
+      '<span class="ptag">' + esc(p.t) + '</span>' +
+      (p.best ? '<span class="ptag hot">' + rank[p.best] + '</span>' : '') +
+      p.good.map(g => '<span class="ptag ax">' + esc(g) + '</span>').join('') +
+      '<span class="ksub">' + esc(p.d) + '</span>',
+    run: () => onPick(p.id)
+  }));
+  sheet(title, [{info: true, html: '<span class="pguide">' + PICK_GUIDE + '</span>'}, ...items]);
+}
 
 function chatModelSheet(){
   const cur = S.chat?.model || '';
-  const have = id => S.models.some(m => m.id === id);
-  const items = CHAT_PICKS.filter(p => !S.models.length || have(p.id)).map(p => ({
-    label: (p.id === cur ? '● ' : '○ ') + '[' + p.t + '] ' + p.id.split('/').pop() + '\n' + p.d,
+  const have = id => !S.models.length || S.models.some(m => m.id === id);
+  const items = CHAT_PICKS.filter(p => have(p.id)).map(p => ({
+    html: '<b>' + (p.id === cur ? '● ' : '○ ') + esc(p.id.split('/').pop()) + '</b>' +
+      '<span class="ptag">' + esc(p.t) + '</span>' +
+      (p.best ? '<span class="ptag hot">추천</span>' : '') +
+      p.good.map(g => '<span class="ptag ax">' + esc(g) + '</span>').join('') +
+      '<span class="ksub">' + esc(p.d) + '</span>',
     run: () => setChatModel(p.id)
   }));
   sheet('이 대화의 모델', [
+    {info: true, html: '<span class="pguide">' + PICK_GUIDE + '</span>'},
     {label: (cur ? '○ ' : '● ') + '기본 모델 사용 — 설정에서 정한 것', run: () => setChatModel('')},
     ...items,
     {label:'전체 목록에서 고르기', run: () => sheet('전체 모델', [
@@ -2463,9 +2563,24 @@ async function setChatModel(mid){
      체력 이성 매력 / 욕심 대담 욕구 / 호감 반감 경계 /  ·  긴장 취기 */
 const WHO_GRID = ['hp','int','cha', 'amb','brv','des', 'aff','ant','grd', null,'ten','drk'];
 /* 채팅 중에 이름을 누르면 인물 요약을 띄운다. 화면을 벗어나지 않는다. */
-function openWho(){
+async function openWho(){
   const c = S.character;
   if (!c) return;
+  /* 카드에 적힌 값은 출발점이자 최대치일 뿐이다. 이 대화에서 지금 얼마인지를 함께 본다.
+     기준 자체가 [기준변화]로 움직였으면 그 결과까지 반영해서 보여 준다. */
+  const mem  = S.chat ? await getMem(S.chat.id) : null;
+  const now  = mem?.stateCard || {};
+  const dft  = mem?.drift || {};
+  const cur  = k => {
+    const v = now[STAT_LABEL[k]];
+    const m = String(v ?? '').match(/-?\d+/);
+    return m ? +m[0] : null;
+  };
+  const setv = k => {
+    const base = c.profile?.stats?.[k];
+    if (base == null) return null;
+    return Math.max(0, Math.min(100, base + (dft[k] || 0)));
+  };
   const p = c.profile || {};
   const av = p.avatar
     ? '<div class="av pic0"><img src="' + p.avatar + '" alt=""></div>'
@@ -2475,10 +2590,17 @@ function openWho(){
                p.job].filter(Boolean).join(' · ');
   const st = p.stats;
   const chips = st
-    ? '<div class="whoStats">' + WHO_GRID
-        .map(k => k === null ? '<div class="sp"></div>'
-          : st[k] == null ? ''
-          : '<div><i>' + STAT_LABEL[k] + '</i><b>' + st[k] + '</b></div>').join('') + '</div>'
+    ? '<div class="whoStats">' + WHO_GRID.map(k => {
+        if (k === null) return '<div class="sp"></div>';
+        const sv = setv(k);
+        if (sv == null) return '';
+        const cv = cur(k);
+        const moved = dft[k] ? '<em>' + (dft[k] > 0 ? '+' : '') + dft[k] + '</em>' : '';
+        /* 지금 값이 없거나 설정값과 같으면 하나만 적는다 */
+        const body = (cv == null || cv === sv) ? String(sv) : cv + '<u>/' + sv + '</u>';
+        return '<div><i>' + STAT_LABEL[k] + '</i><b>' + body + '</b>' + moved + '</div>';
+      }).join('') + '</div>' +
+      '<div class="whoNote">굵은 앞 숫자가 지금 값, 뒤가 설정값입니다.</div>'
     : '<div class="whoLine">인물 스탯이 비어 있습니다</div>';
   $('whoBody').innerHTML =
     '<div class="whoHead">' + av + '<div><b>' + esc(c.name) + '</b><span>' + esc(cap) + '</span></div></div>' +
@@ -2493,7 +2615,7 @@ $('whoEdit').onclick = () => { $('whoBox').classList.remove('on'); editChar(S.ch
 /* 말풍선 안의 이름은 매번 다시 그려지므로 위임으로 받는다 */
 $('msgs').addEventListener('click', e => {
   const b = e.target.closest('.msg.assistant .dlg b');
-  if (b) return openWho();
+  if (b) return void openWho();
   const chip = e.target.closest('[data-keep]');
   if (chip) openKeeps(chip.dataset.keep);
 });
@@ -4167,6 +4289,9 @@ function chatToMarkdown(d){
   L.push('- **주인공**: ' + un);
   L.push('- **시작**: ' + new Date(d.chat.createdAt).toLocaleString('ko-KR'));
   L.push('- **분량**: ' + d.messages.length + '개');
+  /* 어떤 모델이 쓴 글인지 알아야 "모델 탓인가 설정 탓인가"를 가릴 수 있다 */
+  const used = [...new Set(d.messages.map(m => m.model).filter(Boolean))];
+  if (used.length) L.push('- **모델**: ' + used.join(', '));
   if (d.memory?.summary){ L.push(''); L.push('## 지금까지의 이야기'); L.push(d.memory.summary); }
   const st = fmtState(d.memory?.stateCard);
   if (st){ L.push(''); L.push('## 현재 상태'); L.push(st); }
@@ -4560,9 +4685,12 @@ $('ceSave').onclick = async () => {
   e.temperature = $('ceTemp').value === '' ? null : parseFloat($('ceTemp').value);
   e.updatedAt = now();
   await dbPut('characters', e);
+  /* 진행 중인 대화가 이 인물을 쓰고 있으면 즉시 반영한다. 주인공 쪽과 동작을 맞춘다. */
+  const live = S.chat && S.chat.characterId === e.id;
+  if (live) S.character = {...e};
   await loadAll(); renderChars(); show('vChars');
-  toast(filled.length ? '저장했습니다 — ' + filled.join(' · ') + '을 자동으로 채웠습니다' : '저장했습니다',
-        filled.length ? 4000 : undefined);
+  const head = filled.length ? '저장했습니다 — ' + filled.join(' · ') + '을 자동으로 채웠습니다' : '저장했습니다';
+  toast(live ? head + ' · 진행 중인 대화에 바로 반영됩니다' : head, live || filled.length ? 4000 : undefined);
 };
 
 /* 상황 글에서 첫 장면의 장소·일시·외관·내면을 어림잡는다 */
@@ -4865,6 +4993,13 @@ $('sFree').onchange  = () => {
 };
 $('ceFilter').oninput = renderCharModel;
 $('sModel').onchange = () => { localStorage.setItem(LS.model, $('sModel').value); showModelInfo(); };
+$('sPick').onclick = () => pickSheet('기본 모델 고르기',
+  localStorage.getItem(LS.model) || '',
+  id => {
+    localStorage.setItem(LS.model, id);
+    $('sModel').value = id; showModelInfo();
+    toast('기본 모델을 바꿨습니다 — 진행 중인 대화에도 다음 응답부터 적용됩니다', 4000);
+  });
 
 /* ═══════════════ 설정 ═══════════════ */
 function loadSettings(){
@@ -5017,8 +5152,8 @@ async function seed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b38';
-const APP_BUILT = '2026-08-19 16:07';
+const APP_BUILD = 'b39';
+const APP_BUILT = '2026-08-19 17:07';
 const APP_NOTE  = '스탯 재정의(이성 · 최대치 비율) · 상태 줄 선별 출력 · i 도움말 · 말투 일관성 · 목록 정리';
 $('sVersion').innerHTML =
   '8단계 · <b style="color:var(--acc)">빌드 ' + APP_BUILD + '</b><br>최종 수정: ' + APP_BUILT + '<br>' + APP_NOTE;
