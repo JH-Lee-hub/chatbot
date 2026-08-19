@@ -118,6 +118,10 @@
   .drift{margin-top:9px;font-size:11px;color:var(--warn);border-left:2px solid var(--warn);
          padding-left:8px;line-height:1.5}
   .shint{font-size:10px;color:var(--tx3);line-height:1.4;margin-top:4px;word-break:keep-all}
+  .ihelp{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;
+    border:1px solid var(--line2);color:var(--tx3);font-style:normal;font-size:9.5px;
+    font-weight:700;margin-left:5px;vertical-align:1px;cursor:pointer}
+  .ihelp:active{background:var(--panel2);color:var(--tx)}
   .shint b{color:var(--tx2);font-weight:600}
 
   /* ── 대화 ── */
@@ -624,49 +628,43 @@
         <div class="hint" style="margin-top:6px">
           범위 <b>0~100</b> : 10 없음 · 20 미약 · 40 약함 · 60 보통 · 80 강함 · 90+ 압도적
         </div>
-        <div class="shead">능력 — 타고난 바탕 <em>(변하지 않는 기준값)</em></div>
+        <div class="shead">능력 — 도달할 수 있는 최대치</div>
         <div class="row">
-          <div><label>체력</label><input type="number" id="ceStHp" min="0" max="100" placeholder="50">
-            <div class="shint">평균 <b>50</b><br>쉬면 이 값으로 회복</div></div>
-          <div><label>지능</label><input type="number" id="ceStInt" min="0" max="100" placeholder="50">
-            <div class="shint">평균 <b>50</b><br>판단력과 말재간</div></div>
-          <div><label>매력</label><input type="number" id="ceStCha" min="0" max="100" placeholder="50">
-            <div class="shint">평균 <b>50</b><br>인물의 내적 · 외적 매력</div></div>
+          <div><label>체력<i class="ihelp" data-help="hp">i</i></label>
+            <input type="number" id="ceStHp" min="0" max="100" placeholder="50"></div>
+          <div><label>이성<i class="ihelp" data-help="int">i</i></label>
+            <input type="number" id="ceStInt" min="0" max="100" placeholder="50"></div>
+          <div><label>매력<i class="ihelp" data-help="cha">i</i></label>
+            <input type="number" id="ceStCha" min="0" max="100" placeholder="50"></div>
         </div>
 
-        <div class="shead">성향 — 바라는 크기와 꺼내는 힘 <em>(변하지 않는 기준값)</em></div>
+        <div class="shead">성향 — 그렇게 되는 빈도</div>
         <div class="row">
-          <div><label>욕심</label><input type="number" id="ceStAmb" min="0" max="100" placeholder="50">
-            <div class="shint">평균 <b>50</b><br>얼마나 크게 · 자주 바라는가</div></div>
-          <div><label>대담</label><input type="number" id="ceStBrv" min="0" max="100" placeholder="50">
-            <div class="shint">평균 <b>50</b><br>그걸 꺼내는가</div></div>
-          <div><label>욕구</label><input type="number" id="ceStDes" min="0" max="100" placeholder="50">
-            <div class="shint">평균 <b>50</b><br>바라는 해소의 크기 · 정도</div></div>
+          <div><label>욕심<i class="ihelp" data-help="amb">i</i></label>
+            <input type="number" id="ceStAmb" min="0" max="100" placeholder="50"></div>
+          <div><label>대담<i class="ihelp" data-help="brv">i</i></label>
+            <input type="number" id="ceStBrv" min="0" max="100" placeholder="50"></div>
+          <div><label>욕구<i class="ihelp" data-help="des">i</i></label>
+            <input type="number" id="ceStDes" min="0" max="100" placeholder="50"></div>
         </div>
 
-        <div class="shead">관계 — 주인공에 대한 지금의 값 <em>(대화하면서 움직입니다)</em></div>
+        <div class="shead">관계 — 주인공에 대한 지금의 값</div>
         <div class="row">
-          <div><label>호감</label><input type="number" id="ceStAff" min="0" max="100" placeholder="20">
-            <div class="shint">일반 <b>20</b><br>좋아하는 정도</div></div>
-          <div><label>반감</label><input type="number" id="ceStAnt" min="0" max="100" placeholder="5">
-            <div class="shint">대개 <b>한 자리</b><br>싫어하는 정도</div></div>
-          <div><label>경계</label><input type="number" id="ceStGrd" min="0" max="100" placeholder="45">
-            <div class="shint">초면 <b>60</b> · 구면 <b>35</b><br>낯가림의 기본 정도</div></div>
+          <div><label>호감<i class="ihelp" data-help="aff">i</i></label>
+            <input type="number" id="ceStAff" min="0" max="100" placeholder="20"></div>
+          <div><label>반감<i class="ihelp" data-help="ant">i</i></label>
+            <input type="number" id="ceStAnt" min="0" max="100" placeholder="5"></div>
+          <div><label>경계<i class="ihelp" data-help="grd">i</i></label>
+            <input type="number" id="ceStGrd" min="0" max="100" placeholder="45"></div>
         </div>
 
         <div class="shead">기타</div>
         <div class="row">
-          <div><label>취기</label><input type="number" id="ceStDrk" min="0" max="100" placeholder="0">
-            <div class="shint">보통 <b>0</b><br>현재 시점의 취기</div></div>
-          <div></div><div></div>
-        </div>
-
-        <div class="hint" style="margin-top:12px">
-          <b>욕심은 바라는 크기, 대담은 그걸 꺼내는 힘입니다.</b> 둘의 어긋남이 인물을 만듭니다.<br>
-          욕심 <b>높고</b> 대담 <b>낮으면</b> 속으로 애타지만 아무 말 못 합니다.
-          욕심 <b>낮고</b> 대담 <b>높으면</b> 딱히 바라지 않지만 필요하면 그냥 합니다.<br><br>
-          <b>호감과 반감은 반대말이 아닙니다.</b> 둘 다 높으면 "끌리는데 밉다"가 되고,
-          둘 다 낮으면 아무 감정이 없는 것입니다.
+          <div><label>취기<i class="ihelp" data-help="drk">i</i></label>
+            <input type="number" id="ceStDrk" min="0" max="100" placeholder="0"></div>
+          <div><label>긴장<i class="ihelp" data-help="ten">i</i></label>
+            <input type="number" id="ceStTen" min="0" max="100" placeholder="45"></div>
+          <div></div>
         </div>
         <div class="row" style="margin-top:9px">
           <button type="button" class="btn" id="ceStRoll">🎲 수치 새로 굴리기</button>
@@ -979,16 +977,17 @@ const DEFAULT_RULES =
     - 「[지시]」로 시작하는 줄은 장면 밖에서 내려진 작가의 지시다. 그대로 따르되, 그 문장 자체를 대사나 서술로 옮기지 않는다.
     - 이것은 입력을 읽는 규칙일 뿐이다. {{char}}의 출력에는 여전히 별표를 쓰지 않는다.
 14. [상태 출력] 매 응답의 맨 마지막에 아래 한 줄을 반드시 덧붙인다. 이 줄 뒤에는 아무것도 쓰지 않는다.
-    [상태] 장소=... | 일시=... | 외관=... | 내면=... | 호감=... | 반감=... | 긴장=... | 욕구=... | 체력=... | 취기=... | (그 밖에 있는 것만)
-    - 순서를 지켜서, 항상 이 짜임으로 쓴다: 1) 장소·일시  2) 외관·내면  3) 호감·반감·긴장·욕구·체력·취기 여섯 수치  4) 그 뒤에 소지품·동석·미해결 중 이번 장면에 실제로 있는 것만.
-    - **여섯 수치는 하나도 빠뜨리지 않는다.** 이번 턴에 안 바뀌었어도 직전 값을 그대로 다시 적는다.
+    [상태] 장소=... | 일시=... | 외관=... | 내면=... | 호감=... | 반감=... | 경계=... | 긴장=... | 체력=... | 이성=... | 욕심=... | 대담=... | 욕구=... | 취기=... | (그 밖에 있는 것만)
+    - 순서를 지켜서, 항상 이 짜임으로 쓴다: 1) 장소·일시  2) 외관·내면  3) 호감·반감·경계·긴장·체력·이성·욕심·대담·욕구·취기 열 수치  4) 그 뒤에 소지품·동석·미해결 중 이번 장면에 실제로 있는 것만.
+    - **열 수치를 하나도 빠뜨리지 않는다.** 이번 턴에 안 바뀌었어도 직전 값을 그대로 다시 적는다. 화면에 무엇을 보여줄지는 앱이 알아서 고르므로, 무엇을 뺄지 고민하지 않는다.
+    - 매력은 변하지 않으므로 상태 줄에 적지 않는다.
     - 앞의 열 항목(장소~취기)은 이번 턴에 안 바뀌었어도 매번 그대로 다시 쓴다. 무엇을 넣을지 고민하지 않는다 — 자리가 이미 정해져 있다.
     - 일시는 "월/일 요일 시:분 am" 형식으로 쓴다. **날짜를 빠뜨리지 않는다.** 요일은 한 글자(월/화/수/목/금/토/일), am/pm은 소문자. 예: 8/19 화 9:15 am.
     - **"밤" "새벽" "저녁" 같은 말을 앞에 붙이지 않는다.** am/pm 으로 이미 구분되므로 겹쳐 쓰면 군더더기다. "밤 11:20 pm"이 아니라 "8/19 화 11:20 pm"이다. 이번 장면에서 실제로 흐른 만큼만 진행시킨다. 짧은 대화는 3~10분, 자리를 옮기거나 식사를 하면 30분~1시간, 잠들거나 헤어지면 다음 장면의 일시로 넘긴다. 이유 없이 시간을 되돌리지 않는다.
     - 내면에는 {{char}}의 지금 감정이나 기분을 짧은 말로 쓴다.
     - **외관에는 지금 입고 있는 옷과 겉모습을 함께 담는다.** 복장은 따로 적지 않고 여기에 합쳐 쓴다. 옷차림을 먼저 적고, 흐트러진 머리나 붉어진 목덜미처럼 지금 눈에 띄는 상태를 뒤에 덧붙인다. 옷이 흐트러지거나 벗겨진 상태도 여기에 적는다.
-    - 호감 · 반감 · 긴장 · 욕구 · 체력 · 취기는 0~100 정수로 쓰고, 직전 값에서 달라졌으면 호감=68(+3) 처럼 변화폭을 괄호에 적는다. 안 바뀌었으면 괄호 없이 그대로 쓴다.
-    - **한 턴에 움직일 수 있는 폭은 항목마다 다르다.** 호감 · 반감은 ±3, 긴장은 ±6, 욕구 · 체력은 ±5, 취기는 ±8 이내다. 고백 · 구조 · 배신처럼 관계를 뒤집는 사건이 실제로 일어났을 때만 각각 ±15 · ±30 · ±25 · ±40 까지 허용한다. 실망하거나 선을 넘긴 일이 있으면 내려간다. 한 방향으로만 계속 오르지 않는다. (이 범위를 벗어나면 앱이 자동으로 되돌린다.)
+    - 열 수치는 모두 0~100 정수로 쓰고, 직전 값에서 달라졌으면 호감=68(+3) 처럼 변화폭을 괄호에 적는다. 안 바뀌었으면 괄호 없이 그대로 쓴다.
+    - **한 턴에 움직일 수 있는 폭은 항목마다 다르다.** 호감 · 반감 · 경계 · 욕심 · 대담은 ±3, 긴장 · 이성은 ±6, 욕구 · 체력은 ±5, 취기는 ±8 이내다. 관계를 뒤집는 사건이 실제로 일어났을 때만 각각 ±15 · ±30 · ±25 · ±40 까지 허용한다. 실망하거나 선을 넘긴 일이 있으면 내려간다. 한 방향으로만 계속 오르지 않는다. (이 범위를 벗어나면 앱이 자동으로 되돌린다.)
     - 맨 뒤의 소지품 · 동석 · 미해결은 있을 때만 골라 붙인다. 없으면 아예 쓰지 않는다. 거리는 쓰지 않는다.
     - **소지품은 물건이 오갔거나 누군가 무엇을 쥐고 있는 장면이면 반드시 넣는다.** 방금 오간 물건과 지금 그것을 누가 가지고 있는지를 적는다. 예: 소지품=맥주 캔 1개는 {{user}}가 가져감. 오간 물건이 없으면 생략한다.
     - **미해결은 실제로 풀리지 않은 새로운 사건·질문·긴장이 이번 턴에 생기거나 바뀌었을 때만 쓴다.** 지난 턴과 같은 내용이면 아예 넣지 않는다. 매 턴 습관적으로 채우는 항목이 아니다.
@@ -997,8 +996,12 @@ const DEFAULT_RULES =
     - 반면 {{char}}는 자유롭다. 상황과 자신의 기준에 따라 얼마든지 거절하고, 회피하고, 화를 내고, 자리를 뜰 수 있다. 반대로 받아들일 수도 있다. 어느 쪽이든 그때의 관계와 상태에 따라 달라지는 인물의 선택이며, 미리 정해진 답은 없다.
     - 요컨대 막고 물러서는 것은 인물의 몫이고, 그것을 끝까지 쓰는 것은 서술자의 몫이다. 서술자가 인물을 대신해 장면을 닫지 않는다.
     - **다만 제한이 없다는 것이 빨라도 된다는 뜻은 아니다.** 망설임과 저항과 지연이 장면의 내용이다. 아래 16번의 수치 해석을 건너뛰지 않는다. 거부하지 않는 것과 곧바로 받아들이는 것은 전혀 다른 일이다.
-16. [수치 해석] [현재 상태]의 호감 · 반감 · 긴장 · 욕구 · 체력 · 취기 같은 0~100 수치는 아래 구간을 참고해 해석한다.
-    정확한 숫자보다 대략 어느 구간에 있는지가 중요하고, 각 구간이 구체적으로 무엇을 뜻하는지는 수치의 종류와 지금 장면에 따라 달라진다 — 아래는 강도의 대략적인 기준일 뿐, 정해진 대사나 행동이 아니다.
+16. [수치 해석] 수치는 두 종류이며 읽는 법이 다르다.
+    (가) **절대 수치** — 호감 · 반감 · 경계 · 긴장 · 취기. 0~100 을 그대로 읽는다.
+    (나) **비율 수치** — 체력 · 이성 · 욕심 · 대담 · 욕구. [기준 수치]에 적힌 값이 그 인물의 **최대치**이고, 상태 줄의 값은 그 안에서 지금 어디쯤인지다. **반드시 최대치 대비 비율로 읽는다.**
+       최대치의 20% 이하 미약 · 40% 약함 · 60% 보통 · 80% 강함 · 90% 이상 압도적.
+       예: 최대치 50인 인물의 욕구가 45면 90%라 압도적이다. 같은 45라도 최대치가 90인 인물에게는 절반이라 보통이다.
+    아래 구간표는 (가)에 적용한다. 정확한 숫자보다 대략 어느 구간에 있는지가 중요하고, 각 구간이 구체적으로 무엇을 뜻하는지는 수치의 종류와 지금 장면에 따라 달라진다 — 아래는 강도의 대략적인 기준일 뿐, 정해진 대사나 행동이 아니다.
     - 10 이하 — 거의 없다시피 함. 있다고 말하기 어려운 수준.
     - 20 이하 — 미약함. 스치듯 지나가는 정도.
     - 40 이하 — 약함. 본인도 확신하지 못할 만큼 옅은 수준.
@@ -1015,11 +1018,15 @@ const DEFAULT_RULES =
     - 반감이 호감보다 뚜렷이 높으면 거절과 회피가 기본이 된다. 다정한 말에도 먼저 의심한다.
     - 반감이 높은 동안에는 호감이 잘 오르지 않는다. 호감을 올리려면 먼저 반감이 내려갈 일이 있어야 한다.
     - 반감은 사과나 해명만으로 곧장 사라지지 않는다. 시간과 반복된 행동으로 천천히 내려간다.
-18. [기준 수치와 현재 수치] [기준 수치]는 이 인물이 원래 어떤 사람인지이고, [현재 상태]의 수치는 지금 어디에 있는지다. 둘을 혼동하지 않는다.
-    - 체력과 욕구는 기준값이 상한이자 돌아갈 자리다. 사건이 없으면 그 자리로 천천히 돌아가고, 넘어서려면 취기나 강한 자극처럼 분명한 이유가 있어야 한다. 기준이 낮은 인물은 같은 상황에서도 더 낮은 곳까지만 오른다.
-    - 긴장의 평상시 자리는 기준 경계값이다. 편안해지면 그 아래로 내려가고, 위협받으면 위로 치솟았다가 다시 그 자리로 돌아온다.
-    - 기준 경계가 높은 인물은 호감이 천천히 오른다. 같은 다정함에도 덜 움직인다.
-    - 호감과 반감의 기준값은 출발점일 뿐 상한이 아니다. 대화에 따라 얼마든지 그 위로 갈 수 있다.
+18. [기준 수치는 최대치다] [기준 수치]에 적힌 체력 · 이성 · 매력 · 욕심 · 대담 · 욕구는 그 인물이 **도달할 수 있는 최대치**다. 상태 줄의 값은 그 안에서 지금 어디쯤인지이며, 최대치를 넘지 않는다.
+    - **체력** — 하루를 보통으로 지내면 잠들기 직전에 최대치의 40% 쯤 남는다. 활동이 적으면 덜 떨어지고 몸을 쓰면 더 떨어진다. 자고 나면 최대치로 돌아온다.
+    - **이성** — 판단력의 내구도다. 하루를 보내도 잘 떨어지지 않아 잠들기 직전에도 최대치의 80% 이상 남는다. 다만 취하거나 감정이 격해지면 빠르게 깎인다. 낮을수록 쉽게 휘둘리고, 0에 가까우면 아무 판단 없이 받아들인다.
+    - **매력** — 변하지 않는다. 상태 줄에 쓰지 않는다.
+    - **욕심 · 대담 · 욕구** — 최대치는 그 인물이 얼마나 **자주** 그렇게 되는지를 뜻한다. 50이면 평범한 사람만큼, 100이면 남들이 못 말릴 정도다. 현재값은 계기에 따라 그 안에서 오르내린다.
+    - **욕구는 자고 일어나면 최대치의 20% 로 떨어진다.** 뚜렷한 계기 없이도 이따금 저절로 오르내릴 수 있다. 생리적인 것이라 늘 의식되는 것은 아니다.
+    - 긴장의 평상시 자리는 경계값이다. 편안해지면 그 아래로 내려가고, 위협받으면 위로 치솟았다가 다시 돌아온다.
+    - 경계가 높은 인물은 호감이 천천히 오른다. 같은 다정함에도 덜 움직인다.
+    - 호감 · 반감 · 경계는 절대 수치이며 기준값은 출발점일 뿐 상한이 아니다.
 19. [욕심과 대담] 욕심은 "얼마나 바라는가"이고, 대담은 "그 바람을 말과 행동으로 옮기는가"다. 바라는 것과 그것을 꺼내는 것은 다른 일이며, 이 둘의 어긋남이 인물의 긴장을 만든다.
     - 욕심이 높으면 원하는 것이 많고 한번 원한 것을 놓지 못한다. 손해를 오래 곱씹고, 관계에서도 더 많은 것을 바란다. 낮으면 체념이 빠르고 주어진 것에 만족하며, 아쉬워도 그러려니 한다.
     - 대담이 높으면 원하는 것을 말로 꺼내고 먼저 손을 뻗는다. 어색함과 거절을 감수한다. 낮으면 마음이 아무리 커도 속에만 두고, 결정적인 순간에 멈추고 되묻고 다음으로 미룬다. 16번의 "멈추거나 망설인다"가 얼마나 길어지는지가 이 값에 반비례한다.
@@ -1035,7 +1042,7 @@ const DEFAULT_RULES =
     스스로 넘지 못하던 선을 넘어선 경험 — 이 실제로 일어났다면, 딱 한 항목이 1만큼 움직일 수 있다.
     그때만 상태 줄 바로 다음 줄에 이 한 줄을 덧붙인다.
       [기준변화] 대담=+1 (처음으로 자기가 먼저 손을 뻗었다)
-    - 체력 · 지능 · 매력 · 욕심 · 대담 · 욕구 여섯 가지에만 쓴다. 호감 · 반감 · 경계처럼 매 턴 움직이는 값에는 쓰지 않는다.
+    - 체력 · 이성 · 매력 · 욕심 · 대담 · 욕구 여섯 가지에만 쓴다. 호감 · 반감 · 경계처럼 매 턴 움직이는 값에는 쓰지 않는다.
     - 한 번에 한 항목, 1만큼만이다. 한 대화 전체에서 서너 번을 넘지 않는다.
     - 웬만한 장면에서는 쓰지 않는다. 이 줄이 자주 보이면 무게가 사라진다. 확신이 없으면 쓰지 않는다.`;
 
@@ -1219,8 +1226,8 @@ function buildSystem(char, persona, withExample, drift){
       .map(k => STAT_LABEL[k] + ' ' + st[k] +
         (drift?.[k] ? '(' + (drift[k] > 0 ? '+' : '') + drift[k] + ')' : '')).join(' · ');
     if (line) c.push('\n[기준 수치 — 0~100]\n' + line +
-      '\n체력 · 지능 · 매력 · 욕심 · 대담 · 욕구는 변하지 않는 기준값이고, 호감 · 반감 · 경계는 {{user}}에 대한 현재 값이다.' +
-      '\n상태 줄의 수치는 이 기준에서 사건에 따라 오르내린다. 근거 없이 크게 벗어나지 않는다.');
+      '\n체력 · 이성 · 매력 · 욕심 · 대담 · 욕구는 이 인물이 도달할 수 있는 **최대치**다. 상태 줄의 값은 그 안에서 지금 어디쯤인지이며 비율로 읽는다.' +
+      '\n호감 · 반감 · 경계 · 긴장 · 취기는 0~100 절대값이다.');
   }
 
   if (char.description) c.push(char.description);
@@ -1381,9 +1388,11 @@ const getMem = async id => (await dbGet('memory', id)) || blankMem(id);
 
 /* 프롬프트로 "한 턴에 ±5, 예외 상황엔 ±50"이라고 지시해도 모델이 이를 어길 수 있다.
    0~100 정수 수치 항목은 여기서 실제로 델타를 재고 강제로 캡을 씌운다 — 최후의 안전장치. */
-const NUMERIC_STATS = ['호감','반감','긴장','욕구','체력','취기'];
+const NUMERIC_STATS = ['호감','반감','경계','긴장','체력','이성','욕심','대담','욕구','취기'];
 /* 상태 줄은 늘 이 순서로 쓴다. 빠진 수치는 앱이 직전 값으로 채워 넣는다. */
-const STATUS_ORDER = ['장소','일시','외관','내면','호감','반감','긴장','욕구','체력','취기'];
+const STATUS_ORDER = ['장소','일시','외관','내면','호감','반감','경계','긴장','체력','이성','욕심','대담','욕구','취기'];
+/* 대화를 열자마자 보여줄 항목 */
+const FIRST_TURN_STATS = ['호감','반감','경계','긴장','체력','이성','욕구','취기'];
 const STATUS_TAIL  = ['소지품','동석','미해결'];
 function rebuildStatus(stt){
   const seen = new Set();
@@ -1399,7 +1408,11 @@ function rebuildStatus(stt){
 const STAT_CAPS = {
   호감: [3, 15],   /* 관계는 천천히 움직인다 */
   반감: [3, 15],
+  경계: [3, 15],
   긴장: [6, 30],   /* 순간 감정이라 빠르게 오르내린다 */
+  이성: [5, 30],
+  욕심: [3, 15],
+  대담: [3, 15],
   욕구: [5, 25],
   체력: [5, 30],   /* 자고 나면 회복된다 */
   취기: [8, 40]    /* 한 잔에 확 오른다 */
@@ -1421,6 +1434,41 @@ function clampStatDelta(key, rawValue, prevStr){
 
 /* 화면에 보이는 [상태] 줄 자체도 클램프된 값으로 바꿔치기한다.
    syncStatus는 기억(맥락)만 고치므로, 이게 없으면 화면 표시값과 실제 반영값이 어긋난다. */
+/* 매 턴 열 개를 다 보여주면 읽히지 않는다. 뜻이 있는 것만 남긴다.
+   기준값을 아는 쪽은 앱이므로 모델에게 맡기지 않고 여기서 고른다. */
+function pickVisible(stt, maxes, firstTurn){
+  const out = {};
+  const num = v => { const m = String(v).match(/-?\d+/); return m ? +m[0] : null; };
+  const changed = v => /\([+\-]/.test(String(v));
+  for (const [k, v] of Object.entries(stt)){
+    if (!NUMERIC_STATS.includes(k)){ out[k] = v; continue; }   /* 장소·외관 등은 그대로 */
+    const cur = num(v);
+    if (cur === null) continue;
+    const rk = RATIO_STATS[k];
+    const max = rk ? (maxes?.[rk] ?? 50) : null;
+    if (firstTurn){
+      if (!FIRST_TURN_STATS.includes(k)) continue;
+      out[k] = v;
+      continue;
+    }
+    let show = changed(v);
+    if (!show){
+      if (k === '취기') show = cur > 0;
+      else if (k === '체력' || k === '이성') show = max ? cur <= Math.round(max * 0.3) : cur <= 15;
+      else if (rk) show = max ? cur >= Math.round(max * 0.2) : cur >= 10;
+      else show = cur >= 60;                                   /* 호감·반감·경계·긴장 */
+    }
+    if (!show) continue;
+    let mark = '';
+    if (max && (k === '욕심' || k === '대담' || k === '욕구')){
+      if (cur >= max) mark = ' max';
+      else if (cur >= Math.round(max * 0.9)) mark = '!';
+    }
+    out[k] = v + mark;
+  }
+  return out;
+}
+
 async function clampStatusInText(text){
   const stt = readStatus(text);
   if (!stt || !S.chat) return text;
@@ -1434,7 +1482,10 @@ async function clampStatusInText(text){
     stt[key] = clampStatDelta(key, stt[key], mem.stateCard[key]);
   }
   delete stt['거리'];   /* 쓰지 않기로 한 항목 */
-  return text.replace(/\[상태\][ \t]*[^\n]+/, '[상태] ' + rebuildStatus(stt));
+  delete stt['매력'];   /* 고정값이라 상태 줄에 쓰지 않는다 */
+  const firstTurn = S.messages.filter(m => m.role === 'assistant').length <= 1;
+  const shown = pickVisible(stt, S.character?.profile?.stats, firstTurn);
+  return text.replace(/\[상태\][ \t]*[^\n]+/, '[상태] ' + rebuildStatus(shown));
 }
 
 /* 응답 끝의 상태 줄을 상태 카드에 반영한다. 매 턴 갱신되므로 요약을 돌리지 않아도
@@ -1446,7 +1497,7 @@ async function clampStatusInText(text){
 const EPHEMERAL_STATS = ['소지품','미해결'];
 /* 기준 수치는 원칙적으로 고정이지만 아주 드물게 1씩 움직인다.
    인물 카드를 건드리면 다른 대화까지 영향을 받으므로, 대화별로 따로 누적한다. */
-const DRIFT_KEYS = {체력:'hp', 지능:'int', 매력:'cha', 욕심:'amb', 대담:'brv', 욕구:'des'};
+const DRIFT_KEYS = {체력:'hp', 이성:'int', 매력:'cha', 욕심:'amb', 대담:'brv', 욕구:'des'};
 const DRIFT_LIMIT = 10;   /* 한 대화에서 기준값이 벗어날 수 있는 최대 폭 */
 const DRIFT_RE = /^[ \t]*\[?기준변화\]?[ \t]*[:：]?[ \t]*([^\n]+)$/m;
 function readDrift(txt){
@@ -1627,13 +1678,18 @@ function renderChats(){
       : `<div class="av" style="background:${c?.accent||PALETTE[0]}">${esc(initial(c?.name))}</div>`;
     const sc = S.mems?.[ch.id]?.stateCard || {};
     const at = [sc['장소'], sc['일시']].filter(Boolean).join(' · ');
-    const l2 = (c?.name || '삭제된 캐릭터') + ' · 대화 ' + (ch.messageCount||0) + '개';
-    const l3 = '시작 ' + shortStamp(ch.createdAt) + '  ·  최근 ' + shortStamp(ch.lastMessageAt||ch.createdAt);
+    /* 이름은 위에 이미 있다. 대신 관계가 어디까지 왔는지를 보여준다. */
+    const num = v => { const m = String(v ?? '').match(/-?\d+/); return m ? m[0] : null; };
+    const rel = ['호감','반감','경계'].map(k => num(sc[k]) !== null ? k + ' ' + num(sc[k]) : null)
+                                      .filter(Boolean).join(' · ');
+    const l2 = '대화 ' + (ch.messageCount||0) + '개' + (rel ? '  ·  ' + rel : '');
+    const meta = '<div class="cmeta"><span>생성 ' + stampSmart(ch.createdAt) + '</span>' +
+                 '<span>수정 ' + stampSmart(ch.lastMessageAt||ch.createdAt) + '</span></div>';
     return `<div class="card chr" data-id="${ch.id}">
       ${av}
       <div class="t"><b>${esc(ch.title || c?.name || '이름 없음')}${at?`<em>${esc(at)}</em>`:''}</b>
-        <span class="dim">${esc(l2)}</span>
-        <span>${esc(l3)}</span></div>
+        <span class="dim">${esc(l2)}</span></div>
+      ${meta}
       <button class="ico" data-menu="${ch.id}">⋯</button></div>`;
   }).join('');
   box.querySelectorAll('.card').forEach(el => el.onclick = e => {
@@ -3238,10 +3294,25 @@ const skewBoth = (base, sd) => rollStat(
 /* 반감은 대부분 한 자리에 몰려야 한다. 좁은 봉우리에 얇고 긴 꼬리를 붙인다.
    기준 5 기준으로 0~8 이 84%, 9~20 이 11%, 21~40 이 5% 나온다. */
 const skewLow = base => rollStat(base + (Math.random() < 0.10 ? 8 + Math.random() * 17 : 0), 3);
-/* 능력(체력·지능·매력) → 성향(욕심·대담·욕구) → 관계(호감·반감·경계) → 지금(취기) 순 */
-const STAT_KEYS = ['hp','int','cha','amb','brv','des','aff','ant','grd','drk'];
-const STAT_LABEL = {hp:'체력', int:'지능', cha:'매력', amb:'욕심', brv:'대담',
-                    des:'욕구', aff:'호감', ant:'반감', grd:'경계', drk:'취기'};
+/* 능력(체력·이성·매력) → 성향(욕심·대담·욕구) → 관계(호감·반감·경계) → 기타(긴장·취기) 순 */
+const STAT_KEYS = ['hp','int','cha','amb','brv','des','aff','ant','grd','ten','drk'];
+const STAT_LABEL = {hp:'체력', int:'이성', cha:'매력', amb:'욕심', brv:'대담',
+                    des:'욕구', aff:'호감', ant:'반감', grd:'경계', ten:'긴장', drk:'취기'};
+/* 최대치 대비 비율로 읽는 항목. 나머지는 0~100 절대값으로 읽는다. */
+const RATIO_STATS = {체력:'hp', 이성:'int', 욕심:'amb', 대담:'brv', 욕구:'des'};
+const STAT_HELP = {
+  hp:  '하루 활동으로 깎이는 내구도입니다. 부여값이 최대치이고, 보통으로 하루를 보내면 잠들기 직전에 최대치의 40% 쯤 남습니다. 자고 나면 최대치로 돌아옵니다.',
+  int: '판단력의 내구도입니다. 하루를 보내도 잘 안 떨어져 잠들기 직전에도 최대치의 80% 이상 남습니다. 다만 취하거나 감정이 격해지면 빠르게 깎이고, 낮을수록 쉽게 휘둘립니다. 0에 가까우면 아무 판단 없이 받아들입니다.',
+  cha: '변하지 않는 고정값입니다. 외모뿐 아니라 분위기와 태도까지 포함한 끌림의 크기입니다.',
+  amb: '무언가를 바라는 <b>빈도</b>입니다. 50이면 평범한 사람만큼, 100이면 남들이 못 말릴 정도로 자주 바랍니다. 현재값은 이 최대치 안에서 계기에 따라 오르내립니다.',
+  brv: '마음을 꺼내 행동으로 옮기는 <b>빈도</b>입니다. 낮으면 아무도 없어도 주저하고, 높으면 사람이 있든 없든 합니다. 100이면 불편한 것을 망설임 없이 바로 말합니다.',
+  des: '관계를 원하는 <b>빈도</b>입니다. 50이면 또래 평균이고 100이면 아주 빈번합니다. 자고 일어나면 최대치의 20% 로 떨어지며, 뚜렷한 계기 없이도 이따금 저절로 오르내립니다.',
+  aff: '주인공을 좋아하는 정도입니다. 0~100 절대값이며 처음엔 20 안팎입니다.',
+  ant: '주인공을 싫어하는 정도입니다. 호감의 반대가 아니라 별개 축이라 둘 다 높을 수 있습니다.',
+  grd: '낯가림과 방어의 정도입니다. 초면이면 60, 오래된 사이면 35 정도가 기본입니다.',
+  ten: '지금 이 순간의 긴장입니다. 평상시에는 경계값 근처로 돌아옵니다. 설렘도 두려움도 여기에 들어갑니다.',
+  drk: '대화를 시작하는 시점의 취기입니다. 보통 0이며, 취하면 이성이 깎이고 대담이 한 단계 올라갑니다.'
+};
 /* 카드 생성 · 대화 프롬프트에 함께 넘기는 한 줄 설명 */
 const STAT_MEAN = {
   hp:'지구력의 상한', int:'판단력과 말재간', cha:'내적 · 외적 매력',
@@ -3252,7 +3323,7 @@ const statWord = v => v >= 80 ? '매우 높음' : v >= 65 ? '높음' : v >= 45 ?
 
 /* 선호형은 처음부터 옅은 호감이 있는 관계에서 시작하므로 호감을 높이고 경계를 낮춘다. */
 /* 세 갈래로 나눠 굴린다.
-   체력 · 지능 · 매력 — 인물 고유의 특성. 모집단 평균이 곧 중위값이므로 50.
+   체력 · 이성 · 매력 — 인물 고유의 특성. 모집단 평균이 곧 중위값이므로 50.
    호감 · 경계      — 관계의 상태. 경계는 관계에서 끌어오고, 호감은 그 경계에 반비례시킨다.
                       독립으로 굴리면 "호감 85인데 경계 85" 같은 모순 조합이 나온다.
    욕구            — 평소 기준선은 50. 다만 대화 첫 장면의 상태값은 이 값의 35%만 쓴다
@@ -3261,11 +3332,29 @@ const statWord = v => v >= 80 ? '매우 높음' : v >= 65 ? '높음' : v >= 45 ?
      10 이하 거의 없음 · 20 이하 미약 · 40 이하 약함 · 60 이하 보통 · 80 이하 강함
    따라서 "옅은 호감"은 50이 아니라 20 근처다.
 
-   체력 · 지능 · 매력 — 인물 고유 특성. 모집단 중앙이 50.
+   체력 · 이성 · 매력 — 인물 고유 특성. 모집단 중앙이 50.
    호감 · 경계      — 관계의 상태. 각각 관계에서 기준을 끌어온다.
                       둘은 반대축이 아니다. "호감은 크지만 경계도 크다"는 모순이 아니라
                       이 앱이 다루는 인물들의 기본형이므로 강한 음의 상관을 걸지 않는다.
    욕구            — 평소 기준선은 50. 대화 첫 장면의 상태값은 따로 낮춘다(initialState). */
+/* 관계에서 존대의 방향이 정해진다. 첫 대사와 이후 대화의 말투가 어긋나는 것을 막는다. */
+function relSpeech(relName){
+  const r = String(relName || '');
+  if (/상사|사수|선생|누나|수의사|형사|추심원|조사자/.test(r))
+    return '{{char}}가 윗사람이라 {{user}}가 존대하고, {{char}}는 편하게 말한다';
+  if (/동생의 친구/.test(r))
+    return '{{char}}가 아랫사람이라 {{char}}가 존대하고, {{user}}는 편하게 말한다';
+  if (/동기|동창/.test(r))
+    return '서로 반말. 이름을 부른다';
+  if (/처음 만난|소개팅|비행기|엘리베이터|룸메이트|목격|병실|내기/.test(r))
+    return '서로 존대. 아직 이름을 부르지 않는다';
+  if (/옛 연인/.test(r))
+    return '서로 반말이지만 예전만큼 편하지는 않다';
+  if (/척진|라이벌/.test(r))
+    return '서로 존대하되 날이 서 있다';
+  return '서로 존대. {{user}}를 이름으로 부른다';
+}
+
 function rollStats(mode, guardBase, affBase, antiBase){
   const wild = mode !== 'taste';
   const gBase = guardBase == null ? (wild ? 52 : 40) : guardBase;
@@ -3284,6 +3373,7 @@ function rollStats(mode, guardBase, affBase, antiBase){
     des: skewUp(50, 12),
     aff, grd,
     ant: skewLow(nBase),
+    ten: grd,        /* 긴장의 평상시 자리는 경계값이다 */
     drk: 0
   };
 }
@@ -3294,9 +3384,13 @@ function initialState(st){
   return {
     호감: String(st.aff ?? 20),
     반감: String(st.ant ?? 5),
-    긴장: String(st.grd ?? 45),
-    욕구: String(Math.max(3, Math.round((st.des ?? 50) * 0.18))),
+    경계: String(st.grd ?? 45),
+    긴장: String(st.ten ?? st.grd ?? 45),
     체력: String(st.hp ?? 50),
+    이성: String(st.int ?? 50),
+    욕심: String(Math.round((st.amb ?? 50) * 0.3)),
+    대담: String(Math.round((st.brv ?? 50) * 0.5)),
+    욕구: String(Math.max(2, Math.round((st.des ?? 50) * 0.2))),
     취기: String(st.drk ?? 0)
   };
 }
@@ -3392,6 +3486,7 @@ function rollSeeds(mode, gender){
     frame,
     body: bodyRoll.body, bust: bodyRoll.bust, waist: bodyRoll.waist, hip: bodyRoll.hip,
     temper: POOL.temper.length ? pick(POOL.temper) : "",
+    speech: relSpeech(rel[0]),
     stats: rollStats(mode, rel[1], rel[2], rel[3]),
     imgSeed: randInt(100000, 999999)
   };
@@ -3468,10 +3563,12 @@ function cardPrompt(seed, mode, gender){
     '- 학력: ' + seed.edu + ' (EDU 항목에 이 학력을 그대로 쓴다. 임의로 중퇴나 다른 학력으로 바꾸지 않는다)'
   ];
   if (seed.temper) L.push('- {{user}}를 대하는 온도: ' + seed.temper);
+  if (seed.speech) L.push('- 호칭과 말투: ' + seed.speech +
+    ' (FIRST_MES 와 MES_EXAMPLE 도 반드시 이 말투로 쓴다. 첫 대사만 다른 말투가 되면 안 된다)');
   const st = seed.stats || {};
   L.push('- 인물 스탯 (0~100): ' + STAT_KEYS.filter(k => k !== 'drk')
       .map(k => STAT_LABEL[k] + ' ' + st[k] + '(' + statWord(st[k]) + ')').join(' · '));
-  L.push('  이 수치가 인물의 근거다. 지능과 체력은 직업 · 학력의 개연성에, 매력과 욕구는 성장 배경 · 연애 이력에,');
+  L.push('  이 수치가 인물의 근거다. 이성과 체력은 직업 · 학력의 개연성에, 매력과 욕구는 성장 배경 · 연애 이력에,');
   L.push('  호감 · 반감 · 경계는 {{user}}를 대하는 태도에, 욕심 · 대담은 그것을 겉으로 드러내고 행동에 옮기는 방식에 반영한다.');
   L.push('  반감은 호감의 반대가 아니라 별개다. 욕심은 바라는 크기이고 대담은 그것을 꺼내는 힘이라, 욕심이 높고 대담이 낮으면 속으로만 앓는 인물이 된다. 본문에 숫자를 그대로 적지는 않는다.');
   if (taste) L.push('', '[선호 스타일 — 이 범위 안에서 쓴다]', taste);
@@ -3566,7 +3663,7 @@ async function generateCharacter(mode, gender){
         seed: String(seed.imgSeed),
         /* 쓰리사이즈는 본문(신체)이 아니라 숨김 항목에만 들어간다 */
         bust: seed.bust || '', waist: seed.waist || '', hip: seed.hip || '',
-        growth: sec.growth || '', edu: sec.edu || '', finance: sec.finance || '',
+        speech: seed.speech || '', growth: sec.growth || '', edu: sec.edu || '', finance: sec.finance || '',
         living: sec.living || '', friends: sec.friends || '', dating: sec.dating || '',
         stats: seed.stats
       },
@@ -3868,7 +3965,7 @@ function renderChars(){
       <div class="t"><b>${esc(c.name)}${cnt?`<i class="cnt">(${cnt})</i>`:''}${cap?`<em>${esc(cap)}</em>`:''}</b>
         <span class="dim">${esc(l2)}</span></div>
       ${meta}
-      <button class="btn" data-go="${c.id}" style="padding:6px 11px;font-size:12px">대화</button>
+      <button class="btn" data-go="${c.id}" style="padding:6px 11px;font-size:12px">새 대화</button>
     </div>`;
   }).join('');
   box.querySelectorAll('.card').forEach(el => {
@@ -3948,6 +4045,12 @@ function deleteChar(id){
 $('bNewChar').onclick = () => editChar(null);
 
 const statInputId = k => 'ceSt' + k[0].toUpperCase() + k.slice(1);
+/* 설명을 칸마다 붙이면 화면이 길어져 수치와 굴리기 버튼이 한눈에 안 들어온다. i 로 뺀다. */
+document.querySelectorAll('.ihelp').forEach(b => b.onclick = e => {
+  e.stopPropagation();
+  const k = b.dataset.help;
+  sheet(STAT_LABEL[k], [{label:'닫기', html: STAT_HELP[k] || '설명이 없습니다', run: () => {}}]);
+});
 function setStatFields(st){
   STAT_KEYS.forEach(k => { const el = $(statInputId(k)); if (el) el.value = st?.[k] ?? ''; });
 }
@@ -4604,9 +4707,9 @@ async function seed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b31';
-const APP_BUILT = '2026-08-19 13:25';
-const APP_NOTE  = '대상 목록 정리(생성/수정 시각) · 정사각 프로필 · 인물 요약 팝업 · 목록 배지';
+const APP_BUILD = 'b33';
+const APP_BUILT = '2026-08-19 14:37';
+const APP_NOTE  = '스탯 재정의(이성 · 최대치 비율) · 상태 줄 선별 출력 · i 도움말 · 말투 일관성 · 목록 정리';
 $('sVersion').innerHTML =
   '8단계 · <b style="color:var(--acc)">빌드 ' + APP_BUILD + '</b><br>최종 수정: ' + APP_BUILT + '<br>' + APP_NOTE;
 
