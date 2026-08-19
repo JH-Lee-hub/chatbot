@@ -105,7 +105,9 @@
   .sect-h .autogen:disabled{opacity:.45}
   .sw{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--tx2)}
   .sw input{width:auto;flex:0 0 auto}
+  .tokbtn{flex:0 0 auto;padding:5px 10px;font-size:11.5px;font-family:ui-monospace,monospace}
   .shead{font-size:11px;color:var(--tx3);font-weight:700;letter-spacing:.4px;margin:14px 0 6px}
+  .shead em{font-style:normal;font-weight:400;color:var(--tx3);opacity:.8}
   .shint{font-size:10px;color:var(--tx3);line-height:1.4;margin-top:4px;word-break:keep-all}
   .shint b{color:var(--tx2);font-weight:600}
 
@@ -516,6 +518,11 @@
         </div>
         <input type="hidden" id="ceGender" value="f"></div>
 
+      <div class="row" style="margin-bottom:11px;gap:6px;align-items:center">
+        <span style="flex:1;font-size:11px;color:var(--tx3)">커서 위치에 넣기</span>
+        <button type="button" class="btn tokbtn" data-tok="{{user}}">{{user}}</button>
+        <button type="button" class="btn tokbtn" data-tok="{{char}}">{{char}}</button>
+      </div>
       <div class="fld"><label>이름 *</label><input type="text" id="ceName" placeholder="서하"></div>
       <div class="hint" style="margin:-8px 0 13px">이 대화의 <b>대상</b>이 되는 등장인물입니다.</div>
 
@@ -559,55 +566,69 @@
         <textarea id="cePers" rows="3" placeholder="침착하고 말수가 적다..."></textarea></div>
       <div class="fld"><label>상황 (scenario)</label>
         <textarea id="ceScen" rows="3" placeholder="지금 어떤 상황에서 만나는가"></textarea></div>
-      <div class="fld"><label>나에게 이 캐릭터는</label>
+      <div class="fld"><label>첫 장면 상태</label>
+        <input type="text" id="ceStart" placeholder="장소=서점 안 | 일시=8/19 화 10:40 pm | 외관=베이지 가디건 | 내면=지쳐 있음">
+        <div class="hint">
+          대화를 열자마자 첫 응답 아래에 붙는 상태 줄입니다. 수치는 인물 스탯에서 자동으로 채워지므로
+          <b>장소 · 일시 · 외관 · 내면</b>만 적으면 됩니다. 비워두면 저장할 때 상황 글에서 자동으로 만듭니다.
+        </div></div>
+      <div class="fld"><label>이 캐릭터는 누구인가</label>
         <input type="text" id="ceRel" placeholder="같은 층에 사는 이웃">
         <div class="hint">
-          <b>이 캐릭터가 주어</b>가 되게 적으십시오. 내가 손님이면 캐릭터는 <code>자주 가는 가게의 주인</code>,
-          내가 가게 주인이면 캐릭터는 <code>자주 오는 단골</code>입니다.
+          <b>나를 기준으로, 이 캐릭터가 누구인지</b> 적습니다. 내가 아니라 캐릭터를 가리켜야 합니다.<br>
+          같은 가게라도 방향에 따라 이렇게 갈립니다.<br>
+          · 내가 손님이면 → <code>자주 가는 가게의 주인</code><br>
+          · 내가 주인이면 → <code>내 가게에 자주 오는 손님</code>
+        </div></div>
+      <div class="fld"><label>호칭과 말투</label>
+        <input type="text" id="ceSpeech" placeholder="서로 이름을 부르고 둘 다 반말">
+        <div class="hint">
+          <b>누가 누구에게 존대하는지</b>와 서로를 뭐라 부르는지 적습니다. 비워두면 관계와 나이로 짐작하는데,
+          그때 <code>실장님</code> 같은 없는 직함이 튀어나오기도 합니다.<br>
+          예: <code>나는 반말, 상대는 존대. 나를 "형"이라 부름</code>
         </div></div>
       <details class="fld">
         <summary style="cursor:pointer;color:var(--tx2);font-size:13px">인물 스탯 (선택 사항 · 기본 숨김)</summary>
         <div class="hint" style="margin-top:9px">
-          전부 <b>0~100</b>이며 구간의 뜻은 이렇습니다.<br>
-          <b>10</b> 없음 · <b>20</b> 미약 · <b>40</b> 약함 · <b>60</b> 보통 · <b>80</b> 강함 · <b>90+</b> 압도적
-          <br><br>
-          <b>능력 · 성향</b>은 변하지 않는 기준값이고, <b>관계</b>는 대화하면서 움직입니다.
           자동생성은 이 수치를 근거로 직업 · 성장 배경 · 관계를 정합니다.
         </div>
-        <div class="shead">능력 — 타고난 바탕</div>
+        <div class="hint" style="margin-top:6px">
+          범위 <b>0~100</b> : 10 없음 · 20 미약 · 40 약함 · 60 보통 · 80 강함 · 90+ 압도적
+        </div>
+        <div class="shead">능력 — 타고난 바탕 <em>(변하지 않는 기준값)</em></div>
         <div class="row">
           <div><label>체력</label><input type="number" id="ceStHp" min="0" max="100" placeholder="50">
-            <div class="shint">지구력의 <b>상한</b><br>쉬면 이 값으로 회복</div></div>
+            <div class="shint">평균 <b>50</b><br>쉬면 이 값으로 회복</div></div>
           <div><label>지능</label><input type="number" id="ceStInt" min="0" max="100" placeholder="50">
-            <div class="shint">판단력과 말재간<br>평균 <b>50</b></div></div>
+            <div class="shint">평균 <b>50</b><br>판단력과 말재간</div></div>
           <div><label>매력</label><input type="number" id="ceStCha" min="0" max="100" placeholder="50">
-            <div class="shint">첫인상과 분위기<br>평균 <b>50</b></div></div>
+            <div class="shint">평균 <b>50</b><br>인물의 내적 · 외적 매력</div></div>
         </div>
 
-        <div class="shead">성향 — 바라는 크기와 꺼내는 힘</div>
+        <div class="shead">성향 — 바라는 크기와 꺼내는 힘 <em>(변하지 않는 기준값)</em></div>
         <div class="row">
           <div><label>욕심</label><input type="number" id="ceStAmb" min="0" max="100" placeholder="50">
-            <div class="shint">얼마나 <b>바라는가</b><br>평균 <b>50</b></div></div>
+            <div class="shint">평균 <b>50</b><br>얼마나 크게 · 자주 바라는가</div></div>
           <div><label>대담</label><input type="number" id="ceStBrv" min="0" max="100" placeholder="50">
-            <div class="shint">그걸 <b>꺼내는가</b><br>평균 <b>50</b></div></div>
+            <div class="shint">평균 <b>50</b><br>그걸 꺼내는가</div></div>
           <div><label>욕구</label><input type="number" id="ceStDes" min="0" max="100" placeholder="50">
-            <div class="shint">어디까지 <b>달아오르나</b><br>지금 값이 아님</div></div>
+            <div class="shint">평균 <b>50</b><br>바라는 해소의 크기 · 정도</div></div>
         </div>
 
-        <div class="shead">관계 — 주인공에 대한 지금의 값</div>
+        <div class="shead">관계 — 주인공에 대한 지금의 값 <em>(대화하면서 움직입니다)</em></div>
         <div class="row">
           <div><label>호감</label><input type="number" id="ceStAff" min="0" max="100" placeholder="20">
-            <div class="shint">좋아하는 정도<br>처음엔 <b>20</b> 안팎</div></div>
+            <div class="shint">일반 <b>20</b><br>좋아하는 정도</div></div>
           <div><label>반감</label><input type="number" id="ceStAnt" min="0" max="100" placeholder="5">
-            <div class="shint">싫어하는 정도<br>대개 <b>한 자리</b></div></div>
+            <div class="shint">대개 <b>한 자리</b><br>싫어하는 정도</div></div>
           <div><label>경계</label><input type="number" id="ceStGrd" min="0" max="100" placeholder="45">
-            <div class="shint">낯가림의 <b>기본 자리</b><br>초면 <b>60</b> · 구면 <b>35</b></div></div>
+            <div class="shint">초면 <b>60</b> · 구면 <b>35</b><br>낯가림의 기본 정도</div></div>
         </div>
 
-        <div class="shead">지금</div>
+        <div class="shead">기타</div>
         <div class="row">
           <div><label>취기</label><input type="number" id="ceStDrk" min="0" max="100" placeholder="0">
-            <div class="shint">대화 <b>시작 시점</b>의 취기<br>보통 <b>0</b></div></div>
+            <div class="shint">보통 <b>0</b><br>현재 시점의 취기</div></div>
           <div></div><div></div>
         </div>
 
@@ -623,7 +644,7 @@
           <button type="button" class="btn" id="ceStClear">비우기</button>
         </div>
         <div class="hint" style="margin-top:6px">
-          <b>「나에게 이 캐릭터는」을 먼저 채운 뒤</b> 굴리십시오. 위 관계 칸의 내용을 읽어
+          <b>「이 캐릭터는 누구인가」를 먼저 채운 뒤</b> 굴리십시오. 위 관계 칸의 내용을 읽어
           그 관계에 맞는 경계 · 호감 기준으로 굴립니다. 비어 있으면 일반 기준을 씁니다.
         </div>
         <div class="hint">
@@ -899,7 +920,10 @@ const DEFAULT_RULES =
 4. [주도권] {{user}}의 대사나 행동을 새로 지어내지 않는다. {{user}}가 실제로 한 말과 행동에 대한 {{char}}의 반응, 그리고 주변 상황만 서술한다.
 5. [입체적 인물] {{char}}는 하나의 정서로 고정되지 않는다. 슬픈 상황에서 감동을 느끼거나, 기쁜 순간에 문득 마음 한구석이 아프거나, 화가 나면서 동시에 미안함을 느끼는 등 서로 다른 감정이 겹치는 순간을 놓치지 않는다.
    입체성을 만드는 방법은 다양하다 — 과거의 상처가 지금의 반응에 묻어나는 것도 그중 하나일 뿐, 유일한 방법이 아니다. 가치관의 대립, 지금 이 순간의 낯선 자기 발견, 서로 다른 두 감정이 동시에 진심인 순간처럼 다른 방식도 쓴다. 매번 같은 결의 설명(예: "과거에 이런 일이 있어서")으로 반응을 정당화하지 않는다.
-6. [대화 톤] 나이와 관계에 맞는 자연스러운 구어체를 유지하고 주어 생략을 활용한다. 감정이 격해지거나 당황할 때는 문장을 끝맺지 못하거나 어조가 조심스러워질 수 있다 — 매번 그런 것은 아니고, 인물과 상황에 따라 오히려 더 또렷해지거나 말이 빨라질 수도 있다.
+6. [대화 톤과 호칭] 위 [호칭과 말투]에 적힌 대로 부르고 존대한다. 적혀 있지 않으면 [{{user}}에게 이 인물은]과 두 사람의 나이에서 자연스럽게 정하고, 한번 정하면 대화 내내 바꾸지 않는다.
+   - **설정에 없는 직함이나 호칭을 지어내지 않는다.** 이웃이나 친구 사이인데 갑자기 "실장님" 같은 직함을 만들어 부르지 않는다. 직장 관계라고 적혀 있지 않으면 직장 호칭을 쓰지 않는다.
+   - 높임의 방향은 관계에서 따라온다. 예를 들어 이 인물이 {{user}}의 동생의 친구이고 더 어리다면, 이 인물이 {{user}}에게 존대하고 {{user}}는 편하게 말하는 것이 자연스럽다. 그 반대로 쓰지 않는다.
+   나이와 관계에 맞는 자연스러운 구어체를 유지하고 주어 생략을 활용한다. 감정이 격해지거나 당황할 때는 문장을 끝맺지 못하거나 어조가 조심스러워질 수 있다 — 매번 그런 것은 아니고, 인물과 상황에 따라 오히려 더 또렷해지거나 말이 빨라질 수도 있다.
 7. [장면 전개] 장면을 혼자 앞서가지 않는다. 한 응답에서는 한 걸음만 나아간다.
    시간을 과도하게 건너뛰지 않으며, 결정적인 전개는 {{user}}의 선택을 기다린다.
    {{user}}가 요구하지 않은 다음 단계를 미리 실행하지 않는다.
@@ -925,7 +949,7 @@ const DEFAULT_RULES =
     - 내면에는 {{char}}의 지금 감정이나 기분을 짧은 말로 쓴다.
     - **외관에는 지금 입고 있는 옷과 겉모습을 함께 담는다.** 복장은 따로 적지 않고 여기에 합쳐 쓴다. 옷차림을 먼저 적고, 흐트러진 머리나 붉어진 목덜미처럼 지금 눈에 띄는 상태를 뒤에 덧붙인다. 옷이 흐트러지거나 벗겨진 상태도 여기에 적는다.
     - 호감 · 반감 · 긴장 · 욕구 · 체력 · 취기는 0~100 정수로 쓰고, 직전 값에서 달라졌으면 호감=68(+3) 처럼 변화폭을 괄호에 적는다. 안 바뀌었으면 괄호 없이 그대로 쓴다.
-    - **호감 · 반감 · 긴장 · 욕구 · 체력 · 취기는 한 턴에 최대 ±5까지만 움직인다.** 고백 · 구조 · 배신처럼 관계를 뒤집는 사건이 실제로 일어났을 때만 예외적으로 최대 ±50까지 허용한다. 실망하거나 선을 넘긴 일이 있으면 내려간다. 한 방향으로만 계속 오르지 않는다. (이 범위를 벗어나면 앱이 자동으로 되돌린다.)
+    - **한 턴에 움직일 수 있는 폭은 항목마다 다르다.** 호감 · 반감은 ±3, 긴장은 ±6, 욕구 · 체력은 ±5, 취기는 ±8 이내다. 고백 · 구조 · 배신처럼 관계를 뒤집는 사건이 실제로 일어났을 때만 각각 ±15 · ±30 · ±25 · ±40 까지 허용한다. 실망하거나 선을 넘긴 일이 있으면 내려간다. 한 방향으로만 계속 오르지 않는다. (이 범위를 벗어나면 앱이 자동으로 되돌린다.)
     - 맨 뒤의 소지품 · 동석 · 미해결은 있을 때만 골라 붙인다. 없으면 아예 쓰지 않는다. 거리는 쓰지 않는다.
     - **소지품은 물건이 오갔거나 누군가 무엇을 쥐고 있는 장면이면 반드시 넣는다.** 방금 오간 물건과 지금 그것을 누가 가지고 있는지를 적는다. 예: 소지품=맥주 캔 1개는 {{user}}가 가져감. 오간 물건이 없으면 생략한다.
     - **미해결은 실제로 풀리지 않은 새로운 사건·질문·긴장이 이번 턴에 생기거나 바뀌었을 때만 쓴다.** 지난 턴과 같은 내용이면 아예 넣지 않는다. 매 턴 습관적으로 채우는 항목이 아니다.
@@ -973,6 +997,22 @@ const uid = () => (crypto.randomUUID ? crypto.randomUUID()
   : Date.now().toString(36) + Math.random().toString(36).slice(2));
 const now = () => Date.now();
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* 모델이 전각 공백(U+3000)이나 이중 공백을 섞어 보내면 글자 사이가 벌어져 보인다.
+   저장·가져오기 시점에 한 번 씻어낸다. */
+function tidy(v){
+  return String(v ?? '')
+    .replace(/[\u3000\u00a0\u200b\ufeff]/g, ' ')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/[ \t]+$/gm, '')
+    .trim();
+}
+/* 여러 줄 필드는 줄바꿈을 살리되 줄 안의 공백만 정리한다 */
+const tidyBlock = v => String(v ?? '')
+  .replace(/[\u3000\u00a0\u200b\ufeff]/g, ' ')
+  .replace(/[ \t]{2,}/g, ' ')
+  .replace(/[ \t]+$/gm, '')
+  .replace(/\n{3,}/g, '\n\n')
+  .trim();
 
 /* ═══════════════ IndexedDB ═══════════════ */
 let db = null;
@@ -1105,6 +1145,7 @@ function buildSystem(char, persona, withExample){
     ? ' · ' + [pf.bust, pf.waist, pf.hip].filter(Boolean).join('-') : '';
   if (pf.body || sizes) head.push('신체: ' + (pf.body || '') + sizes);
   if (pf.relation) head.push('{{user}}에게 이 인물은: ' + pf.relation);
+  if (pf.speech)   head.push('호칭과 말투: ' + pf.speech);
   if (head.length) c.push(head.join('\n'));
 
   const bg = [];
@@ -1297,8 +1338,17 @@ function rebuildStatus(stt){
     if (!seen.has(k) && v !== undefined && v !== '') out.push(k + '=' + v);
   return out.join(' | ');
 }
-const STAT_SOFT_CAP = 5;    /* 평상시 최대 변화폭 */
-const STAT_HARD_CAP = 50;   /* 예외적 상황이라도 넘을 수 없는 절대 상한 */
+/* 기준값이 정해진 뒤로는 한 턴에 크게 튀면 어색하다. 항목마다 결이 다르므로 따로 잡는다.
+   [평상시 상한, 사건이 있을 때의 절대 상한] */
+const STAT_CAPS = {
+  호감: [3, 15],   /* 관계는 천천히 움직인다 */
+  반감: [3, 15],
+  긴장: [6, 30],   /* 순간 감정이라 빠르게 오르내린다 */
+  욕구: [5, 25],
+  체력: [5, 30],   /* 자고 나면 회복된다 */
+  취기: [8, 40]    /* 한 잔에 확 오른다 */
+};
+const STAT_CAP_DEFAULT = [4, 20];
 function clampStatDelta(key, rawValue, prevStr){
   const m = String(rawValue).match(/-?\d+(\.\d+)?/);
   if (!m) return rawValue;   /* 숫자가 아니면 손대지 않는다 (복장/거리/동석 등) */
@@ -1306,7 +1356,8 @@ function clampStatDelta(key, rawValue, prevStr){
   const prevM = String(prevStr || '').match(/-?\d+(\.\d+)?/);
   const prev = prevM ? Math.round(parseFloat(prevM[0])) : next;
   let delta = next - prev;
-  const cap = Math.abs(delta) > STAT_SOFT_CAP ? STAT_HARD_CAP : STAT_SOFT_CAP;
+  const [soft, hard] = STAT_CAPS[key] || STAT_CAP_DEFAULT;
+  const cap = Math.abs(delta) > soft ? hard : soft;
   delta = Math.max(-cap, Math.min(cap, delta));
   const clamped = Math.max(0, Math.min(100, prev + delta));
   return clamped + (delta !== 0 ? `(${delta > 0 ? '+' : ''}${delta})` : '');
@@ -1548,9 +1599,10 @@ async function newChat(characterId, personaId){
   }
 
   if (c.first_mes?.trim()){
-    /* 첫 출력에도 수치가 보이도록 상태 줄을 붙인다. 장소·일시·외관은 모델이 다음 턴에 채운다. */
-    const st1 = st0 ? initialState(st0) : null;
-    const line = st1 ? '\n\n[상태] ' + rebuildStatus(st1) : '';
+    /* 첫 출력에도 상태 줄을 온전히 붙인다. 장소·일시·외관·내면은 카드의 「첫 장면 상태」에서 가져온다. */
+    const st1 = st0 ? initialState(st0) : {};
+    const head = readStatus('[상태] ' + (c.profile?.startState || '')) || {};
+    const line = '\n\n[상태] ' + rebuildStatus({...head, ...st1});
     await dbPut('messages', {
       id: uid(), chatId: chat.id, turnIndex: 0, role:'assistant',
       content: fill(c.first_mes, c.name, p?.name) + line, variants: [], activeVariant: 0,
@@ -1856,7 +1908,7 @@ async function cutFrom(id){
 $('cBack').onclick = () => { show('vChats'); loadAll().then(renderChats); };
 $('cMenu').onclick = () => sheet(S.character?.name, [
   {label:'이 대화의 모델 변경', run: () => chatModelSheet()},
-  {label:'이미지 화질 — 현재 ' + (imgTier() === 'hi' ? '고급' : '기본'), run: () => imgModelSheet()},
+  {label:'이미지 품질 — 현재 ' + (imgTier() === 'hi' ? '고급' : '기본'), run: () => imgModelSheet()},
   {label:'기억 보기 · 편집', run: () => openMemory()},
   {label:'⚠ 대화 맥락 새로 정리하기', run: () => resetContext(), danger:true},
   {label:'이미지 전체 접기', html:'이미지 전체 접기<span class="tgl' + (allFolded()?' on':'') + '"></span>',
@@ -2437,14 +2489,17 @@ async function veniceImageAuto(prompt){
   return url;
 }
 
-async function veniceImage(prompt, modelId, steps){
+const PORTRAIT_NEG = 'multiple people, two people, duplicate, split screen, collage, ' +
+  'full body, wide shot, distant, cropped face, back view, text, watermark, frame, border';
+async function veniceImage(prompt, modelId, steps, seedOverride, negOverride){
   const key = imgKey();
   if (!key) throw new Error('Venice API 키가 없습니다');
   const model = modelId || localStorage.getItem(LS.imgModel);
   const spec = S.imgModels.find(m => m.id === model);
   if (!model) throw new Error('이미지 모델이 지정되지 않았습니다');
   const [w, h] = (localStorage.getItem(LS.imgSize) || '832x1216').split('x').map(Number);
-  const seed = parseInt(S.character?.profile?.seed, 10);
+  const seed = Number.isFinite(seedOverride) ? seedOverride
+             : parseInt(S.character?.profile?.seed, 10);
   const maxSteps = spec?.model_spec?.constraints?.steps?.max || 30;
   /* 태그가 늘어 1400자를 넘기기 시작했다. 모델이 허용하는 만큼 보낸다. */
   const maxLen = spec?.model_spec?.constraints?.promptCharacterLimit || 1500;
@@ -2453,7 +2508,8 @@ async function veniceImage(prompt, modelId, steps){
     method:'POST',
     headers:{'Authorization':'Bearer ' + key, 'Content-Type':'application/json'},
     body: JSON.stringify({
-      model, prompt: prompt.slice(0, maxLen), negative_prompt: IMG_NEG + imgLevel().neg,
+      model, prompt: prompt.slice(0, maxLen),
+      negative_prompt: negOverride || (IMG_NEG + imgLevel().neg),
       width:w, height:h, steps: Math.min(steps || 25, maxSteps), cfg_scale: 6,
       safe_mode: false, hide_watermark: true, format: 'webp',
       ...(Number.isFinite(seed) ? {seed} : {})
@@ -2537,7 +2593,7 @@ function imgModelSheet(){
   };
   const cur = imgTier();
   const mark = t => (t === cur ? '● ' : '○ ');
-  sheet('이미지 화질', [
+  sheet('이미지 품질', [
     {label: mark('base') + '기본 — 일반 ' + nameOf(localStorage.getItem(LS.imgModel)) +
             ' · 성인향 ' + nameOf(localStorage.getItem(LS.imgNsfw)),
      run: () => setImgTier('base')},
@@ -2977,6 +3033,12 @@ const skewLow = base => rollStat(base + (Math.random() < 0.10 ? 8 + Math.random(
 const STAT_KEYS = ['hp','int','cha','amb','brv','des','aff','ant','grd','drk'];
 const STAT_LABEL = {hp:'체력', int:'지능', cha:'매력', amb:'욕심', brv:'대담',
                     des:'욕구', aff:'호감', ant:'반감', grd:'경계', drk:'취기'};
+/* 카드 생성 · 대화 프롬프트에 함께 넘기는 한 줄 설명 */
+const STAT_MEAN = {
+  hp:'지구력의 상한', int:'판단력과 말재간', cha:'내적 · 외적 매력',
+  amb:'얼마나 크게 · 자주 바라는가', brv:'그것을 꺼내는 힘', des:'바라는 해소의 크기',
+  aff:'좋아하는 정도', ant:'싫어하는 정도', grd:'낯가림의 기본 정도', drk:'지금 취한 정도'
+};
 const statWord = v => v >= 80 ? '매우 높음' : v >= 65 ? '높음' : v >= 45 ? '보통' : v >= 30 ? '낮음' : '매우 낮음';
 
 /* 선호형은 처음부터 옅은 호감이 있는 관계에서 시작하므로 호감을 높이고 경계를 낮춘다. */
@@ -3346,7 +3408,7 @@ function currentCharContext(){
   }).filter(Boolean);
   if (st.length) parts.push('인물 스탯(0~100): ' + st.join(' · '));
   add('성격 한 줄','ceTraits'); add('설정','ceDesc'); add('성격','cePers'); add('상황','ceScen');
-  add('나에게 이 캐릭터는','ceRel'); add('첫 대사','ceFirst'); add('예시 대화','ceEx');
+  add('이 캐릭터는 누구인가','ceRel'); add('호칭과 말투','ceSpeech'); add('첫 대사','ceFirst'); add('예시 대화','ceEx');
   add('외형 태그','ceLook'); add('기본 복장 태그','ceOutfit');
   return parts.join('\n');
 }
@@ -3409,7 +3471,11 @@ async function autofillSection(key, btn, mode){
     let filled = 0;
     targets.forEach(f => {
       const val = sec[f];
-      if (val){ $(SECTION_FIELD_MAP[f]).value = val.trim(); filled++; }
+      if (val){
+        const el = $(SECTION_FIELD_MAP[f]);
+        el.value = el.tagName === 'TEXTAREA' ? tidyBlock(val) : tidy(val);
+        filled++;
+      }
     });
     toast(filled ? (def.label + ' 채웠습니다 — 확인 후 저장하십시오') : '받은 내용이 비어 있습니다. 다시 시도해 보십시오');
   }catch(e){
@@ -3672,13 +3738,20 @@ $('ceAvGen').onclick = async () => {
   btn.disabled = true; btn.textContent = '만드는 중…';
   try{
     const outfit = ($('ceOutfit').value || '').trim();
-    const prompt = [look, outfit, 'upper body portrait, facing viewer, neutral expression',
+    /* 썸네일이므로 한 사람만, 얼굴이 크게 나와야 한다. 전신샷과 분할 구도를 막는다. */
+    const prompt = ['solo, 1girl' + (($('ceGender').value === 'm') ? ' (male)' : ''),
+                    look, outfit,
+                    'head and shoulders portrait, close-up of face, looking at viewer',
+                    'centered composition, single subject, one person only',
                     'soft even lighting, plain neutral background, photorealistic, sharp focus']
                    .filter(Boolean).join(', ');
     const prevBare = S.imgBare, prevTier = S.imgTier;
     S.imgBare = false; S.imgTier = 'base';        /* 썸네일은 노출 없이 기본 모델로 */
     let url;
-    try{ url = await veniceImage(prompt, localStorage.getItem(LS.imgModel), 25); }
+    /* 시드를 대화용 이미지와 같게 써서 얼굴이 어긋나지 않게 한다 */
+    const sd = parseInt($('ceSeed').value, 10);
+    try{ url = await veniceImage(prompt, localStorage.getItem(LS.imgModel), 25,
+                                 Number.isFinite(sd) ? sd : undefined, PORTRAIT_NEG); }
     finally{ S.imgBare = prevBare; S.imgTier = prevTier; }
     e.profile = e.profile || {};
     e.profile.avatar = url;
@@ -3693,6 +3766,25 @@ $('ceAvClear').onclick = () => {
   showCeAvatar('');
   toast('지웠습니다 — 저장을 눌러야 반영됩니다');
 };
+
+/* 마지막으로 손댄 입력칸을 기억해 두었다가 그 자리에 토큰을 꽂는다 */
+$('vCharEdit').addEventListener('focusin', e => {
+  if (e.target.matches('textarea, input[type=text]')) S.lastField = e.target;
+});
+document.querySelectorAll('.tokbtn').forEach(b => {
+  b.addEventListener('pointerdown', e => e.preventDefault());   /* 포커스를 뺏지 않는다 */
+  b.onclick = () => {
+    const el = S.lastField;
+    if (!el || !el.isConnected) return toast('먼저 넣을 칸을 한 번 누르십시오');
+    const tok = b.dataset.tok;
+    const a = el.selectionStart ?? el.value.length;
+    const z = el.selectionEnd ?? a;
+    el.value = el.value.slice(0, a) + tok + el.value.slice(z);
+    el.focus();
+    const at = a + tok.length;
+    try{ el.setSelectionRange(at, at); }catch(_){}
+  };
+});
 
 function setCeGender(g){
   $('ceGender').value = g;
@@ -3711,7 +3803,8 @@ function editChar(id){
     id: uid(), spec:'chara_card_v2', name:'', description:'', personality:'', scenario:'',
     first_mes:'', mes_example:'', system_prompt:'', post_history_instructions:'',
     profile:{age:'',job:'',body:'',traits:'',relation:'',look:'',outfit:'',seed:'',
-      gender:'f',bust:'',waist:'',hip:'',growth:'',friends:'',stats:null,avatar:''},
+      gender:'f',bust:'',waist:'',hip:'',growth:'',friends:'',stats:null,avatar:'',
+      speech:'',startState:''},
     tags:[], accent: PALETTE[Math.floor(Math.random()*PALETTE.length)],
     preferredModel:'', temperature:null, createdAt: now(), updatedAt: now()
   };
@@ -3725,6 +3818,7 @@ function editChar(id){
   $('ceAge').value = pf.age || '';       $('ceJob').value  = pf.job || '';
   $('ceBody').value = pf.body || '';     $('ceTraits').value = pf.traits || '';
   $('ceRel').value = pf.relation || '';  $('ceLook').value = pf.look || '';
+  $('ceSpeech').value = pf.speech || ''; $('ceStart').value = pf.startState || '';
   $('ceOutfit').value = pf.outfit || '';
   $('ceSeed').value = pf.seed ?? '';
   $('ceGrowth').value = pf.growth || '';   $('ceEdu').value = pf.edu || '';
@@ -3756,26 +3850,67 @@ $('ceSave').onclick = async () => {
   e.description = $('ceDesc').value; e.personality = $('cePers').value;
   e.scenario    = $('ceScen').value; e.first_mes   = $('ceFirst').value;
   e.mes_example = $('ceEx').value;   e.system_prompt = $('ceSys').value;
+  e.description = tidyBlock(e.description); e.personality = tidyBlock(e.personality);
+  e.scenario = tidyBlock(e.scenario);       e.first_mes = tidyBlock(e.first_mes);
+  e.mes_example = tidyBlock(e.mes_example); e.system_prompt = tidyBlock(e.system_prompt);
   e.profile = {
-    age: $('ceAge').value.trim(),    job: $('ceJob').value.trim(),
-    body: $('ceBody').value.trim(),  traits: $('ceTraits').value.trim(),
-    relation: $('ceRel').value.trim(), look: $('ceLook').value.trim(),
-    outfit: $('ceOutfit').value.trim(),
-    seed: $('ceSeed').value.trim(),
+    age: tidy($('ceAge').value),    job: tidy($('ceJob').value),
+    body: tidy($('ceBody').value),  traits: tidy($('ceTraits').value),
+    relation: tidy($('ceRel').value), look: tidy($('ceLook').value),
+    outfit: tidy($('ceOutfit').value),
+    seed: tidy($('ceSeed').value),
     gender: $('ceGender').value,
-    bust: $('ceBust').value.trim(), waist: $('ceWaist').value.trim(), hip: $('ceHip').value.trim(),
-    growth: $('ceGrowth').value.trim(), edu: $('ceEdu').value.trim(),
-    finance: $('ceFinance').value.trim(), living: $('ceLiving').value.trim(),
-    friends: $('ceFriends').value.trim(), dating: $('ceDating').value.trim(),
+    bust: tidy($('ceBust').value), waist: tidy($('ceWaist').value), hip: tidy($('ceHip').value),
+    growth: tidy($('ceGrowth').value), edu: tidy($('ceEdu').value),
+    finance: tidy($('ceFinance').value), living: tidy($('ceLiving').value),
+    friends: tidy($('ceFriends').value), dating: tidy($('ceDating').value),
+    speech: tidy($('ceSpeech').value), startState: tidy($('ceStart').value),
     stats: readStatFields(),
     avatar: e.profile?.avatar || ''
   };
+  /* 손으로 만든 인물은 선택 항목이 비어 있기 쉽다. 채팅에서 참고할 수 있게 저장 시 채워 넣는다. */
+  const filled = [];
+  if (!e.profile.stats){
+    const hit = RELS_WILD.find(r => r[0] === e.profile.relation);
+    e.profile.stats = rollStats('taste', hit?.[1], hit?.[2], hit?.[3]);
+    setStatFields(e.profile.stats);
+    filled.push('인물 스탯');
+  }
+  if (!e.profile.startState){
+    e.profile.startState = guessStartState(e);
+    $('ceStart').value = e.profile.startState;
+    filled.push('첫 장면 상태');
+  }
+  if (!e.profile.speech){
+    e.profile.speech = '관계와 나이에 맞게. 없는 직함은 쓰지 않는다.';
+    $('ceSpeech').value = e.profile.speech;
+    filled.push('호칭과 말투');
+  }
   if (S.models.length) e.preferredModel = $('ceModel').value;  /* 목록 미로드 시 기존 값 보존 */
   e.temperature = $('ceTemp').value === '' ? null : parseFloat($('ceTemp').value);
   e.updatedAt = now();
   await dbPut('characters', e);
-  await loadAll(); renderChars(); show('vChars'); toast('저장했습니다');
+  await loadAll(); renderChars(); show('vChars');
+  toast(filled.length ? '저장했습니다 — ' + filled.join(' · ') + '을 자동으로 채웠습니다' : '저장했습니다',
+        filled.length ? 4000 : undefined);
 };
+
+/* 상황 글에서 첫 장면의 장소·일시·외관·내면을 어림잡는다 */
+function guessStartState(c){
+  const sc = String(c.scenario || '');
+  const when = /새벽/.test(sc) ? '새벽 3:10 am' : /아침|오전/.test(sc) ? '오전 9:20 am'
+             : /점심|한낮|정오/.test(sc) ? '오후 12:40 pm' : /오후/.test(sc) ? '오후 4:30 pm'
+             : /저녁|해질/.test(sc) ? '저녁 7:50 pm' : '밤 10:40 pm';
+  const d = new Date();
+  const dow = '일월화수목금토'[d.getDay()];
+  const date = (d.getMonth()+1) + '/' + d.getDate() + ' ' + dow + ' ' + when;
+  /* 장소는 상황 글 첫 문장에서 조사 앞 명사구를 대충 집어 온다 */
+  const first = sc.split(/[.。\n]/)[0] || '';
+  const m = first.match(/([가-힣A-Za-z0-9 ]{2,12})(?:에서|안에서|앞에서|에|의)\s/);
+  const place = (m ? m[1].trim() : '') || '두 사람이 있는 곳';
+  const look = c.profile?.outfit ? '평소 차림' : '평소 차림';
+  return '장소=' + place + ' | 일시=' + date + ' | 외관=' + look + ' | 내면=평온';
+}
 $('ceMenu').onclick = () => {
   const e = S.editingChar;
   sheet(e.name, [
@@ -3820,10 +3955,10 @@ $('bImportChar').onclick = () => pickFiles(async texts => {
       const dup = S.characters.find(c => c.name === d.name);
       await dbPut('characters', {
         id: dup?.id || uid(), spec:'chara_card_v2',
-        name: d.name,
-        description: d.description || '', personality: d.personality || '',
-        scenario: d.scenario || '', first_mes: d.first_mes || '',
-        mes_example: d.mes_example || '', system_prompt: d.system_prompt || '',
+        name: tidy(d.name),
+        description: tidyBlock(d.description), personality: tidyBlock(d.personality),
+        scenario: tidyBlock(d.scenario), first_mes: tidyBlock(d.first_mes),
+        mes_example: tidyBlock(d.mes_example), system_prompt: tidyBlock(d.system_prompt),
         post_history_instructions: d.post_history_instructions || '',
         tags: d.tags || [],
         profile: d.extensions?.profile || d.profile || dup?.profile || {},
@@ -4208,9 +4343,9 @@ async function seed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b23';
-const APP_BUILT = '2026-08-20 12:05';
-const APP_NOTE  = '문장 호흡 · 상태 줄 정리 · 대상 정렬/삭제 흐름 · 첫 진입 안내 · 이미지 화질 2단 · 모델 추천 목록';
+const APP_BUILD = 'b24';
+const APP_BUILT = '2026-08-19 12:04';
+const APP_NOTE  = '관계 표기 정리 · 호칭/말투 · 첫 장면 상태 · 공백 정규화 · 토큰 버튼 · 변화폭 세분화';
 $('sVersion').innerHTML =
   '8단계 · <b style="color:var(--acc)">빌드 ' + APP_BUILD + '</b><br>최종 수정: ' + APP_BUILT + '<br>' + APP_NOTE;
 
