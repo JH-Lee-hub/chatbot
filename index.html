@@ -105,9 +105,14 @@
   .sect-h .autogen:disabled{opacity:.45}
   .sw{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--tx2)}
   .sw input{width:auto;flex:0 0 auto}
+  #ceTokBar{position:sticky;top:0;z-index:6;gap:6px;align-items:center;
+    background:var(--bg);margin:-12px -12px 9px;padding:10px 12px;
+    border-bottom:1px solid var(--line)}
   .tokbtn{flex:0 0 auto;padding:5px 10px;font-size:11.5px;font-family:ui-monospace,monospace}
   .shead{font-size:11px;color:var(--tx3);font-weight:700;letter-spacing:.4px;margin:14px 0 6px}
   .shead em{font-style:normal;font-weight:400;color:var(--tx3);opacity:.8}
+  .drift{margin-top:9px;font-size:11px;color:var(--warn);border-left:2px solid var(--warn);
+         padding-left:8px;line-height:1.5}
   .shint{font-size:10px;color:var(--tx3);line-height:1.4;margin-top:4px;word-break:keep-all}
   .shint b{color:var(--tx2);font-weight:600}
 
@@ -518,7 +523,7 @@
         </div>
         <input type="hidden" id="ceGender" value="f"></div>
 
-      <div class="row" style="margin-bottom:11px;gap:6px;align-items:center">
+      <div class="row" id="ceTokBar">
         <span style="flex:1;font-size:11px;color:var(--tx3)">커서 위치에 넣기</span>
         <button type="button" class="btn tokbtn" data-tok="{{user}}">{{user}}</button>
         <button type="button" class="btn tokbtn" data-tok="{{char}}">{{char}}</button>
@@ -557,13 +562,12 @@
       <div class="fld"><label>교우관계</label><input type="text" id="ceFriends" placeholder="오래된 친구 둘, 새 사람은 잘 안 사귐"></div>
       <div class="fld"><label>연애이력</label><input type="text" id="ceDating" placeholder="3년 사귄 사람과 2년 전 헤어짐"></div>
       <div class="fld"><label>성격 한 줄</label><input type="text" id="ceTraits" placeholder="차분하고 방어적"></div>
-      <div class="hint" style="margin-top:-6px">각 항목은 공백 제외 <b>15~25자</b> 정도가 적당합니다.</div>
 
       <div class="sect-h"><b>세부 설정</b><button type="button" class="btn autogen" data-sec="detail">✦ 자동생성</button></div>
       <div class="fld"><label>설정 (description)</label>
-        <textarea id="ceDesc" rows="6" placeholder="가정환경 · 교우관계를 포함한 성장 배경, 연인관계, 취향, 가치관 등 — 나이 · 직업 · 신체는 위에서 이미 채웠으니 여기서 다시 쓰지 마십시오"></textarea></div>
+        <textarea id="ceDesc" rows="4" placeholder="가정환경 · 교우관계를 포함한 성장 배경, 연인관계, 취향, 가치관 등 — 나이 · 직업 · 신체는 위에서 이미 채웠으니 여기서 다시 쓰지 마십시오"></textarea></div>
       <div class="fld"><label>성격 (personality)</label>
-        <textarea id="cePers" rows="3" placeholder="침착하고 말수가 적다..."></textarea></div>
+        <textarea id="cePers" rows="4" placeholder="침착하고 말수가 적다..."></textarea></div>
       <div class="fld"><label>상황 (scenario)</label>
         <textarea id="ceScen" rows="3" placeholder="지금 어떤 상황에서 만나는가"></textarea></div>
       <div class="fld"><label>첫 장면 상태</label>
@@ -749,7 +753,8 @@
           매 턴 이 칸에 자동으로 병합되며, 여기 적힌 값은 다음 요청에 그대로 실려 나갑니다.
         </div>
       </div>
-      <div class="fld row">
+      <div class="hint" id="meDrift" style="border-left:2px solid var(--warn);padding-left:9px"></div>
+      <div class="fld row" style="margin-top:11px">
         <button class="btn" id="meRun">지금 요약하기</button>
         <button class="btn dan" id="meReset">기억 초기화</button>
       </div>
@@ -945,7 +950,8 @@ const DEFAULT_RULES =
     - 순서를 지켜서, 항상 이 짜임으로 쓴다: 1) 장소·일시  2) 외관·내면  3) 호감·반감·긴장·욕구·체력·취기 여섯 수치  4) 그 뒤에 소지품·동석·미해결 중 이번 장면에 실제로 있는 것만.
     - **여섯 수치는 하나도 빠뜨리지 않는다.** 이번 턴에 안 바뀌었어도 직전 값을 그대로 다시 적는다.
     - 앞의 열 항목(장소~취기)은 이번 턴에 안 바뀌었어도 매번 그대로 다시 쓴다. 무엇을 넣을지 고민하지 않는다 — 자리가 이미 정해져 있다.
-    - 일시는 "월/일 요일 시:분 am" 형식으로 쓴다. 요일은 한 글자(월/화/수/목/금/토/일), am/pm은 소문자. 예: 8/19 화 9:15 am. 이번 장면에서 실제로 흐른 만큼만 진행시킨다. 짧은 대화는 3~10분, 자리를 옮기거나 식사를 하면 30분~1시간, 잠들거나 헤어지면 다음 장면의 일시로 넘긴다. 이유 없이 시간을 되돌리지 않는다.
+    - 일시는 "월/일 요일 시:분 am" 형식으로 쓴다. **날짜를 빠뜨리지 않는다.** 요일은 한 글자(월/화/수/목/금/토/일), am/pm은 소문자. 예: 8/19 화 9:15 am.
+    - **"밤" "새벽" "저녁" 같은 말을 앞에 붙이지 않는다.** am/pm 으로 이미 구분되므로 겹쳐 쓰면 군더더기다. "밤 11:20 pm"이 아니라 "8/19 화 11:20 pm"이다. 이번 장면에서 실제로 흐른 만큼만 진행시킨다. 짧은 대화는 3~10분, 자리를 옮기거나 식사를 하면 30분~1시간, 잠들거나 헤어지면 다음 장면의 일시로 넘긴다. 이유 없이 시간을 되돌리지 않는다.
     - 내면에는 {{char}}의 지금 감정이나 기분을 짧은 말로 쓴다.
     - **외관에는 지금 입고 있는 옷과 겉모습을 함께 담는다.** 복장은 따로 적지 않고 여기에 합쳐 쓴다. 옷차림을 먼저 적고, 흐트러진 머리나 붉어진 목덜미처럼 지금 눈에 띄는 상태를 뒤에 덧붙인다. 옷이 흐트러지거나 벗겨진 상태도 여기에 적는다.
     - 호감 · 반감 · 긴장 · 욕구 · 체력 · 취기는 0~100 정수로 쓰고, 직전 값에서 달라졌으면 호감=68(+3) 처럼 변화폭을 괄호에 적는다. 안 바뀌었으면 괄호 없이 그대로 쓴다.
@@ -990,7 +996,15 @@ const DEFAULT_RULES =
     - 긴장과 욕구가 모두 40 아래인 평상시에는 문장을 길게 이어 쓴다. 배경과 속마음을 한 문장에 함께 담아도 좋다.
     - 둘 중 하나가 60을 넘으면 문장을 짧게 끊는다. 접속사를 줄이고 한 문장에 하나씩만 담는다.
     - 80을 넘는 순간에는 더 잘게 쪼갠다. 서너 어절짜리 문장을 이어 붙여 호흡을 몰아친다. 다만 이 구간은 길어야 대여섯 문장이고, 지나면 다시 호흡을 늘린다.
-    - 완급이 핵심이다. 짧기만 하면 읽는 사람이 지치고, 길기만 하면 절정이 밋밋해진다.`;
+    - 완급이 핵심이다. 짧기만 하면 읽는 사람이 지치고, 길기만 하면 절정이 밋밋해진다.
+21. [기준 수치의 변화] [기준 수치]는 원칙적으로 변하지 않는다. 그 사람이 원래 어떤 사람인지이기 때문이다.
+    다만 사람은 아주 드물게 바뀐다. 인생을 다시 보게 만드는 사건 — 큰 상실, 오래 미뤄둔 결심을 마침내 실행한 순간,
+    스스로 넘지 못하던 선을 넘어선 경험 — 이 실제로 일어났다면, 딱 한 항목이 1만큼 움직일 수 있다.
+    그때만 상태 줄 바로 다음 줄에 이 한 줄을 덧붙인다.
+      [기준변화] 대담=+1 (처음으로 자기가 먼저 손을 뻗었다)
+    - 체력 · 지능 · 매력 · 욕심 · 대담 · 욕구 여섯 가지에만 쓴다. 호감 · 반감 · 경계처럼 매 턴 움직이는 값에는 쓰지 않는다.
+    - 한 번에 한 항목, 1만큼만이다. 한 대화 전체에서 서너 번을 넘지 않는다.
+    - 웬만한 장면에서는 쓰지 않는다. 이 줄이 자주 보이면 무게가 사라진다. 확신이 없으면 쓰지 않는다.`;
 
 const $ = id => document.getElementById(id);
 const uid = () => (crypto.randomUUID ? crypto.randomUUID()
@@ -1007,6 +1021,11 @@ function tidy(v){
     .trim();
 }
 /* 여러 줄 필드는 줄바꿈을 살리되 줄 안의 공백만 정리한다 */
+/* [제목] 앞에 빈 줄을 넣어 섹션이 눈에 들어오게 한다 */
+const sectionize = v => String(v ?? '')
+  .replace(/\n*(\[[^\]\n]{1,20}\])/g, '\n\n$1')
+  .replace(/^\n+/, '')
+  .replace(/\n{3,}/g, '\n\n');
 const tidyBlock = v => String(v ?? '')
   .replace(/[\u3000\u00a0\u200b\ufeff]/g, ' ')
   .replace(/[ \t]{2,}/g, ' ')
@@ -1130,7 +1149,7 @@ const relTime = t => {
 function fill(tpl, charName, userName){
   return String(tpl||'').replaceAll('{{char}}', charName||'캐릭터').replaceAll('{{user}}', userName||'나');
 }
-function buildSystem(char, persona, withExample){
+function buildSystem(char, persona, withExample, drift){
   const cn = char.name, un = persona?.name || '나';
   const P = [];
   P.push(`너는 롤플레잉 상대역 "${cn}"이다. 아래 설정을 대화 내내 유지한다.`);
@@ -1159,9 +1178,13 @@ function buildSystem(char, persona, withExample){
 
   /* 스탯은 인물의 기준선이다. 상태 줄의 수치가 여기서 크게 벗어나지 않게 근거로 준다. */
   if (pf.stats){
-    const st = pf.stats;
+    /* 이 대화에서 쌓인 변화를 얹어 보여준다. 인물 카드 원본은 건드리지 않는다. */
+    const st = {...pf.stats};
+    if (drift) for (const [k, v] of Object.entries(drift))
+      if (st[k] != null) st[k] = Math.max(0, Math.min(100, st[k] + v));
     const line = STAT_KEYS.filter(k => st[k] != null)
-      .map(k => STAT_LABEL[k] + ' ' + st[k]).join(' · ');
+      .map(k => STAT_LABEL[k] + ' ' + st[k] +
+        (drift?.[k] ? '(' + (drift[k] > 0 ? '+' : '') + drift[k] + ')' : '')).join(' · ');
     if (line) c.push('\n[기준 수치 — 0~100]\n' + line +
       '\n체력 · 지능 · 매력 · 욕심 · 대담 · 욕구는 변하지 않는 기준값이고, 호감 · 반감 · 경계는 {{user}}에 대한 현재 값이다.' +
       '\n상태 줄의 수치는 이 기준에서 사건에 따라 오르내린다. 근거 없이 크게 벗어나지 않는다.');
@@ -1388,10 +1411,41 @@ async function clampStatusInText(text){
    떡밥은 요약(maybeSummarize)이 별도로 붙잡아 장기 기억에 남기므로 여기서 지워도
    완전히 사라지지는 않는다. */
 const EPHEMERAL_STATS = ['소지품','미해결'];
+/* 기준 수치는 원칙적으로 고정이지만 아주 드물게 1씩 움직인다.
+   인물 카드를 건드리면 다른 대화까지 영향을 받으므로, 대화별로 따로 누적한다. */
+const DRIFT_KEYS = {체력:'hp', 지능:'int', 매력:'cha', 욕심:'amb', 대담:'brv', 욕구:'des'};
+const DRIFT_LIMIT = 10;   /* 한 대화에서 기준값이 벗어날 수 있는 최대 폭 */
+const DRIFT_RE = /^[ \t]*\[?기준변화\]?[ \t]*[:：]?[ \t]*([^\n]+)$/m;
+function readDrift(txt){
+  const m = String(txt || '').match(DRIFT_RE);
+  if (!m) return null;
+  const g = m[1].match(/([가-힣]{2})\s*=\s*([+\-]?\d+)/);
+  if (!g) return null;
+  const key = DRIFT_KEYS[g[1]];
+  if (!key) return null;
+  const d = Math.max(-1, Math.min(1, parseInt(g[2], 10) || 0));
+  if (!d) return null;
+  const why = (m[1].match(/\(([^)]*)\)/) || [])[1] || '';
+  return {key, label: g[1], delta: d, why};
+}
+async function applyDrift(text){
+  if (!S.chat) return;
+  const d = readDrift(text);
+  if (!d) return;
+  const mem = await getMem(S.chat.id);
+  const drift = mem.drift || (mem.drift = {});
+  const next = Math.max(-DRIFT_LIMIT, Math.min(DRIFT_LIMIT, (drift[d.key] || 0) + d.delta));
+  if (next === (drift[d.key] || 0)) return;   /* 한계에 닿으면 더 움직이지 않는다 */
+  drift[d.key] = next;
+  mem.updatedAt = now();
+  await dbPut('memory', mem);
+  toast(d.label + ' 기준이 ' + (d.delta > 0 ? '+1' : '-1') + ' 움직였습니다', 3500);
+}
 async function syncStatus(text){
   if (!S.chat) return;
   const stt = readStatus(text);
   if (!stt) return;
+  await applyDrift(text);
   const mem = await getMem(S.chat.id);
   for (const key of NUMERIC_STATS){
     if (stt[key] !== undefined) stt[key] = clampStatDelta(key, stt[key], mem.stateCard[key]);
@@ -1408,8 +1462,8 @@ async function syncStatus(text){
 /* 매 요청의 전송 내용을 조립한다 */
 async function buildContext(userText){
   const B = budgetOf();
-  const sys = buildSystem(S.character, S.persona, S.messages.length < 12);
   const mem = await getMem(S.chat.id);
+  const sys = buildSystem(S.character, S.persona, S.messages.length < 12, mem.drift);
 
   const stateTxt = fmtState(mem.stateCard);
   const fixed = estTok(sys) + estTok(stateTxt) + estTok(mem.summary);
@@ -1444,7 +1498,7 @@ async function buildContext(userText){
     '- 반드시 한국어로 쓴다. 영어 단어나 문장을 섞지 않는다. 등장인물 이름이나 고유명사가 아닌 이상 알파벳을 쓰지 않는다.',
     '- 위 [현재 상태]와 대화 원문을 먼저 확인한다. 지금 몇 시이고, 어디이며, 방금 오간 물건을 지금 누가 쥐고 있는지를 확정한 뒤 쓴다.',
     '- 건네준 것과 돌려받은 것, 원래 있던 것과 새로 생긴 것을 섞지 않는다. 확인이 안 되는 물건은 언급하지 않는다.',
-    '- 응답의 마지막 줄은 반드시 [상태] 로 시작하는 한 줄이다. 장소·일시·외관·내면·호감·반감·긴장·욕구·체력·취기 열 가지를 하나도 빠뜨리지 않고 매번 넣고, 그 뒤에 소지품·동석·미해결 중 있는 것만 붙인다. 복장과 거리는 쓰지 않는다. 그 줄 뒤에는 아무것도 쓰지 않는다.',
+    '- 응답의 마지막 줄은 반드시 [상태] 로 시작하는 한 줄이다. 장소·일시·외관·내면·호감·반감·긴장·욕구·체력·취기 열 가지를 하나도 빠뜨리지 않고 매번 넣고, 그 뒤에 소지품·동석·미해결 중 있는 것만 붙인다. 복장과 거리는 쓰지 않는다. 그 줄 뒤에는 아무것도 쓰지 않는다. 단 하나, 21번에 해당하는 아주 드문 경우에만 [기준변화] 한 줄만 덧붙일 수 있다.',
     '- 분량은 한국어 ' + LIMIT + '자 안팎이다. ' + Math.round(LIMIT * 1.35) + '자를 넘기지 않는다. 앞선 응답이 길었더라도 따라 늘이지 않는다.',
     '- 이번 턴에 나아갈 수 있는 것은 한 걸음뿐이다. 호감 수치가 허용하는 단계를 넘지 않고, 넘어서려면 먼저 멈추거나 되묻는다.'
   ].join('\n');
@@ -1749,10 +1803,12 @@ function statusChips(spec){
 function fmt(t, role){
   const mine = role === 'user';
   const meName = S.persona?.name || '나';
-  let stat = '';
+  let stat = '', drift = '';
   const lines = String(t||'').split('\n').filter(line => {
     const m = line.match(STATUS_RE);
     if (m){ stat = m[1]; return false; }
+    const g = line.match(DRIFT_RE);
+    if (g){ drift = g[1]; return false; }
     return true;
   });
   const body = lines.map(line => {
@@ -1773,7 +1829,8 @@ function fmt(t, role){
     return '<span class="nar">' +
       (mine ? esc(line) : esc(line).replace(/\*([^*]+)\*/g, '$1')) + '</span>';
   }).join('\n').replace(/\s+$/, '');
-  return body + (stat ? statusChips(stat) : '');
+  return body + (drift ? '<div class="drift">기준 변화 · ' + esc(drift) + '</div>' : '')
+              + (stat ? statusChips(stat) : '');
 }
 /* 메시지 하나의 마크업. 대화가 길어져도 이 함수는 "바뀐 메시지"에만 다시 돈다
    (renderMsgs의 캐시 참고) — 매 턴 전체를 다시 그리던 것이 느려짐의 원인이었다. */
@@ -2490,7 +2547,8 @@ async function veniceImageAuto(prompt){
 }
 
 const PORTRAIT_NEG = 'multiple people, two people, duplicate, split screen, collage, ' +
-  'full body, wide shot, distant, cropped face, back view, text, watermark, frame, border';
+  'full body, wide shot, distant, cropped face, back view, text, watermark, frame, border, ' +
+  'studio lighting, formal portrait, id photo, passport photo, plain white background, stiff pose';
 async function veniceImage(prompt, modelId, steps, seedOverride, negOverride){
   const key = imgKey();
   if (!key) throw new Error('Venice API 키가 없습니다');
@@ -2809,6 +2867,11 @@ async function openMemory(){
   $('meSummary').value = mem.summary || '';
   $('meState').value = fmtState(mem.stateCard);
   const pend = S.messages.filter(m => m.turnIndex > mem.summarizedUpTo).length;
+  const dr = mem.drift && Object.entries(mem.drift).filter(([,v]) => v);
+  $('meDrift').innerHTML = dr && dr.length
+    ? '<b>기준 수치 변화</b><br>' + dr.map(([k,v]) =>
+        (STAT_LABEL[k] || k) + ' ' + (v > 0 ? '+' : '') + v).join(' · ')
+    : '';
   $('meInfo').textContent =
     `전체 ${S.messages.length}턴 중 ${mem.summarizedUpTo + 1}턴까지 요약됨. 미반영 ${pend}턴.` +
     (mem.updatedAt ? ` 최종 갱신 ${relTime(mem.updatedAt)}.` : '');
@@ -2940,26 +3003,44 @@ const JOBS_WILD = JOBS_TASTE.concat([
    내 직업을 확정해 버리는 항목(내 가게 단골 등)은 넣지 않는다. */
 /* [이름, 기준 경계, 기준 호감, 기준 반감]
    반감은 호감의 반대가 아니라 별개 축이다. 좋아하면서 동시에 미울 수 있다. */
+/* [이름, 기준 경계, 기준 호감, 기준 반감]
+   반감은 호감의 반대가 아니라 별개 축이다.
+   **"나"라는 말을 쓰지 않는다.** 프롬프트 안에서 AI는 자기가 이 인물이므로,
+   "내 상사"라고 쓰면 AI가 자기 상사로 읽어 방향이 뒤집힌다. 반드시 {{user}} 로 적는다. */
 const RELS_TASTE = [
-  ['같은 층에 사는 이웃', 40, 20, 4], ['내 직속 상사', 45, 18, 8],
-  ['자주 가는 가게의 주인', 38, 22, 3], ['대학 동기', 25, 26, 5],
-  ['작업실 옆방을 쓰는 사람', 35, 22, 5], ['전 직장에서 나를 가르치던 사수', 35, 20, 7],
-  ['같은 스터디에 나오는 사람', 40, 18, 5], ['자주 가는 바의 피아니스트', 35, 24, 3],
-  ['내 동생의 친구', 35, 18, 5], ['새로 이사 온 옆집 사람', 55, 12, 4],
-  ['같은 헬스장에서 자주 마주치는 사람', 45, 18, 5], ['내 반려동물을 봐주는 수의사', 45, 16, 3],
-  ['옆 팀에서 같은 시간대에 야근하는 사람', 42, 18, 6], ['고등학교 동창', 25, 24, 5],
-  ['내 친구의 누나', 40, 18, 4], ['합주실을 같이 쓰는 사람', 35, 22, 5],
-  ['내가 다니는 공방의 선생', 38, 22, 4]
+  /* 다섯 번째 자리는 이 관계가 못 박는 직업이다. 없으면 직업을 따로 굴린다.
+     'office' 는 회사원이면 무엇이든 좋다는 뜻이다. */
+  ['같은 층에 사는 이웃', 40, 20, 4],
+  ['{{user}}의 직속 상사', 45, 18, 8, 'office'],
+  ['{{user}}가 자주 가는 가게의 주인', 38, 22, 3, '작은 가게 운영'],
+  ['{{user}}의 대학 동기', 25, 26, 5],
+  ['{{user}} 작업실 옆방을 쓰는 사람', 35, 22, 5, '프리랜서 창작자'],
+  ['전 직장에서 {{user}}를 가르친 사수', 35, 20, 7, 'office'],
+  ['{{user}}와 같은 스터디에 나오는 사람', 40, 18, 5],
+  ['{{user}}가 자주 가는 바의 피아니스트', 35, 24, 3, '재즈바 피아니스트'],
+  ['{{user}} 동생의 친구', 35, 18, 5],
+  ['{{user}} 옆집에 새로 이사 온 사람', 55, 12, 4],
+  ['{{user}}와 같은 헬스장에서 자주 마주치는 사람', 45, 18, 5],
+  ['{{user}}의 반려동물을 봐주는 수의사', 45, 16, 3, '수의사'],
+  ['{{user}} 옆 팀에서 같은 시간대에 야근하는 사람', 42, 18, 6, 'office'],
+  ['{{user}}의 고등학교 동창', 25, 24, 5],
+  ['{{user}} 친구의 누나', 40, 18, 4],
+  ['{{user}}와 합주실을 같이 쓰는 사람', 35, 22, 5, '밴드 보컬'],
+  ['{{user}}가 다니는 공방의 선생', 38, 22, 4, '도예 공방 운영']
 ];
 const RELS_WILD = RELS_TASTE.concat([
-  ['오늘 처음 만난 사람', 60, 10, 3], ['소개팅에서 만난 상대', 50, 20, 5],
-  ['룸메이트를 구하다 만난 사람', 55, 12, 6], ['헤어진 옛 연인', 50, 35, 25],
-  ['나와 척진 사이', 85, 5, 70], ['내가 의뢰한 사건을 맡은 조사자', 50, 14, 6],
-  ['내게 돈을 받으러 온 추심원', 70, 6, 30], ['같은 사건을 목격한 사람', 55, 12, 6],
-  ['나를 라이벌로 여기는 사람', 65, 15, 40], ['나를 취조하는 형사', 75, 6, 25],
-  ['같은 병실을 쓰게 된 사람', 45, 18, 5], ['비행기 옆자리에 앉은 사람', 55, 12, 5],
-  ['엘리베이터에 함께 갇힌 사람', 55, 14, 6], ['내기로 엮인 사람', 50, 16, 12],
-  ['친구 소개로 알게 된 사람', 42, 20, 4]
+  ['{{user}}와 오늘 처음 만난 사람', 60, 10, 3], ['{{user}}의 소개팅 상대', 50, 20, 5],
+  ['{{user}}와 룸메이트를 구하다 만난 사람', 55, 12, 6], ['{{user}}와 헤어진 옛 연인', 50, 35, 25],
+  ['{{user}}와 척진 사이', 85, 5, 70],
+  ['{{user}}가 의뢰한 사건을 맡은 조사자', 50, 14, 6, '사설탐정'],
+  ['{{user}}에게 돈을 받으러 온 추심원', 70, 6, 30, '채권 추심원'],
+  ['{{user}}와 같은 사건을 목격한 사람', 55, 12, 6],
+  ['{{user}}를 라이벌로 여기는 사람', 65, 15, 40],
+  ['{{user}}를 취조하는 형사', 75, 6, 25, '강력계 형사'],
+  ['{{user}}와 같은 병실을 쓰게 된 사람', 45, 18, 5],
+  ['{{user}} 비행기 옆자리에 앉은 사람', 55, 12, 5],
+  ['{{user}}와 엘리베이터에 함께 갇힌 사람', 55, 14, 6],
+  ['{{user}}와 내기로 엮인 사람', 50, 16, 12], ['{{user}}가 친구 소개로 알게 된 사람', 42, 20, 4]
 ]);
 
 /* 모델에게 이름을 맡기면 서 · 지 · 하 · 윤 같은 몇 글자만 반복된다.
@@ -3012,6 +3093,60 @@ const JOBLESS = [
   ['구직 중', 22, 32], ['퇴사 후 쉬는 중', 25, 38],
   ['시험 준비 중', 22, 30], ['휴직 중', 27, 40]
 ];
+
+/* 세상 대부분은 회사에 다닌다. 특수 직업만 굴리면 같은 것이 반복되므로
+   업종 · 직무 · 직급을 조합해 회사원을 주력으로 뽑는다. 조합만 4천 가지가 넘는다. */
+/* 물건을 만들거나 다루는 업종에만 생산 · 물류 · 품질 같은 직무를 붙인다.
+   "증권 회사 물류팀" 같은 조합이 나오지 않게 한다. */
+const BIZ_GOODS = ['식품','화장품','패션','가구','제약','유통','물류','건설','반도체',
+  '자동차 부품','문구','완구','주류','의료기기','섬유','포장재','유아용품',
+  '반려동물용품','스포츠용품','커피 프랜차이즈'];
+const BIZ_SVC = ['광고 대행','출판','여행','교육','보험','증권','호텔','이커머스','게임',
+  '소프트웨어','인테리어','환경','리서치','컨설팅','방송','통신'];
+const BIZ = BIZ_GOODS.concat(BIZ_SVC);
+const ROLE_GOODS_ONLY = ['생산관리팀','물류팀','품질관리팀','구매팀','시설관리팀'];
+/* [직무, 성별 경향]  f 여성이 많음 · n 반반 · m 남성이 많음 */
+const ROLE = [
+  ['마케팅팀','f'], ['홍보팀','f'], ['디자인팀','f'], ['인사팀','f'], ['총무팀','f'],
+  ['회계팀','f'], ['상품기획팀','f'], ['MD','f'], ['고객지원팀','f'], ['교육팀','f'],
+  ['영업지원팀','f'], ['CS팀','f'], ['재무팀','n'], ['전략기획팀','n'], ['법무팀','n'],
+  ['품질관리팀','n'], ['구매팀','n'], ['해외영업팀','n'], ['데이터분석팀','n'], ['연구소','n'],
+  ['국내영업팀','m'], ['생산관리팀','m'], ['물류팀','m'], ['개발팀','m'], ['시설관리팀','m']
+];
+const RANK = [
+  ['사원',22,29], ['주임',24,31], ['대리',26,35], ['과장',31,42],
+  ['차장',36,47], ['팀장',34,48], ['파트장',32,44]
+];
+/* 회사원 한 명을 조합한다. 선호형이면 여성 비중이 높은 직무 쪽으로 기운다. */
+function rollOffice(mode, gender, lo, hi){
+  const wantF = mode === 'taste' && gender !== 'm';
+  const biz = pick(BIZ);
+  const goods = BIZ_GOODS.includes(biz);
+  let roles = ROLE.filter(r => goods || !ROLE_GOODS_ONLY.includes(r[0]));
+  if (wantF){
+    const f = roles.filter(r => r[1] !== 'm');
+    if (f.length) roles = f;
+  }
+  const ranks = RANK.filter(r => r[2] >= lo && r[1] <= hi);
+  const rk = pick(ranks.length ? ranks : RANK);
+  return [biz + ' 회사 ' + pick(roles)[0] + ' ' + rk[0], rk[1], rk[2]];
+}
+
+/* 학력도 모델에게 맡기면 중퇴가 지나치게 자주 나온다. 실제 분포에 가깝게 앱이 뽑는다. */
+const EDU_POOL = [
+  ['4년제 대학 졸업', 26, 23], ['수도권 4년제 졸업', 11, 23], ['지방 국립대 졸업', 9, 23],
+  ['전문대 졸업', 14, 21], ['고등학교 졸업', 9, 19], ['특성화고 졸업', 3, 19],
+  ['대학원 석사', 7, 26], ['해외 대학 졸업', 3, 24], ['방송통신대 졸업', 2, 24],
+  ['4년제 대학 중퇴', 5, 20], ['전문대 중퇴', 2, 20],
+  ['대학 재학 중', 5, 19], ['대학원 재학 중', 3, 24], ['대학원 박사 과정', 1, 28]
+];
+function rollEdu(age, job){
+  if (/대학생|졸업반|체대생|의대생/.test(job)) return '대학 재학 중';
+  if (/대학원생/.test(job)) return '대학원 재학 중';
+  if (/로스쿨생/.test(job)) return '로스쿨 재학 중';
+  const fit = EDU_POOL.filter(e => age >= e[2] && !(/재학|박사/.test(e[0]) && age > 34));
+  return pickWeighted((fit.length ? fit : EDU_POOL).map(e => [e[0], e[1]]));
+}
 
 /* 정규분포 난수 (상자-뮐러). 평균 50 · 표준편차 15면 대부분 20~80에 모이고 극단은 드물다. */
 function gauss(mean, sd){
@@ -3141,14 +3276,32 @@ function rollSeeds(mode, gender){
   const hi = Math.max(lo, parseInt(localStorage.getItem(LS.ageMax) || '39', 10));
 
   /* 설정한 나이 범위와 겹치는 직업만 후보로 둔다. 하나도 없으면 직업 쪽 범위를 따른다. */
-  /* 6% 확률로 일을 쉬고 있는 상태를 섞는다 */
-  const jobPool = Math.random() < 0.06 ? JOBLESS : POOL.job;
-  const fit = jobPool.filter(j => j[2] >= lo && j[1] <= hi);
-  const job = pick(fit.length ? fit : jobPool);
+  /* 관계를 먼저 정한다. 관계가 직업을 함의하면(피아니스트 · 수의사 등) 그 직업을 그대로 쓴다.
+     그러지 않으면 "법의학 조수인데 공방 선생" 같은 모순이 생긴다. */
+  const rel = pick(POOL.relation);
+  const forced = rel[4];
+  let job;
+  if (forced && forced !== 'office'){
+    const known = POOL.job.find(j => j[0] === forced);
+    job = known || [forced, 22, 45];
+  } else if (forced === 'office'){
+    job = rollOffice(mode, gender, lo, hi);
+  } else {
+    /* 세상 대부분은 회사원이다. 절반 이상을 조합형으로 뽑아 같은 직업이 반복되는 것을 막는다. */
+    const r = Math.random();
+    if (r < 0.06){
+      const fitJ = JOBLESS.filter(j => j[2] >= lo && j[1] <= hi);
+      job = pick(fitJ.length ? fitJ : JOBLESS);
+    } else if (r < 0.61){
+      job = rollOffice(mode, gender, lo, hi);
+    } else {
+      const fit = POOL.job.filter(j => j[2] >= lo && j[1] <= hi);
+      job = pick(fit.length ? fit : POOL.job);
+    }
+  }
   const aLo = Math.max(lo, job[1]), aHi = Math.min(hi, job[2]);
   const age = aLo <= aHi ? randInt(aLo, aHi) : randInt(job[1], job[2]);
 
-  const rel = pick(POOL.relation);   /* [이름, 기준 경계] */
   const frameRaw = pick(POOL.frame);
   const frame = gender === 'm' ? frameForMale(frameRaw) : frameRaw;
   const bodyRoll = gender === 'm' ? rollBodyMale(frame) : rollBody(frame);
@@ -3157,6 +3310,7 @@ function rollSeeds(mode, gender){
     name: rollName(gender),
     jobPath: pickWeighted(JOB_PATH),
     job: job[0],
+    edu: rollEdu(age, job[0]),
     relation: rel[0],
     surface: pick(POOL.surface),
     lack: pick(POOL.lack),
@@ -3221,6 +3375,7 @@ function cardPrompt(seed, mode, gender){
   const taste = mode === 'taste'
     ? (localStorage.getItem(LS.taste)?.trim() || DEFAULT_TASTE) : "";
   const genderWord = gender === 'm' ? '남성' : '여성';
+  /* 관계 문자열의 {{user}} 는 그대로 남겨 둔다. 이름으로 치환하면 방향이 다시 흐려진다. */
   const lookBase = gender === 'm' ? 'korean man' : 'korean woman';
   const L = [
     '너는 롤플레잉 앱에 넣을 인물 카드를 쓰는 작가다. 아래 재료로 ' + genderWord + ' 인물 한 명을 완성한다.',
@@ -3235,7 +3390,8 @@ function cardPrompt(seed, mode, gender){
     '- 겉으로 보이는 성향: ' + seed.surface,
     '- 속에 있는 결핍: ' + seed.lack,
     '- 첫 장면의 시간대: ' + seed.when,
-    '- 지금 직업을 갖게 된 경로: ' + seed.jobPath
+    '- 지금 직업을 갖게 된 경로: ' + seed.jobPath,
+    '- 학력: ' + seed.edu + ' (EDU 항목에 이 학력을 그대로 쓴다. 임의로 중퇴나 다른 학력으로 바꾸지 않는다)'
   ];
   if (seed.temper) L.push('- {{user}}를 대하는 온도: ' + seed.temper);
   const st = seed.stats || {};
@@ -3252,10 +3408,10 @@ function cardPrompt(seed, mode, gender){
     '- [성장배경]에는 위 "직업을 갖게 된 경로"가 자연스럽게 드러나야 한다. 경로가 부모와 무관하면 부모의 직업과 인물의 직업을 임의로 연결하지 않는다. 가족 이야기는 직업과 별개의 사실로 쓴다.',
     '- {{user}}의 직업 · 나이 · 성별 · 이름을 단정하지 않는다. 관계에서 필연적으로 따라오는 것(예: 상사라면 같은 직장에 다닌다)만 전제하고, 그 밖의 {{user}} 개인 정보는 쓰지 않는다. {{user}}가 무엇을 하는 사람인지는 대화에서 정해진다.',
     '- 단어를 임의로 줄이지 않는다. "검지톱"이 아니라 "검지손톱", "왼손 검지 손톱을 만지작거린다"처럼 온전한 형태로 쓴다. 문장은 반드시 끝맺는다.',
-    '- DESCRIPTION 은 아래 일곱 섹션을 이 순서대로, 대괄호 제목을 그대로 써서, 섹션당 1~2문장으로 짧게 채운다. 전체 DESCRIPTION은 500자를 넘기지 않는다.',
+    '- DESCRIPTION 은 아래 일곱 섹션을 이 순서대로, 대괄호 제목을 그대로 써서, 섹션당 1~2문장으로 짧게 채운다. **각 대괄호 제목 앞에 빈 줄을 하나 둔다.** 전체 DESCRIPTION은 500자를 넘기지 않는다.',
     '  (나이 · 직업 · 신체는 이미 위 재료와 EDU~DATING 항목에 있으니 여기서 다시 쓰지 않는다.)',
     '  [성장배경] 가정환경을 포함한 과거. 가정환경도 다른 요소만큼 비중 있게 한 문장으로 쓴다.',
-    '  [{{user}}와의 관계] {{user}}를 어떻게 인식하고 있는지',
+    '  [{{user}}와의 관계] 위 고정 재료의 관계를 **방향까지 그대로** 지켜 쓴다. 이 인물이 주어이고 {{user}}가 상대다. 예를 들어 재료가 "전 직장에서 {{user}}를 가르친 사수"라면 이 인물이 가르친 쪽이다. 뒤집어서 {{user}}가 가르친 것처럼 쓰지 않는다. {{user}}를 어떻게 인식하는지도 함께 쓴다.',
     '  [연인관계] 연애 스타일과 스킨십 특성을 포함해서 쓴다. 85% 확률로 지금은 솔로(과거 연애 경험은 있을 수 있음)이고, 15% 확률로 현재 사귀는 사람이 있거나 복잡한 관계에 있다 — 주사위를 굴리듯 무작위로 정하되, 어느 쪽이든 DATING 항목과 같은 사실이어야 한다.',
     '  [취향] 좋아하는 것 / 싫어하는 것 / 취미를 함께 쓴다.',
     '  [가치관과 기준] 양보 못 하는 것 · 판단 기준 · 거절 방식 · 스스로 정한 규칙',
@@ -3281,7 +3437,7 @@ function cardPrompt(seed, mode, gender){
     '  뻔한 미인형 조합("long straight black hair, almond eyes" 같은 상투구)을 그대로 반복하지 않는다. 위의 성향 · 결핍 · 직업과 어울리는 구체적이고 개성 있는 디테일을 최소 하나 넣는다 — 예: 특이한 흉터나 점, 비대칭적인 이목구비, 독특한 헤어스타일이나 색, 손이나 자세의 습관적 특징, 나이나 직업에서 오는 현실적인 흔적(굳은살, 다크서클, 자세 등). 매번 같은 미모의 공식을 재사용하지 않는다.',
     '- OUTFIT 은 평소 복장의 영어 태그다. 쉼표로 나열하고 15단어 이내로 쓴다.',
     '- TRAITS 는 성격을 12자 이내 한 줄로 줄인 말이다.',
-    '- GROWTH · EDU · FINANCE · LIVING · FRIENDS 는 각각 한 줄로, 공백을 뺀 글자 수가 15~25자가 되게 쓴다.',
+    '- GROWTH · EDU · FINANCE · LIVING · FRIENDS 는 각각 한 줄로 쓴다. 한 줄에 20~45자 정도면 적당하지만 정확히 맞출 필요는 없다. **띄어쓰기를 반드시 지킨다. 글자 수를 줄이려고 공백을 빼거나 붙여 쓰지 않는다.** EDU 는 위 고정 재료의 학력을 그대로 쓰되 학교 계열이나 전공만 덧붙인다.',
     '  (성장배경 = 가정 구성과 자란 환경 / 학력 / 재정수준 / 거주환경 / 교우관계 = 친구 관계의 폭과 깊이)',
     '- DATING 도 같은 분량으로, 연애 경험치와 지금의 싱글 여부를 쓴다. 위 DESCRIPTION의 [연인관계]와 반드시 같은 사실이어야 한다.',
     '- 위 배경 항목들은 서로 앞뒤가 맞아야 한다. 예: 재정수준이 빠듯하면 거주환경도 그에 맞게 쓴다.',
@@ -3367,7 +3523,7 @@ const SECTION_DEFS = {
     'BODY 는 "키cm/몸무게kg" 형식으로만 쓴다. 쓰리사이즈는 여기 넣지 않는다.'
   ]},
   bg: { label:'성장 배경', fields:['growth','edu','finance','living','friends','dating','traits'], instr:[
-    '아래 여섯 항목(GROWTH~DATING)은 각각 한 줄이며, 공백을 뺀 글자 수가 15~25자가 되게 쓴다.',
+    '아래 여섯 항목(GROWTH~DATING)은 각각 한 줄로 쓴다. 20~45자 정도면 적당하지만 정확히 맞출 필요는 없다. **띄어쓰기를 반드시 지킨다. 글자 수를 줄이려고 공백을 빼거나 붙여 쓰지 않는다.**',
     'GROWTH 성장배경 — 가정 구성(부모 · 형제)과 자란 환경. 부모의 직업과 인물의 직업을 임의로 연결하지 않는다.',
     'EDU 학력.',
     'FINANCE 재정수준.',
@@ -3738,12 +3894,13 @@ $('ceAvGen').onclick = async () => {
   btn.disabled = true; btn.textContent = '만드는 중…';
   try{
     const outfit = ($('ceOutfit').value || '').trim();
-    /* 썸네일이므로 한 사람만, 얼굴이 크게 나와야 한다. 전신샷과 분할 구도를 막는다. */
-    const prompt = ['solo, 1girl' + (($('ceGender').value === 'm') ? ' (male)' : ''),
+    /* 스튜디오 사진이 아니라 메신저 프로필 사진 느낌으로. 한 사람만, 얼굴이 크게. */
+    const prompt = [($('ceGender').value === 'm') ? 'solo, 1boy' : 'solo, 1girl',
                     look, outfit,
-                    'head and shoulders portrait, close-up of face, looking at viewer',
-                    'centered composition, single subject, one person only',
-                    'soft even lighting, plain neutral background, photorealistic, sharp focus']
+                    'casual profile picture, smartphone photo, candid everyday moment',
+                    'upper body, face clearly visible, slight natural smile, relaxed pose',
+                    'natural daylight, softly blurred everyday background such as a cafe or street',
+                    'shallow depth of field, natural skin texture, single subject, one person only']
                    .filter(Boolean).join(', ');
     const prevBare = S.imgBare, prevTier = S.imgTier;
     S.imgBare = false; S.imgTier = 'base';        /* 썸네일은 노출 없이 기본 모델로 */
@@ -3850,7 +4007,8 @@ $('ceSave').onclick = async () => {
   e.description = $('ceDesc').value; e.personality = $('cePers').value;
   e.scenario    = $('ceScen').value; e.first_mes   = $('ceFirst').value;
   e.mes_example = $('ceEx').value;   e.system_prompt = $('ceSys').value;
-  e.description = tidyBlock(e.description); e.personality = tidyBlock(e.personality);
+  e.description = sectionize(tidyBlock(e.description));
+  e.personality = sectionize(tidyBlock(e.personality));
   e.scenario = tidyBlock(e.scenario);       e.first_mes = tidyBlock(e.first_mes);
   e.mes_example = tidyBlock(e.mes_example); e.system_prompt = tidyBlock(e.system_prompt);
   e.profile = {
@@ -3898,9 +4056,10 @@ $('ceSave').onclick = async () => {
 /* 상황 글에서 첫 장면의 장소·일시·외관·내면을 어림잡는다 */
 function guessStartState(c){
   const sc = String(c.scenario || '');
-  const when = /새벽/.test(sc) ? '새벽 3:10 am' : /아침|오전/.test(sc) ? '오전 9:20 am'
-             : /점심|한낮|정오/.test(sc) ? '오후 12:40 pm' : /오후/.test(sc) ? '오후 4:30 pm'
-             : /저녁|해질/.test(sc) ? '저녁 7:50 pm' : '밤 10:40 pm';
+  /* 시각만 남긴다. 밤·새벽 같은 말은 am/pm 과 겹치므로 쓰지 않는다. */
+  const when = /새벽/.test(sc) ? '3:10 am' : /아침|오전/.test(sc) ? '9:20 am'
+             : /점심|한낮|정오/.test(sc) ? '12:40 pm' : /오후/.test(sc) ? '4:30 pm'
+             : /저녁|해질/.test(sc) ? '7:50 pm' : '10:40 pm';
   const d = new Date();
   const dow = '일월화수목금토'[d.getDay()];
   const date = (d.getMonth()+1) + '/' + d.getDate() + ' ' + dow + ' ' + when;
@@ -3956,7 +4115,8 @@ $('bImportChar').onclick = () => pickFiles(async texts => {
       await dbPut('characters', {
         id: dup?.id || uid(), spec:'chara_card_v2',
         name: tidy(d.name),
-        description: tidyBlock(d.description), personality: tidyBlock(d.personality),
+        description: sectionize(tidyBlock(d.description)),
+        personality: sectionize(tidyBlock(d.personality)),
         scenario: tidyBlock(d.scenario), first_mes: tidyBlock(d.first_mes),
         mes_example: tidyBlock(d.mes_example), system_prompt: tidyBlock(d.system_prompt),
         post_history_instructions: d.post_history_instructions || '',
@@ -4343,9 +4503,9 @@ async function seed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b24';
-const APP_BUILT = '2026-08-19 12:04';
-const APP_NOTE  = '관계 표기 정리 · 호칭/말투 · 첫 장면 상태 · 공백 정규화 · 토큰 버튼 · 변화폭 세분화';
+const APP_BUILD = 'b27';
+const APP_BUILT = '2026-08-19 12:56';
+const APP_NOTE  = '프사 스타일 이미지 · 토큰 버튼 고정 · 띄어쓰기 규칙 완화 · 관계 주어 고정 · 직업 조합 생성';
 $('sVersion').innerHTML =
   '8단계 · <b style="color:var(--acc)">빌드 ' + APP_BUILD + '</b><br>최종 수정: ' + APP_BUILT + '<br>' + APP_NOTE;
 
