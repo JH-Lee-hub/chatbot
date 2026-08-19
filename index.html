@@ -83,6 +83,10 @@
   .card .t span.dim{color:var(--tx3)}
   .card.chr{align-items:flex-start}
   .card.chr .av{margin-top:2px}
+  .av img{width:100%;height:100%;object-fit:cover;border-radius:11px;display:block}
+  .av.pic0{background:var(--panel2)!important}
+  #ceAvatar{width:96px;height:128px;border-radius:11px;border:1px solid var(--line);
+    background:var(--panel2);object-fit:cover;display:block}
   .empty{text-align:center;color:var(--tx3);font-size:13px;padding:44px 20px;line-height:1.9}
 
   /* ── 폼 ── */
@@ -101,6 +105,9 @@
   .sect-h .autogen:disabled{opacity:.45}
   .sw{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--tx2)}
   .sw input{width:auto;flex:0 0 auto}
+  .shead{font-size:11px;color:var(--tx3);font-weight:700;letter-spacing:.4px;margin:14px 0 6px}
+  .shint{font-size:10px;color:var(--tx3);line-height:1.4;margin-top:4px;word-break:keep-all}
+  .shint b{color:var(--tx2);font-weight:600}
 
   /* ── 대화 ── */
   #msgs{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 12px 6px}
@@ -221,6 +228,7 @@
   <!-- ══════════ 페르소나 ══════════ -->
   <section class="view" id="vPersonas">
     <div class="bar"><h2>주인공<span class="sub">내가 연기하는 인물</span></h2>
+      <button class="ico" id="bRandPersona" title="무작위 생성">🎲</button>
       <button class="ico" id="bNewPersona">＋</button></div>
     <div class="scroll" id="personaList"></div>
   </section>
@@ -342,11 +350,42 @@
         </div>
       </div>
       <div class="fld">
-        <label>이미지 모델 <span id="sImgCost" style="color:var(--tx3);font-weight:400"></span></label>
+        <label>일반 장면 모델 <span id="sImgCost" style="color:var(--tx3);font-weight:400"></span></label>
         <select id="sImgModel"><option value="">— 키를 입력하면 불러옵니다 —</option></select>
-        <input type="text" id="sImgFilter" placeholder="모델 검색 — lustify, flux, qwen ..." style="margin-top:7px">
+        <div class="hint">노출이 없는 장면의 기본값입니다. 싸고 빠른 쪽을 고르십시오.</div>
+      </div>
+      <div class="fld">
+        <label>고급 모델 (품질 우선)</label>
+        <select id="sImgHi"><option value="">— 키를 입력하면 불러옵니다 —</option></select>
+        <div class="hint">
+          일반 장면에서 기본 모델이 실패했을 때, 또는 이미지 아이콘을 길게 눌러
+          <b>고급</b>을 고를 때 씁니다. 비싸지만 구도와 프롬프트 이해도가 낫습니다.
+        </div>
+      </div>
+      <div class="fld">
+        <label>무검열 모델 (성인향 장면)</label>
+        <select id="sImgNsfw"><option value="">— 키를 입력하면 불러옵니다 —</option></select>
+        <div class="hint">
+          노출이 있는 장면은 <b>수위와 무관하게 이 모델로 갑니다.</b>
+          Flux 같은 고급 모델은 성인향을 거부하거나 뭉개므로 여기에 지정하지 마십시오.
+        </div>
+      </div>
+      <div class="fld">
+        <label>무검열 고급 모델</label>
+        <select id="sImgNsfwHi"><option value="">— 키를 입력하면 불러옵니다 —</option></select>
         <div class="sw" style="margin-top:8px">
-          <input type="checkbox" id="sImgUnc" checked><label for="sImgUnc" style="margin:0">무검열 모델만</label>
+          <input type="checkbox" id="sImgUp" checked>
+          <label for="sImgUp" style="margin:0">고급일 때 2배 업스케일 (+$0.02)</label>
+        </div>
+        <div class="hint">
+          무검열 계열에는 더 비싼 상위 모델이 없습니다. 대신 <b>스텝을 40으로 올리고
+          2배 업스케일</b>을 걸어 품질을 끌어올립니다. 합계 약 $0.03으로 일반 고급과 같습니다.
+        </div>
+      </div>
+      <div class="fld">
+        <input type="text" id="sImgFilter" placeholder="세 목록 공통 검색 — lustify, flux, qwen ...">
+        <div class="sw" style="margin-top:8px">
+          <input type="checkbox" id="sImgUnc"><label for="sImgUnc" style="margin:0">일반 · 고급 목록도 무검열만</label>
           <div class="sp"></div>
           <button class="btn" id="sImgReload" style="padding:5px 11px;font-size:12px">목록 새로고침</button>
         </div>
@@ -407,7 +446,7 @@
         대화 하나만 따로 빼려면 <b>대화 목록의 <code>⋯</code></b> 또는 채팅 화면의 <code>⋯</code>에서 내보내십시오.
       </div>
       <div style="height:24px"></div>
-      <div class="hint" style="text-align:center">7단계 · <b style="color:var(--acc)">빌드 b12</b><br>최종 수정: 2026-08-19<br>상태 표시 · 입력 규칙 · 이미지 · 무작위 생성 · 노출 수위 · 상세도 · 섹션별 자동생성</div>
+      <div class="hint" style="text-align:center" id="sVersion"></div>
     </div>
   </section>
 
@@ -450,8 +489,8 @@
     <div class="scroll">
       <div class="fld"><label>성별</label>
         <div class="row" id="ceGenderRow">
-          <button type="button" class="btn gsel" data-g="f">여성</button>
           <button type="button" class="btn gsel" data-g="m">남성</button>
+          <button type="button" class="btn gsel" data-g="f">여성</button>
         </div>
         <input type="hidden" id="ceGender" value="f"></div>
 
@@ -482,11 +521,14 @@
 
       <div class="sect-h"><b>성장 배경</b><button type="button" class="btn autogen" data-sec="bg">✦ 자동생성</button></div>
       <div class="hint" style="margin-top:-6px">목록엔 안 보이고 대화 맥락에만 반영됩니다.</div>
+      <div class="fld"><label>성장배경</label><input type="text" id="ceGrowth" placeholder="맞벌이 부모 아래 자란 외동"></div>
       <div class="fld"><label>학력</label><input type="text" id="ceEdu" placeholder="지방 국립대 시각디자인과 졸업"></div>
-      <div class="fld"><label>재정수준</label><input type="text" id="ceFinance" placeholder="월급으로 빠듯하게, 저축은 거의 못함"></div>
-      <div class="fld"><label>거주환경</label><input type="text" id="ceLiving" placeholder="회사 근처 원룸 자취 3년차"></div>
-      <div class="fld"><label>연애이력</label><input type="text" id="ceDating" placeholder="2년 전 3년 사귄 사람과 헤어짐, 이후 연애 없음"></div>
+      <div class="fld"><label>재정수준</label><input type="text" id="ceFinance" placeholder="월급으로 빠듯하게 저축은 거의 못함"></div>
+      <div class="fld"><label>거주환경</label><input type="text" id="ceLiving" placeholder="회사 근처 원룸에서 자취 3년차"></div>
+      <div class="fld"><label>교우관계</label><input type="text" id="ceFriends" placeholder="오래된 친구 둘, 새 사람은 잘 안 사귐"></div>
+      <div class="fld"><label>연애이력</label><input type="text" id="ceDating" placeholder="3년 사귄 사람과 2년 전 헤어짐"></div>
       <div class="fld"><label>성격 한 줄</label><input type="text" id="ceTraits" placeholder="차분하고 방어적"></div>
+      <div class="hint" style="margin-top:-6px">각 항목은 공백 제외 <b>15~25자</b> 정도가 적당합니다.</div>
 
       <div class="sect-h"><b>세부 설정</b><button type="button" class="btn autogen" data-sec="detail">✦ 자동생성</button></div>
       <div class="fld"><label>설정 (description)</label>
@@ -495,8 +537,78 @@
         <textarea id="cePers" rows="3" placeholder="침착하고 말수가 적다..."></textarea></div>
       <div class="fld"><label>상황 (scenario)</label>
         <textarea id="ceScen" rows="3" placeholder="지금 어떤 상황에서 만나는가"></textarea></div>
-      <div class="fld"><label>주인공과의 관계</label>
-        <input type="text" id="ceRel" placeholder="같은 층 이웃"></div>
+      <div class="fld"><label>나에게 이 캐릭터는</label>
+        <input type="text" id="ceRel" placeholder="같은 층에 사는 이웃">
+        <div class="hint">
+          <b>이 캐릭터가 주어</b>가 되게 적으십시오. 내가 손님이면 캐릭터는 <code>자주 가는 가게의 주인</code>,
+          내가 가게 주인이면 캐릭터는 <code>자주 오는 단골</code>입니다.
+        </div></div>
+      <details class="fld">
+        <summary style="cursor:pointer;color:var(--tx2);font-size:13px">인물 스탯 (선택 사항 · 기본 숨김)</summary>
+        <div class="hint" style="margin-top:9px">
+          전부 <b>0~100</b>이며 구간의 뜻은 이렇습니다.<br>
+          <b>10</b> 없음 · <b>20</b> 미약 · <b>40</b> 약함 · <b>60</b> 보통 · <b>80</b> 강함 · <b>90+</b> 압도적
+          <br><br>
+          <b>능력 · 성향</b>은 변하지 않는 기준값이고, <b>관계</b>는 대화하면서 움직입니다.
+          자동생성은 이 수치를 근거로 직업 · 성장 배경 · 관계를 정합니다.
+        </div>
+        <div class="shead">능력 — 타고난 바탕</div>
+        <div class="row">
+          <div><label>체력</label><input type="number" id="ceStHp" min="0" max="100" placeholder="50">
+            <div class="shint">지구력의 <b>상한</b><br>쉬면 이 값으로 회복</div></div>
+          <div><label>지능</label><input type="number" id="ceStInt" min="0" max="100" placeholder="50">
+            <div class="shint">판단력과 말재간<br>평균 <b>50</b></div></div>
+          <div><label>매력</label><input type="number" id="ceStCha" min="0" max="100" placeholder="50">
+            <div class="shint">첫인상과 분위기<br>평균 <b>50</b></div></div>
+        </div>
+
+        <div class="shead">성향 — 바라는 크기와 꺼내는 힘</div>
+        <div class="row">
+          <div><label>욕심</label><input type="number" id="ceStAmb" min="0" max="100" placeholder="50">
+            <div class="shint">얼마나 <b>바라는가</b><br>평균 <b>50</b></div></div>
+          <div><label>대담</label><input type="number" id="ceStBrv" min="0" max="100" placeholder="50">
+            <div class="shint">그걸 <b>꺼내는가</b><br>평균 <b>50</b></div></div>
+          <div><label>욕구</label><input type="number" id="ceStDes" min="0" max="100" placeholder="50">
+            <div class="shint">어디까지 <b>달아오르나</b><br>지금 값이 아님</div></div>
+        </div>
+
+        <div class="shead">관계 — 주인공에 대한 지금의 값</div>
+        <div class="row">
+          <div><label>호감</label><input type="number" id="ceStAff" min="0" max="100" placeholder="20">
+            <div class="shint">좋아하는 정도<br>처음엔 <b>20</b> 안팎</div></div>
+          <div><label>반감</label><input type="number" id="ceStAnt" min="0" max="100" placeholder="5">
+            <div class="shint">싫어하는 정도<br>대개 <b>한 자리</b></div></div>
+          <div><label>경계</label><input type="number" id="ceStGrd" min="0" max="100" placeholder="45">
+            <div class="shint">낯가림의 <b>기본 자리</b><br>초면 <b>60</b> · 구면 <b>35</b></div></div>
+        </div>
+
+        <div class="shead">지금</div>
+        <div class="row">
+          <div><label>취기</label><input type="number" id="ceStDrk" min="0" max="100" placeholder="0">
+            <div class="shint">대화 <b>시작 시점</b>의 취기<br>보통 <b>0</b></div></div>
+          <div></div><div></div>
+        </div>
+
+        <div class="hint" style="margin-top:12px">
+          <b>욕심은 바라는 크기, 대담은 그걸 꺼내는 힘입니다.</b> 둘의 어긋남이 인물을 만듭니다.<br>
+          욕심 <b>높고</b> 대담 <b>낮으면</b> 속으로 애타지만 아무 말 못 합니다.
+          욕심 <b>낮고</b> 대담 <b>높으면</b> 딱히 바라지 않지만 필요하면 그냥 합니다.<br><br>
+          <b>호감과 반감은 반대말이 아닙니다.</b> 둘 다 높으면 "끌리는데 밉다"가 되고,
+          둘 다 낮으면 아무 감정이 없는 것입니다.
+        </div>
+        <div class="row" style="margin-top:9px">
+          <button type="button" class="btn" id="ceStRoll">🎲 수치 새로 굴리기</button>
+          <button type="button" class="btn" id="ceStClear">비우기</button>
+        </div>
+        <div class="hint" style="margin-top:6px">
+          <b>「나에게 이 캐릭터는」을 먼저 채운 뒤</b> 굴리십시오. 위 관계 칸의 내용을 읽어
+          그 관계에 맞는 경계 · 호감 기준으로 굴립니다. 비어 있으면 일반 기준을 씁니다.
+        </div>
+        <div class="hint">
+          새 대화를 시작할 때 <b>호감 · 반감 · 경계 · 체력</b>은 그대로, <b>욕구</b>는 기준값의 18%가
+          상태 줄의 출발점이 됩니다. 첫 장면부터 평소 기준선일 수는 없기 때문입니다.
+        </div>
+      </details>
 
       <div class="sect-h"><b>대화 방식</b><button type="button" class="btn autogen" data-sec="dialogue">✦ 자동생성</button></div>
       <div class="fld"><label>첫 대사 (first_mes)</label>
@@ -515,6 +627,19 @@
       <div class="fld"><label>기본 복장 태그 (영문)</label>
         <textarea id="ceOutfit" rows="2" placeholder="oversized knit cardigan, plain shirt and slacks"></textarea>
         <div class="hint">평소 차림입니다.</div></div>
+      <div class="fld"><label>프로필 이미지 (목록 썸네일)</label>
+        <div class="row" style="align-items:flex-start">
+          <img id="ceAvatar" alt="" style="flex:0 0 auto">
+          <div style="flex:1">
+            <button type="button" class="btn" id="ceAvGen" style="width:100%">✦ 프로필 이미지 생성</button>
+            <button type="button" class="btn" id="ceAvClear" style="width:100%;margin-top:7px">지우기</button>
+            <div class="hint" style="margin-top:7px">
+              아래 <b>외형 · 복장 태그</b>로 인물 사진을 한 장 뽑아 목록 썸네일로 씁니다.
+              <b>한 번만 만들면 되고 장당 $0.01</b>입니다. 없으면 이름 첫 글자가 대신 표시됩니다.
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="fld"><label>이미지 시드</label>
         <input type="number" id="ceSeed" placeholder="비우면 매번 무작위">
         <div class="hint">같은 숫자를 고정해 두면 인물의 인상이 덜 흔들립니다.</div></div>
@@ -622,6 +747,8 @@ const LS = {
   window:'rp_windowTurns', free:'rp_free', lastChat:'rp_lastChatId',
   budget:'rp_budget', autoSum:'rp_autoSummary', fallbacks:'rp_fallbacks', rules:'rp_rules',
   imgKey:'rp_imgkey', imgModel:'rp_imgmodel', imgSize:'rp_imgsize', imgUnc:'rp_imgunc',
+  imgHi:'rp_imghi', imgNsfw:'rp_imgnsfw', imgNsfwHi:'rp_imgnsfwhi',
+  imgTier:'rp_imgtier', imgUp:'rp_imgup',
   taste:'rp_taste', ageMin:'rp_agemin', ageMax:'rp_agemax', noReason:'rp_noreason',
   len:'rp_len', imgTxt:'rp_imgtxt', imgLevel:'rp_imglevel', imgDetail:'rp_imgdetail'
 };
@@ -748,14 +875,14 @@ const DEFAULT_RULES =
     - 「[지시]」로 시작하는 줄은 장면 밖에서 내려진 작가의 지시다. 그대로 따르되, 그 문장 자체를 대사나 서술로 옮기지 않는다.
     - 이것은 입력을 읽는 규칙일 뿐이다. {{char}}의 출력에는 여전히 별표를 쓰지 않는다.
 14. [상태 출력] 매 응답의 맨 마지막에 아래 한 줄을 반드시 덧붙인다. 이 줄 뒤에는 아무것도 쓰지 않는다.
-    [상태] 장소=... | 일시=... | 복장=... | 외관=... | 내면=... | 호감=... | 긴장=... | 욕구=... | 체력=... | 취기=... | (그 밖에 있는 것만)
+    [상태] 장소=... | 일시=... | 복장=... | 외관=... | 내면=... | 호감=... | 반감=... | 긴장=... | 욕구=... | 체력=... | 취기=... | (그 밖에 있는 것만)
     - 순서를 지켜서, 항상 이 짜임으로 쓴다: 1) 장소·일시  2) 복장·외관·내면  3) 호감·긴장·욕구·체력·취기 다섯 수치  4) 그 뒤에 거리·소지품·동석·미해결 중 이번 장면에 실제로 있는 것만.
     - 앞의 열 항목(장소~취기)은 이번 턴에 안 바뀌었어도 매번 그대로 다시 쓴다. 무엇을 넣을지 고민하지 않는다 — 자리가 이미 정해져 있다.
     - 일시는 "월/일 요일 시:분 am" 형식으로 쓴다. 요일은 한 글자(월/화/수/목/금/토/일), am/pm은 소문자. 예: 8/19 화 9:15 am. 이번 장면에서 실제로 흐른 만큼만 진행시킨다. 짧은 대화는 3~10분, 자리를 옮기거나 식사를 하면 30분~1시간, 잠들거나 헤어지면 다음 장면의 일시로 넘긴다. 이유 없이 시간을 되돌리지 않는다.
     - 내면에는 {{char}}의 지금 감정이나 기분을 짧은 말로 쓴다.
     - **외관은 본문을 부연하는 보조 장치다.** 지금 입고 있는 옷, 손에 쥔 도구, 인물의 외모 중에서 본문에 이미 나온 것을 그대로 반복하지 않고, 아직 언급되지 않았지만 있으면 장면이 더 살아나는 요소 하나를 짧게 덧붙인다. 복장과 겹치지 않게 — 복장이 "지금 입은 옷"이라면, 외관은 그 위에 얹는 한 가지 디테일이다.
-    - 호감 · 긴장 · 욕구 · 체력 · 취기는 0~100 정수로 쓰고, 직전 값에서 달라졌으면 호감=68(+3) 처럼 변화폭을 괄호에 적는다. 안 바뀌었으면 괄호 없이 그대로 쓴다.
-    - **호감 · 긴장 · 욕구 · 체력 · 취기는 한 턴에 최대 ±5까지만 움직인다.** 고백 · 구조 · 배신처럼 관계를 뒤집는 사건이 실제로 일어났을 때만 예외적으로 최대 ±50까지 허용한다. 실망하거나 선을 넘긴 일이 있으면 내려간다. 한 방향으로만 계속 오르지 않는다. (이 범위를 벗어나면 앱이 자동으로 되돌린다.)
+    - 호감 · 반감 · 긴장 · 욕구 · 체력 · 취기는 0~100 정수로 쓰고, 직전 값에서 달라졌으면 호감=68(+3) 처럼 변화폭을 괄호에 적는다. 안 바뀌었으면 괄호 없이 그대로 쓴다.
+    - **호감 · 반감 · 긴장 · 욕구 · 체력 · 취기는 한 턴에 최대 ±5까지만 움직인다.** 고백 · 구조 · 배신처럼 관계를 뒤집는 사건이 실제로 일어났을 때만 예외적으로 최대 ±50까지 허용한다. 실망하거나 선을 넘긴 일이 있으면 내려간다. 한 방향으로만 계속 오르지 않는다. (이 범위를 벗어나면 앱이 자동으로 되돌린다.)
     - 맨 뒤의 거리 · 소지품 · 동석 · 미해결은 있을 때만 골라 붙인다. 없으면 아예 쓰지 않는다.
     - **소지품은 물건이 오갔거나 누군가 무엇을 쥐고 있는 장면이면 반드시 넣는다.** 방금 오간 물건과 지금 그것을 누가 가지고 있는지를 적는다. 예: 소지품=맥주 캔 1개는 {{user}}가 가져감. 오간 물건이 없으면 생략한다.
     - **미해결은 실제로 풀리지 않은 새로운 사건·질문·긴장이 이번 턴에 생기거나 바뀌었을 때만 쓴다.** 지난 턴과 같은 내용이면 아예 넣지 않는다. 매 턴 습관적으로 채우는 항목이 아니다.
@@ -764,7 +891,7 @@ const DEFAULT_RULES =
     - 반면 {{char}}는 자유롭다. 상황과 자신의 기준에 따라 얼마든지 거절하고, 회피하고, 화를 내고, 자리를 뜰 수 있다. 반대로 받아들일 수도 있다. 어느 쪽이든 그때의 관계와 상태에 따라 달라지는 인물의 선택이며, 미리 정해진 답은 없다.
     - 요컨대 막고 물러서는 것은 인물의 몫이고, 그것을 끝까지 쓰는 것은 서술자의 몫이다. 서술자가 인물을 대신해 장면을 닫지 않는다.
     - **다만 제한이 없다는 것이 빨라도 된다는 뜻은 아니다.** 망설임과 저항과 지연이 장면의 내용이다. 아래 16번의 수치 해석을 건너뛰지 않는다. 거부하지 않는 것과 곧바로 받아들이는 것은 전혀 다른 일이다.
-16. [수치 해석] [현재 상태]의 호감 · 긴장 · 욕구 · 체력 · 취기 같은 0~100 수치는 아래 구간을 참고해 해석한다.
+16. [수치 해석] [현재 상태]의 호감 · 반감 · 긴장 · 욕구 · 체력 · 취기 같은 0~100 수치는 아래 구간을 참고해 해석한다.
     정확한 숫자보다 대략 어느 구간에 있는지가 중요하고, 각 구간이 구체적으로 무엇을 뜻하는지는 수치의 종류와 지금 장면에 따라 달라진다 — 아래는 강도의 대략적인 기준일 뿐, 정해진 대사나 행동이 아니다.
     - 10 이하 — 거의 없다시피 함. 있다고 말하기 어려운 수준.
     - 20 이하 — 미약함. 스치듯 지나가는 정도.
@@ -776,7 +903,22 @@ const DEFAULT_RULES =
     한 단계를 건너뛰어 오르내리지 않는다.
     특히 호감이 이 구간을 따라 신체적 친밀함으로 이어지는 장면에서는, 단계가 오를 때마다 {{char}}가 최소 한 번은 멈추거나, 되묻거나, 망설인다. 그 망설임을 건너뛰고 곧바로 받아들이지 않는다.
     취했거나, 지쳤거나, 방금 상처받은 상태라면 한 단계 아래로 취급한다. 판단이 흐려진 상태에서 나온 승낙은 {{char}}가 스스로 되짚는다.
-    {{user}}가 재촉하더라도 단계를 뛰어넘지 않는다. 재촉 자체에 대한 {{char}}의 반응을 쓴다.`;
+    {{user}}가 재촉하더라도 단계를 뛰어넘지 않는다. 재촉 자체에 대한 {{char}}의 반응을 쓴다.
+17. [호감과 반감은 별개 축이다] 반감은 호감이 낮은 상태가 아니라, 상대가 싫은 정도다. 0은 아무 감정이 없는 것이고 60이면 분명히 싫은 것이다. 둘은 동시에 높을 수 있고, 그것이 모순이 아니라 이 인물들의 기본형이다.
+    - 호감도 높고 반감도 높으면 행동이 불안정해진다. 밀어냈다가 당기고, 모질게 말한 뒤 후회하고, 다가와 놓고 먼저 자리를 뜬다. 한쪽으로 정리해 버리지 않는다.
+    - 반감이 호감보다 뚜렷이 높으면 거절과 회피가 기본이 된다. 다정한 말에도 먼저 의심한다.
+    - 반감이 높은 동안에는 호감이 잘 오르지 않는다. 호감을 올리려면 먼저 반감이 내려갈 일이 있어야 한다.
+    - 반감은 사과나 해명만으로 곧장 사라지지 않는다. 시간과 반복된 행동으로 천천히 내려간다.
+18. [기준 수치와 현재 수치] [기준 수치]는 이 인물이 원래 어떤 사람인지이고, [현재 상태]의 수치는 지금 어디에 있는지다. 둘을 혼동하지 않는다.
+    - 체력과 욕구는 기준값이 상한이자 돌아갈 자리다. 사건이 없으면 그 자리로 천천히 돌아가고, 넘어서려면 취기나 강한 자극처럼 분명한 이유가 있어야 한다. 기준이 낮은 인물은 같은 상황에서도 더 낮은 곳까지만 오른다.
+    - 긴장의 평상시 자리는 기준 경계값이다. 편안해지면 그 아래로 내려가고, 위협받으면 위로 치솟았다가 다시 그 자리로 돌아온다.
+    - 기준 경계가 높은 인물은 호감이 천천히 오른다. 같은 다정함에도 덜 움직인다.
+    - 호감과 반감의 기준값은 출발점일 뿐 상한이 아니다. 대화에 따라 얼마든지 그 위로 갈 수 있다.
+19. [욕심과 대담] 욕심은 "얼마나 바라는가"이고, 대담은 "그 바람을 말과 행동으로 옮기는가"다. 바라는 것과 그것을 꺼내는 것은 다른 일이며, 이 둘의 어긋남이 인물의 긴장을 만든다.
+    - 욕심이 높으면 원하는 것이 많고 한번 원한 것을 놓지 못한다. 손해를 오래 곱씹고, 관계에서도 더 많은 것을 바란다. 낮으면 체념이 빠르고 주어진 것에 만족하며, 아쉬워도 그러려니 한다.
+    - 대담이 높으면 원하는 것을 말로 꺼내고 먼저 손을 뻗는다. 어색함과 거절을 감수한다. 낮으면 마음이 아무리 커도 속에만 두고, 결정적인 순간에 멈추고 되묻고 다음으로 미룬다. 16번의 "멈추거나 망설인다"가 얼마나 길어지는지가 이 값에 반비례한다.
+    - 둘의 조합이 곧 인물이다. 욕심이 높고 대담이 낮으면 속으로 애태우면서도 아무 말 못 하고, 그 억눌림이 다른 데서 새어 나온다. 욕심이 낮고 대담이 높으면 딱히 바라지는 않지만 필요하면 망설임 없이 움직인다. 둘 다 낮으면 조용히 물러나고, 둘 다 높으면 직진한다.
+    - 취하면 대담이 한 단계 위처럼 움직여 평소 안 하던 말과 행동이 나온다. 다만 그렇게 나온 것은 {{char}}가 나중에 스스로 되짚는다. 지쳤을 때는 한 단계 아래처럼 움직인다.`;
 
 const $ = id => document.getElementById(id);
 const uid = () => (crypto.randomUUID ? crypto.randomUUID()
@@ -833,14 +975,17 @@ const S = {
   chats:[], characters:[], personas:[], models:[], imgModels:[], txtModels:[], generating:false,
   chat:null, character:null, persona:null, messages:[],
   editingChar:null, editingPersona:null,
-  streaming:false, abort:null, view:'vChats', lastCtx:null, stick:true
+  streaming:false, abort:null, view:'vChats', lastCtx:null, stick:true,
+  imgBare:false, imgTier:'auto'
 };
 
 /* ═══════════════ 공통 UI ═══════════════ */
 let toastT;
+/* CSS 페이드가 0.2초다. 1.5초 동안 온전히 보이게 하려면 그만큼 더 두었다 지운다. */
+const TOAST_HOLD = 1500, TOAST_FADE = 200;
 function toast(msg){
   const t = $('toast'); t.textContent = msg; t.classList.add('on');
-  clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove('on'), 2200);
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), TOAST_HOLD + TOAST_FADE);
 }
 function sheet(title, items){
   const box = $('sheetIn');
@@ -898,15 +1043,27 @@ function buildSystem(char, persona, withExample){
   const sizes = [pf.bust, pf.waist, pf.hip].some(Boolean)
     ? ' · ' + [pf.bust, pf.waist, pf.hip].filter(Boolean).join('-') : '';
   if (pf.body || sizes) head.push('신체: ' + (pf.body || '') + sizes);
-  if (pf.relation) head.push('{{user}}와의 관계: ' + pf.relation);
+  if (pf.relation) head.push('{{user}}에게 이 인물은: ' + pf.relation);
   if (head.length) c.push(head.join('\n'));
 
   const bg = [];
+  if (pf.growth)  bg.push('성장배경: ' + pf.growth);
   if (pf.edu)     bg.push('학력: ' + pf.edu);
   if (pf.finance) bg.push('재정수준: ' + pf.finance);
   if (pf.living)  bg.push('거주환경: ' + pf.living);
+  if (pf.friends) bg.push('교우관계: ' + pf.friends);
   if (pf.dating)  bg.push('연애이력: ' + pf.dating);
   if (bg.length) c.push('\n[성장 배경]\n' + bg.join('\n'));
+
+  /* 스탯은 인물의 기준선이다. 상태 줄의 수치가 여기서 크게 벗어나지 않게 근거로 준다. */
+  if (pf.stats){
+    const st = pf.stats;
+    const line = STAT_KEYS.filter(k => st[k] != null)
+      .map(k => STAT_LABEL[k] + ' ' + st[k]).join(' · ');
+    if (line) c.push('\n[기준 수치 — 0~100]\n' + line +
+      '\n체력 · 지능 · 매력 · 욕심 · 대담 · 욕구는 변하지 않는 기준값이고, 호감 · 반감 · 경계는 {{user}}에 대한 현재 값이다.' +
+      '\n상태 줄의 수치는 이 기준에서 사건에 따라 오르내린다. 근거 없이 크게 벗어나지 않는다.');
+  }
 
   if (char.description) c.push(char.description);
   if (char.personality) c.push(`\n[성격]\n${char.personality}`);
@@ -1162,7 +1319,7 @@ async function buildContext(userText){
     '- 반드시 한국어로 쓴다. 영어 단어나 문장을 섞지 않는다. 등장인물 이름이나 고유명사가 아닌 이상 알파벳을 쓰지 않는다.',
     '- 위 [현재 상태]와 대화 원문을 먼저 확인한다. 지금 몇 시이고, 어디이며, 방금 오간 물건을 지금 누가 쥐고 있는지를 확정한 뒤 쓴다.',
     '- 건네준 것과 돌려받은 것, 원래 있던 것과 새로 생긴 것을 섞지 않는다. 확인이 안 되는 물건은 언급하지 않는다.',
-    '- 응답의 마지막 줄은 반드시 [상태] 로 시작하는 한 줄이다. 장소·일시·복장·외관·내면·호감·긴장·욕구·체력·취기 열 가지는 매번 그대로 넣고, 그 뒤에 거리·소지품·동석·미해결 중 있는 것만 붙인다. 그 줄 뒤에는 아무것도 쓰지 않는다.',
+    '- 응답의 마지막 줄은 반드시 [상태] 로 시작하는 한 줄이다. 장소·일시·복장·외관·내면·호감·반감·긴장·욕구·체력·취기 열한 가지는 매번 그대로 넣고, 그 뒤에 거리·소지품·동석·미해결 중 있는 것만 붙인다. 그 줄 뒤에는 아무것도 쓰지 않는다.',
     '- 분량은 한국어 ' + LIMIT + '자 안팎이다. ' + Math.round(LIMIT * 1.35) + '자를 넘기지 않는다. 앞선 응답이 길었더라도 따라 늘이지 않는다.',
     '- 이번 턴에 나아갈 수 있는 것은 한 걸음뿐이다. 호감 수치가 허용하는 단계를 넘지 않고, 넘어서려면 먼저 멈추거나 되묻는다.'
   ].join('\n');
@@ -1307,6 +1464,15 @@ async function newChat(characterId, personaId){
   };
   await dbPut('chats', chat);
 
+  /* 인물 스탯이 있으면 상태 줄의 출발점으로 삼는다. 경계는 긴장의 초기값이 된다. */
+  const st0 = c.profile?.stats;
+  if (st0){
+    await dbPut('memory', {
+      chatId: chat.id, summary: '', summarizedUpTo: -1, updatedAt: now(),
+      stateCard: initialState(st0)
+    });
+  }
+
   if (c.first_mes?.trim()){
     await dbPut('messages', {
       id: uid(), chatId: chat.id, turnIndex: 0, role:'assistant',
@@ -1421,7 +1587,7 @@ function readStatus(txt){
 const STAT_ROWS = [
   ['장소', '일시'],
   ['복장', '외관', '내면'],
-  ['호감', '긴장', '욕구', '체력', '취기']
+  ['호감', '반감', '긴장', '욕구', '체력', '취기']
 ];
 function statChipRow(k){
   for (let i = 0; i < STAT_ROWS.length; i++)
@@ -1492,8 +1658,9 @@ function msgHTML(m, isLast){
        </span>` : '';
   const regen = (m.role === 'assistant' && isLast)
     ? '<button data-act="regen">다시 생성</button>' : '';
+  const fold = m.imgFold ? ' collapsed' : '';
   const pics = (m.images || []).map(u =>
-    `<div class="pic"><button type="button" class="picfold" data-act="foldpic" title="접기/펴기">▾</button><img src="${u}" alt="장면" loading="lazy"></div>`
+    `<div class="pic${fold}"><button type="button" class="picfold" data-act="foldpic" title="접기/펴기">▾</button><img src="${u}" alt="장면" loading="lazy"></div>`
   ).join('') + (m.imgPending ? '<div class="imgwait">이미지를 만드는 중입니다…</div>' : '');
   const mkimg = (m.role === 'assistant' && imgKey() && !m.imgPending)
     ? '<button data-act="img">이미지</button>' : '';
@@ -1520,7 +1687,7 @@ function renderMsgs(toBottom){
   S.messages.forEach((m, i) => {
     const isLast = i === last;
     const sig = m.content + '|' + m.activeVariant + '|' + (m.images?.length||0)
-      + '|' + (m.imgPending?1:0) + '|' + isLast + '|' + (imgKey()?1:0);
+      + '|' + (m.imgPending?1:0) + '|' + isLast + '|' + (imgKey()?1:0) + '|' + (m.imgFold?1:0);
     seen.add(m.id);
     let entry = msgNodeCache.get(m.id);
     if (!entry || entry.sig !== sig){
@@ -1529,7 +1696,13 @@ function renderMsgs(toBottom){
       const node = tmp.firstElementChild;
       node.querySelectorAll('[data-act]').forEach(b => {
         if (b.dataset.act === 'foldpic'){
-          b.onclick = () => b.closest('.pic').classList.toggle('collapsed');
+          /* 접은 상태를 메시지에 남긴다. 다시 열어도 그대로 유지된다. */
+          b.onclick = async () => {
+            const box = b.closest('.pic');
+            const on = box.classList.toggle('collapsed');
+            const msg = S.messages.find(x => x.id === node.dataset.id);
+            if (msg){ msg.imgFold = on; await dbPut('messages', msg); }
+          };
           return;
         }
         b.onclick = () => { MSG_ACT[b.dataset.act]?.(node.dataset.id); };
@@ -1616,10 +1789,15 @@ $('cMenu').onclick = () => sheet(S.character?.name, [
   {label:'대상 편집', run: () => editChar(S.character.id)},
   {label:'주인공 편집', run: () => S.persona ? editPersona(S.persona.id) : toast('지정된 주인공이 없습니다')}
 ]);
-function toggleAllImages(collapse){
+async function toggleAllImages(collapse){
   const pics = document.querySelectorAll('#msgs .pic');
   if (!pics.length) return toast('접거나 펼 이미지가 없습니다');
   pics.forEach(el => el.classList.toggle('collapsed', collapse));
+  /* 화면만 바꾸면 다음에 열 때 되돌아간다. 메시지에도 함께 남긴다. */
+  for (const m of S.messages){
+    if (!m.images?.length || !!m.imgFold === collapse) continue;
+    m.imgFold = collapse; await dbPut('messages', m);
+  }
   toast(collapse ? '이미지를 모두 접었습니다' : '이미지를 모두 펼쳤습니다');
 }
 
@@ -1822,20 +2000,56 @@ async function fetchImgModels(){
     $('sImgModel').innerHTML = `<option value="">— 로드 실패: ${esc(e.message)} —</option>`;
   }
 }
+/* 세 목록을 한꺼번에 채운다. 무검열 목록은 항상 무검열 모델만 담는다. */
 function renderImgSelect(){
-  const onlyUnc = $('sImgUnc').checked;
   const q = $('sImgFilter').value.trim().toLowerCase();
-  const list = S.imgModels
-    .filter(m => !onlyUnc || m.model_spec?.uncensored)
-    .filter(m => !q || (m.id + ' ' + (m.model_spec?.name || '')).toLowerCase().includes(q));
-  const saved = localStorage.getItem(LS.imgModel) || '';
-  $('sImgModel').innerHTML = list.length
-    ? list.map(m => `<option value="${esc(m.id)}">${esc(m.model_spec?.name || m.id)} · $${imgPrice(m)}`
-        + `${m.model_spec?.uncensored ? ' · 무검열' : ''}</option>`).join('')
-    : '<option value="">— 조건에 맞는 모델 없음 —</option>';
-  if (saved && list.some(m => m.id === saved)) $('sImgModel').value = saved;
-  else localStorage.setItem(LS.imgModel, $('sImgModel').value);
+  const match = m => !q || (m.id + ' ' + (m.model_spec?.name || '')).toLowerCase().includes(q);
+  const label = m => esc(m.model_spec?.name || m.id) + ' · $' + imgPrice(m) +
+                     (m.model_spec?.uncensored ? ' · 무검열' : '');
+  const fill = (id, key, list, fallback) => {
+    const saved = localStorage.getItem(key) || '';
+    $(id).innerHTML = list.length
+      ? list.map(m => '<option value="' + esc(m.id) + '">' + label(m) + '</option>').join('')
+      : '<option value="">— 조건에 맞는 모델 없음 —</option>';
+    if (saved && list.some(m => m.id === saved)) $(id).value = saved;
+    else {
+      const auto = list.find(m => fallback.test(m.id)) || list[0];
+      if (auto){ $(id).value = auto.id; localStorage.setItem(key, auto.id); }
+    }
+  };
+  const onlyUnc = $('sImgUnc').checked;
+  const general = S.imgModels.filter(m => !onlyUnc || m.model_spec?.uncensored).filter(match);
+  fill('sImgModel', LS.imgModel, general, /z-image|sd35|chroma/i);
+  fill('sImgHi',    LS.imgHi,    S.imgModels.filter(match), /flux-2-pro|flux|seedream|qwen-image/i);
+  const unc = S.imgModels.filter(m => m.model_spec?.uncensored).filter(match);
+  fill('sImgNsfw',   LS.imgNsfw,   unc, /lustify-v8|lustify/i);
+  fill('sImgNsfwHi', LS.imgNsfwHi, unc, /lustify-v8|lustify/i);
   showImgCost();
+}
+
+/* 장면과 선택한 계층으로 어떤 모델을 쓸지 정한다.
+   성인향 장면은 계층과 무관하게 무검열 모델이 우선이다. 고급 모델은 성인향을 거부한다. */
+/* 어떤 모델로, 몇 스텝으로, 업스케일을 걸지까지 한 번에 정한다.
+   성인향은 계층과 무관하게 무검열 축으로 간다. 고급 모델은 성인향을 거부한다. */
+function imgPlan(bare, tier){
+  const hi   = tier === 'hi';
+  const base = localStorage.getItem(LS.imgModel) || '';
+  const gHi  = localStorage.getItem(LS.imgHi) || '';
+  const nsfw = localStorage.getItem(LS.imgNsfw) || '';
+  const nHi  = localStorage.getItem(LS.imgNsfwHi) || nsfw;
+  const up   = (localStorage.getItem(LS.imgUp) ?? '1') === '1';
+  let chain, steps = 25, upscale = 0;
+  if (bare){
+    chain = hi ? [nHi, nsfw, base] : [nsfw, nHi, base];
+    if (hi){ steps = 40; upscale = up ? 2 : 0; }
+  } else if (tier === 'nsfw'){
+    chain = [nsfw, nHi, base];
+  } else if (hi){
+    chain = [gHi, base, nsfw]; steps = 40;
+  } else {
+    chain = [base, gHi, nsfw];
+  }
+  return {chain: chain.filter((m, i, a) => m && a.indexOf(m) === i), steps, upscale};
 }
 function showImgCost(){
   const m = imgSpec();
@@ -2027,6 +2241,7 @@ async function buildImagePrompt(sceneText, stateTxt, stateCard){
   const pf = S.character?.profile || {};
   const look = (pf.look || '').trim();
   const bare = undressed(stateCard) || /벗|알몸|나체|삽입|결합/.test(String(sceneText || ''));
+  S.imgBare = bare;   /* 어떤 계층의 모델을 쓸지 정하는 데 쓴다 */
   const outfit = bare ? '' : (pf.outfit || '').trim();
   const L = imgLevel();
   const ask = tagAsk(sceneText, stateTxt, look, outfit);
@@ -2058,11 +2273,51 @@ async function buildImagePrompt(sceneText, stateTxt, stateCard){
   return IMG_STYLE + ', ' + tags + ', ' + extra.join(', ');
 }
 
-async function veniceImage(prompt){
+/* 계층 순서대로 시도한다. 앞 모델이 거부하거나 죽어도 그림은 나온다. */
+/* 업스케일은 base64 를 받아 PNG 바이너리를 돌려준다 */
+async function veniceUpscale(dataUri, scale){
+  const key = imgKey();
+  const b64 = String(dataUri).split(',')[1];
+  if (!b64) throw new Error('업스케일할 이미지가 없습니다');
+  const res = await fetch(VENICE + '/image/upscale', {
+    method:'POST',
+    headers:{'Authorization':'Bearer ' + key, 'Content-Type':'application/json'},
+    body: JSON.stringify({image: b64, scale: scale || 2, creativity: 0.01})
+  });
+  if (!res.ok) throw new Error('업스케일 HTTP ' + res.status);
+  const blob = await res.blob();
+  return await new Promise((ok, no) => {
+    const r = new FileReader();
+    r.onload = () => ok(r.result);
+    r.onerror = () => no(new Error('업스케일 결과를 읽지 못했습니다'));
+    r.readAsDataURL(blob);
+  });
+}
+
+async function veniceImageAuto(prompt){
+  const plan = imgPlan(!!S.imgBare, S.imgTier || 'auto');
+  if (!plan.chain.length) throw new Error('이미지 모델이 지정되지 않았습니다');
+  let last = null, url = null;
+  for (let i = 0; i < plan.chain.length; i++){
+    try{
+      if (i > 0) toast(plan.chain[i].split('/').pop() + ' 로 다시 시도합니다');
+      url = await veniceImage(prompt, plan.chain[i], plan.steps);
+      break;
+    }catch(e){ last = e; }
+  }
+  if (!url) throw last;
+  if (plan.upscale){
+    try{ url = await veniceUpscale(url, plan.upscale); }
+    catch(e){ toast('업스케일은 실패했습니다 — 원본으로 둡니다'); }   /* 그림 자체를 버리지는 않는다 */
+  }
+  return url;
+}
+
+async function veniceImage(prompt, modelId, steps){
   const key = imgKey();
   if (!key) throw new Error('Venice API 키가 없습니다');
-  const spec = imgSpec();
-  const model = localStorage.getItem(LS.imgModel);
+  const model = modelId || localStorage.getItem(LS.imgModel);
+  const spec = S.imgModels.find(m => m.id === model);
   if (!model) throw new Error('이미지 모델이 지정되지 않았습니다');
   const [w, h] = (localStorage.getItem(LS.imgSize) || '832x1216').split('x').map(Number);
   const seed = parseInt(S.character?.profile?.seed, 10);
@@ -2075,7 +2330,7 @@ async function veniceImage(prompt){
     headers:{'Authorization':'Bearer ' + key, 'Content-Type':'application/json'},
     body: JSON.stringify({
       model, prompt: prompt.slice(0, maxLen), negative_prompt: IMG_NEG + imgLevel().neg,
-      width:w, height:h, steps: Math.min(25, maxSteps), cfg_scale: 6,
+      width:w, height:h, steps: Math.min(steps || 25, maxSteps), cfg_scale: 6,
       safe_mode: false, hide_watermark: true, format: 'webp',
       ...(Number.isFinite(seed) ? {seed} : {})
     })
@@ -2099,7 +2354,7 @@ async function attachImage(msg){
     const mem = await getMem(S.chat.id);
     const scene = String(msg.content).replace(/\n?[ \t]*\[상태\][^\n]*/g, '').slice(0, 2000);
     const prompt = await buildImagePrompt(scene, fmtState(mem.stateCard), mem.stateCard);
-    const url = await veniceImage(prompt);
+    const url = await veniceImageAuto(prompt);
     msg.images = [...(msg.images || []), url];
     msg.imgPrompt = prompt;
   }catch(e){
@@ -2147,6 +2402,47 @@ function askImage(rest){
     send({text: rest || '`장면을 이어서 진행한다`', image: b.dataset.a === 'y'});
   });
 }
+
+/* 이미지 아이콘을 길게 누르면 생성 모델을 고를 수 있다.
+   기본은 설정에 지정된 모델이고, 비싸더라도 품질이 좋은 쪽으로 그 자리에서 바꿀 수 있다. */
+function imgModelSheet(){
+  if (!imgKey()){ show('vSettings'); return toast('설정에서 Venice API 키를 먼저 입력하십시오'); }
+  if (!S.imgModels.length){ fetchImgModels(); return toast('모델 목록을 불러오는 중입니다. 잠시 후 다시 눌러주십시오'); }
+  const nameOf = id => {
+    const m = S.imgModels.find(x => x.id === id);
+    return m ? (m.model_spec?.name || m.id) + ' · $' + imgPrice(m) : '(미지정)';
+  };
+  const cur = S.imgTier || 'auto';
+  const mark = t => (t === cur ? '● ' : '○ ');
+  sheet('이미지 생성 방식', [
+    {label: mark('auto') + '자동 (권장) — 일반은 기본, 성인향은 무검열',
+     run: () => { S.imgTier = 'auto'; toast('자동으로 되돌렸습니다'); }},
+    {label: mark('hi') + '고급 — 일반 ' + nameOf(localStorage.getItem(LS.imgHi)).split(' · ')[0] +
+            ' · 성인향 ' + nameOf(localStorage.getItem(LS.imgNsfwHi)).split(' · ')[0] + ' +업스케일',
+     run: () => { S.imgTier = 'hi'; toast('고급으로 뽑습니다. 성인향 장면은 무검열 고급으로 자동 전환됩니다'); }},
+    {label: mark('base') + '기본 — ' + nameOf(localStorage.getItem(LS.imgModel)),
+     run: () => { S.imgTier = 'base'; toast('기본 모델로 뽑습니다'); }},
+    {label: mark('nsfw') + '무검열 — ' + nameOf(localStorage.getItem(LS.imgNsfw)),
+     run: () => { S.imgTier = 'nsfw'; toast('무검열 모델로 뽑습니다'); }},
+    {label: '⚙ 모델 지정하러 가기', run: () => show('vSettings')}
+  ]);
+}
+(function bindLongPress(){
+  const el = $('cImgAutoWrap');
+  if (!el) return;
+  let timer = null, fired = false;
+  const start = () => { fired = false; timer = setTimeout(() => { fired = true; imgModelSheet(); }, 550); };
+  const stop  = () => { clearTimeout(timer); };
+  el.addEventListener('touchstart', start, {passive:true});
+  el.addEventListener('touchend', stop);
+  el.addEventListener('touchmove', stop, {passive:true});
+  el.addEventListener('mousedown', start);
+  el.addEventListener('mouseup', stop);
+  el.addEventListener('mouseleave', stop);
+  el.addEventListener('contextmenu', e => e.preventDefault());
+  /* 길게 눌러 시트를 띄운 경우, 손을 뗄 때 체크박스가 토글되지 않게 막는다 */
+  el.addEventListener('click', e => { if (fired){ e.preventDefault(); e.stopPropagation(); fired = false; } }, true);
+})();
 
 /* ═══════════════ 전송 ═══════════════ */
 $('cSend').onclick = () => send();
@@ -2428,17 +2724,192 @@ function rollBodyMale(frame){
 /* 여성 체형 단어를 남성용으로 바꿔치기한다 ('글래머'는 남성에게 안 어울리는 표현) */
 const frameForMale = f => f === '글래머' ? '건장한' : f;
 
+/* 직업은 [이름, 최소나이, 최대나이] 로 둔다.
+   나이를 먼저 굴리고 직업을 뽑으면 "30대 대학생"이나 "20살 국선변호사" 같은 조합이 나온다.
+   그래서 직업을 먼저 뽑고, 그 직업이 허용하는 구간 안에서 나이를 정한다. */
+const JOBS_TASTE = [
+  ['대학생', 19, 25], ['대학원생', 23, 30], ['미술대학 졸업반', 22, 26],
+  ['미술관 큐레이터', 28, 40], ['건축사무소 실무자', 26, 38], ['독립서점 주인', 29, 42],
+  ['도예 공방 운영', 30, 45], ['플로리스트', 24, 38], ['치과위생사', 23, 35],
+  ['도서관 사서', 26, 40], ['재즈바 피아니스트', 25, 40], ['요가 강사', 25, 38],
+  ['방송작가', 26, 38], ['수의사', 28, 42], ['웹소설 편집자', 25, 36],
+  ['조향사', 27, 40], ['카페 로스터', 25, 38], ['현대무용수', 22, 33],
+  ['국선변호사', 29, 45], ['초등교사', 25, 40], ['필라테스 강사', 24, 36],
+  ['영화 스크립터', 24, 34], ['심리상담사', 29, 45], ['제과 파티시에', 23, 36],
+  ['악기 수리공', 30, 48], ['박물관 보존처리사', 28, 42], ['국악 연주자', 24, 40],
+  ['번역가', 26, 42], ['건축 모형 제작자', 25, 38], ['천문대 연구원', 28, 42]
+];
+const JOBS_WILD = JOBS_TASTE.concat([
+  ['체대생', 19, 25], ['의대생', 20, 27], ['로스쿨생', 24, 30], ['공무원 준비생', 22, 30],
+  ['강력계 형사', 30, 45], ['사설탐정', 30, 48], ['응급구조사', 24, 38], ['소방관', 25, 42],
+  ['타투이스트', 24, 38], ['클럽 DJ', 22, 34], ['밴드 보컬', 21, 34], ['스턴트 배우', 23, 36],
+  ['격투기 선수', 21, 33], ['채권 추심원', 27, 45], ['보험조사관', 28, 45], ['장의사', 30, 50],
+  ['법의학 조수', 26, 38], ['트럭 운전기사', 28, 50], ['항공 승무원', 23, 36], ['소믈리에', 27, 42],
+  ['호텔 컨시어지', 25, 40], ['경마 기수', 20, 32], ['산악구조대원', 26, 42], ['잠수부', 25, 40],
+  ['성우', 24, 42], ['마술사', 23, 40], ['스타트업 대표', 26, 42], ['증권 트레이더', 25, 40],
+  ['통역사', 25, 40], ['기상 캐스터', 24, 36], ['편의점 야간 알바', 19, 32], ['노점 상인', 30, 55],
+  ['무속인', 28, 50], ['간호사', 23, 40], ['정비공', 24, 45], ['드론 촬영기사', 23, 36],
+  ['프로게이머 코치', 23, 34]
+]);
+
+/* 관계는 [이름, 기준 경계] 로 둔다.
+   2년 된 이웃과 오늘 처음 만난 사람의 초기 경계가 같을 수 없으므로,
+   경계는 고정 중위값이 아니라 관계에서 끌어온다. */
+/* 전부 "나에게 이 인물은 무엇인가"로 읽히게, 캐릭터를 주어로 쓴다.
+   내 직업을 확정해 버리는 항목(내 가게 단골 등)은 넣지 않는다. */
+/* [이름, 기준 경계, 기준 호감, 기준 반감]
+   반감은 호감의 반대가 아니라 별개 축이다. 좋아하면서 동시에 미울 수 있다. */
+const RELS_TASTE = [
+  ['같은 층에 사는 이웃', 40, 20, 4], ['내 직속 상사', 45, 18, 8],
+  ['자주 가는 가게의 주인', 38, 22, 3], ['대학 동기', 25, 26, 5],
+  ['작업실 옆방을 쓰는 사람', 35, 22, 5], ['전 직장에서 나를 가르치던 사수', 35, 20, 7],
+  ['같은 스터디에 나오는 사람', 40, 18, 5], ['자주 가는 바의 피아니스트', 35, 24, 3],
+  ['내 동생의 친구', 35, 18, 5], ['새로 이사 온 옆집 사람', 55, 12, 4],
+  ['같은 헬스장에서 자주 마주치는 사람', 45, 18, 5], ['내 반려동물을 봐주는 수의사', 45, 16, 3],
+  ['옆 팀에서 같은 시간대에 야근하는 사람', 42, 18, 6], ['고등학교 동창', 25, 24, 5],
+  ['내 친구의 누나', 40, 18, 4], ['합주실을 같이 쓰는 사람', 35, 22, 5],
+  ['내가 다니는 공방의 선생', 38, 22, 4]
+];
+const RELS_WILD = RELS_TASTE.concat([
+  ['오늘 처음 만난 사람', 60, 10, 3], ['소개팅에서 만난 상대', 50, 20, 5],
+  ['룸메이트를 구하다 만난 사람', 55, 12, 6], ['헤어진 옛 연인', 50, 35, 25],
+  ['나와 척진 사이', 85, 5, 70], ['내가 의뢰한 사건을 맡은 조사자', 50, 14, 6],
+  ['내게 돈을 받으러 온 추심원', 70, 6, 30], ['같은 사건을 목격한 사람', 55, 12, 6],
+  ['나를 라이벌로 여기는 사람', 65, 15, 40], ['나를 취조하는 형사', 75, 6, 25],
+  ['같은 병실을 쓰게 된 사람', 45, 18, 5], ['비행기 옆자리에 앉은 사람', 55, 12, 5],
+  ['엘리베이터에 함께 갇힌 사람', 55, 14, 6], ['내기로 엮인 사람', 50, 16, 12],
+  ['친구 소개로 알게 된 사람', 42, 20, 4]
+]);
+
+/* 모델에게 이름을 맡기면 서 · 지 · 하 · 윤 같은 몇 글자만 반복된다.
+   앱이 성과 이름을 각각 뽑아 고정 재료로 넘겨 편향을 끊는다. */
+const SURNAME = [
+  '김','김','이','이','박','박','최','정','강','조','윤','장','임','한','오','서','신','권',
+  '황','안','송','전','홍','고','문','양','손','배','백','허','유','남','심','노','하','곽',
+  '성','차','주','우','구','민','진','지','엄','채','원','천','방','공','현','함','변','염',
+  '여','추','도','소','석','선','설','마','길','연','위','표','명','기','반','금','육','인',
+  '맹','제','모','탁','국','어','은','편','용','봉','석','옥','왕','피','계'
+].filter(x => /^[가-힣]$/.test(x));
+/* 20~40대 한국인에게 실제로 흔한 이름 위주로, 시대와 결을 섞는다 */
+const GIVEN_F = [
+  '지영','수진','은지','혜진','미나','예은','다인','소연','유진','하늘','슬기','보람','아름',
+  '나연','세영','채원','다솜','민경','서윤','현주','지수','은영','가연','도희','수아','예린',
+  '주희','한별','시은','다현','윤아','소영','재이','태희','유나','희원','연서','미소','다은',
+  '가온','서진','정민','혜원','수현','지안','라온','새봄','온유','다올','시연','예나'
+];
+const GIVEN_M = [
+  '지훈','민수','성호','현우','준영','태호','상현','도경','재현','승우','건우','한결','우진',
+  '시우','정우','태윤','기범','성진','영재','동하','규민','찬영','민재','호준','세훈','유찬',
+  '도현','재원','상혁','승기','예준','하준','연호','시온','강우','태경','주원','은성'
+].filter(x => /^[가-힣]+$/.test(x));
+
+function rollName(gender){
+  const given = gender === 'm' ? pick(GIVEN_M) : pick(GIVEN_F);
+  return pick(SURNAME) + given;
+}
+
+/* 직업을 갖게 된 경로. 이것을 주지 않으면 모델이 늘 "부모의 영향"으로 쓴다. */
+const JOB_PATH = [
+  ['전공을 그대로 살렸다', 18],
+  ['전공과 무관하다. 취업이 안 돼서 들어간 곳에 그대로 눌러앉았다', 16],
+  ['취미로 하던 일이 어쩌다 직업이 됐다', 14],
+  ['과거의 어떤 사건이나 경험이 계기가 됐다', 12],
+  ['우연히 아르바이트로 시작했다가 계속하게 됐다', 12],
+  ['돈이 필요해서 고른 일이고 적성은 따지지 않았다', 10],
+  ['지인의 권유로 얼떨결에 발을 들였다', 8],
+  ['부모나 가족의 영향을 받았다', 6],
+  ['원래 하던 일을 그만두고 뒤늦게 바꿨다', 4]
+];
+function pickWeighted(pairs){
+  const total = pairs.reduce((a, p) => a + p[1], 0);
+  let r = Math.random() * total;
+  for (const p of pairs){ r -= p[1]; if (r <= 0) return p[0]; }
+  return pairs[pairs.length - 1][0];
+}
+/* 드물게 일을 쉬고 있는 상태 */
+const JOBLESS = [
+  ['구직 중', 22, 32], ['퇴사 후 쉬는 중', 25, 38],
+  ['시험 준비 중', 22, 30], ['휴직 중', 27, 40]
+];
+
+/* 정규분포 난수 (상자-뮐러). 평균 50 · 표준편차 15면 대부분 20~80에 모이고 극단은 드물다. */
+function gauss(mean, sd){
+  let u = 0, v = 0;
+  while (!u) u = Math.random();
+  while (!v) v = Math.random();
+  return mean + sd * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+const rollStat = (mean, sd) => Math.max(0, Math.min(100, Math.round(gauss(mean ?? 50, sd ?? 15))));
+/* 대칭 정규분포만 쓰면 기준값 근처만 나와 인물이 판에 박힌다.
+   가끔 눈에 띄게 벗어나는 값이 나오도록 꼬리를 붙인다. */
+const skewUp   = (base, sd) => rollStat(base + (Math.random() < 0.25 ? 8 + Math.random() * 22 : 0), sd);
+const skewBoth = (base, sd) => rollStat(
+  base + (Math.random() < 0.15 ? (Math.random() < 0.5 ? 1 : -1) * (8 + Math.random() * 14) : 0), sd);
+/* 반감은 대부분 한 자리에 몰려야 한다. 좁은 봉우리에 얇고 긴 꼬리를 붙인다.
+   기준 5 기준으로 0~8 이 84%, 9~20 이 11%, 21~40 이 5% 나온다. */
+const skewLow = base => rollStat(base + (Math.random() < 0.10 ? 8 + Math.random() * 17 : 0), 3);
+/* 능력(체력·지능·매력) → 성향(욕심·대담·욕구) → 관계(호감·반감·경계) → 지금(취기) 순 */
+const STAT_KEYS = ['hp','int','cha','amb','brv','des','aff','ant','grd','drk'];
+const STAT_LABEL = {hp:'체력', int:'지능', cha:'매력', amb:'욕심', brv:'대담',
+                    des:'욕구', aff:'호감', ant:'반감', grd:'경계', drk:'취기'};
+const statWord = v => v >= 80 ? '매우 높음' : v >= 65 ? '높음' : v >= 45 ? '보통' : v >= 30 ? '낮음' : '매우 낮음';
+
+/* 선호형은 처음부터 옅은 호감이 있는 관계에서 시작하므로 호감을 높이고 경계를 낮춘다. */
+/* 세 갈래로 나눠 굴린다.
+   체력 · 지능 · 매력 — 인물 고유의 특성. 모집단 평균이 곧 중위값이므로 50.
+   호감 · 경계      — 관계의 상태. 경계는 관계에서 끌어오고, 호감은 그 경계에 반비례시킨다.
+                      독립으로 굴리면 "호감 85인데 경계 85" 같은 모순 조합이 나온다.
+   욕구            — 평소 기준선은 50. 다만 대화 첫 장면의 상태값은 이 값의 35%만 쓴다
+                      (initialState 참조). 처음 마주친 순간부터 기준선 그대로일 수는 없다. */
+/* 수치는 0 기준이다 (앱의 수치 해석 규칙과 같다).
+     10 이하 거의 없음 · 20 이하 미약 · 40 이하 약함 · 60 이하 보통 · 80 이하 강함
+   따라서 "옅은 호감"은 50이 아니라 20 근처다.
+
+   체력 · 지능 · 매력 — 인물 고유 특성. 모집단 중앙이 50.
+   호감 · 경계      — 관계의 상태. 각각 관계에서 기준을 끌어온다.
+                      둘은 반대축이 아니다. "호감은 크지만 경계도 크다"는 모순이 아니라
+                      이 앱이 다루는 인물들의 기본형이므로 강한 음의 상관을 걸지 않는다.
+   욕구            — 평소 기준선은 50. 대화 첫 장면의 상태값은 따로 낮춘다(initialState). */
+function rollStats(mode, guardBase, affBase, antiBase){
+  const wild = mode !== 'taste';
+  const gBase = guardBase == null ? (wild ? 52 : 40) : guardBase;
+  const aBase = affBase   == null ? (wild ? 16 : 21) : affBase;
+  const nBase = antiBase  == null ? 5 : antiBase;
+  const grd = skewBoth(gBase, wild ? 10 : 9);
+  /* 이 인물이 유독 경계가 심하게 나왔다면 호감을 조금만 끌어내린다 (상관 -0.2 수준) */
+  const aff = skewUp(aBase - (grd - gBase) * 0.15, 8);
+  return {
+    hp:  rollStat(50, 15),
+    int: rollStat(50, 15),
+    cha: rollStat(50, 15),
+    /* 선호형은 "바람은 큰데 꺼내지 못하는" 결을 지향한다. 욕심은 올리고 대담은 내린다. */
+    amb: rollStat(wild ? 50 : 57, 15),
+    brv: rollStat(wild ? 50 : 43, 15),
+    des: skewUp(50, 12),
+    aff, grd,
+    ant: skewLow(nBase),
+    drk: 0
+  };
+}
+
+/* 인물의 기준값에서 "대화를 막 시작한 시점"의 상태값을 만든다.
+   욕구는 평소 기준선이지 첫 장면의 값이 아니다. 처음 마주친 순간엔 거의 없다시피 해야 한다. */
+function initialState(st){
+  return {
+    호감: String(st.aff ?? 20),
+    반감: String(st.ant ?? 5),
+    긴장: String(st.grd ?? 45),
+    욕구: String(Math.max(3, Math.round((st.des ?? 50) * 0.18))),
+    체력: String(st.hp ?? 50),
+    취기: String(st.drk ?? 0)
+  };
+}
+
+
 /* 선호형 — 기존 다섯 명에서 뽑아낸 결에 맞춘 좁은 풀 */
 const TASTE = {
-  job: ['미술관 큐레이터','건축사무소 실무자','독립서점 주인','도예 공방 운영','플로리스트',
-        '치과위생사','도서관 사서','재즈바 피아니스트','요가 강사','방송작가','수의사',
-        '웹소설 편집자','조향사','카페 로스터','현대무용수','국선변호사','초등교사',
-        '필라테스 강사','영화 스크립터','심리상담사','제과 파티시에','악기 수리공',
-        '박물관 보존처리사','국악 연주자','번역가','건축 모형 제작자','천문대 연구원'],
-  relation: ['같은 층 이웃','직속 상사','주 2~3회 오는 단골','대학 동기','작업실 옆방',
-             '전 직장 사수','같은 스터디 멤버','자주 가는 가게 주인','동생의 친구',
-             '새로 이사 온 옆집','같은 헬스장에서 자주 마주치는 사이','반려동물 병원 담당의',
-             '같은 시간대 야근하는 옆 팀','고등학교 동창','친구의 누나','합주실을 같이 쓰는 사이'],
+  job: JOBS_TASTE,
+  relation: RELS_TASTE,
   surface: ['차분하고 말수가 적음','밝고 붙임성 좋음','유능하고 단호함','자유분방하고 거침없음',
             '사려 깊고 조심스러움','무심하고 시크함','장난스럽고 능청스러움','다정하지만 거리를 둠'],
   lack: ['인정받고 싶은 마음을 들키기 싫어함','버려지는 것에 대한 공포',
@@ -2454,17 +2925,8 @@ const TASTE = {
 
 /* 완전 랜덤 — 결을 가리지 않고 넓게 */
 const WILD = {
-  job: TASTE.job.concat([
-    '강력계 형사','사설탐정','응급구조사','소방관','타투이스트','클럽 DJ','밴드 보컬',
-    '스턴트 배우','격투기 선수','채권 추심원','보험조사관','장의사','법의학 조수',
-    '트럭 운전기사','항공 승무원','소믈리에','호텔 컨시어지','경마 기수','산악구조대원',
-    '잠수부','성우','마술사','스타트업 대표','증권 트레이더','통역사','기상 캐스터',
-    '편의점 야간 알바','노점 상인','무속인','간호사','정비공','드론 촬영기사','프로게이머 코치']),
-  relation: [
-    '오늘 처음 만난 사람','소개팅 상대','룸메이트 구인으로 만난 사이','전 연인','원수',
-    '의뢰인과 조사자','채권자와 채무자','같은 사건의 목격자','라이벌','취조하는 쪽과 받는 쪽',
-    '같은 병실을 쓰게 된 사이','비행기 옆자리','엘리베이터에 함께 갇힌 사이','내기로 엮인 사이',
-    '같은 층 이웃','직속 상사','단골','대학 동기','작업실 옆방','친구의 소개로 알게 된 사이'],
+  job: JOBS_WILD,
+  relation: RELS_WILD,
   surface: TASTE.surface.concat(['공격적이고 도발적','냉소적이고 비관적','과하게 밝고 시끄러움',
     '계산적이고 능글맞음','위태롭고 충동적','무해해 보이지만 집요함','예의 바르지만 차가움',
     '허세가 심하고 우스꽝스러움']),
@@ -2490,19 +2952,32 @@ function rollSeeds(mode, gender){
   const POOL = mode === 'taste' ? TASTE : WILD;
   const lo = Math.max(18, parseInt(localStorage.getItem(LS.ageMin) || '20', 10));
   const hi = Math.max(lo, parseInt(localStorage.getItem(LS.ageMax) || '39', 10));
+
+  /* 설정한 나이 범위와 겹치는 직업만 후보로 둔다. 하나도 없으면 직업 쪽 범위를 따른다. */
+  /* 6% 확률로 일을 쉬고 있는 상태를 섞는다 */
+  const jobPool = Math.random() < 0.06 ? JOBLESS : POOL.job;
+  const fit = jobPool.filter(j => j[2] >= lo && j[1] <= hi);
+  const job = pick(fit.length ? fit : jobPool);
+  const aLo = Math.max(lo, job[1]), aHi = Math.min(hi, job[2]);
+  const age = aLo <= aHi ? randInt(aLo, aHi) : randInt(job[1], job[2]);
+
+  const rel = pick(POOL.relation);   /* [이름, 기준 경계] */
   const frameRaw = pick(POOL.frame);
   const frame = gender === 'm' ? frameForMale(frameRaw) : frameRaw;
   const bodyRoll = gender === 'm' ? rollBodyMale(frame) : rollBody(frame);
   return {
-    age: randInt(lo, hi),
-    job: pick(POOL.job),
-    relation: pick(POOL.relation),
+    age,
+    name: rollName(gender),
+    jobPath: pickWeighted(JOB_PATH),
+    job: job[0],
+    relation: rel[0],
     surface: pick(POOL.surface),
     lack: pick(POOL.lack),
     when: pick(POOL.when),
     frame,
     body: bodyRoll.body, bust: bodyRoll.bust, waist: bodyRoll.waist, hip: bodyRoll.hip,
     temper: POOL.temper.length ? pick(POOL.temper) : "",
+    stats: rollStats(mode, rel[1], rel[2], rel[3]),
     imgSeed: randInt(100000, 999999)
   };
 }
@@ -2564,21 +3039,32 @@ function cardPrompt(seed, mode, gender){
     '너는 롤플레잉 앱에 넣을 인물 카드를 쓰는 작가다. 아래 재료로 ' + genderWord + ' 인물 한 명을 완성한다.',
     '',
     '[고정 재료 — 바꾸지 말고 그대로 쓴다]',
+    '- 이름: ' + seed.name + ' (이 이름을 그대로 쓴다. 다른 이름을 짓지 않는다)',
     '- 나이: ' + seed.age + '세',
     '- 직업: ' + seed.job,
     '- 신체: ' + seed.body,
     '- 체형: ' + seed.frame + ' 편',
-    '- {{user}}와의 관계: ' + seed.relation,
+    '- {{user}}에게 이 인물은: ' + seed.relation + ' (이 인물이 주어다. {{user}}의 직업을 여기서 유추해 확정하지 않는다)',
     '- 겉으로 보이는 성향: ' + seed.surface,
     '- 속에 있는 결핍: ' + seed.lack,
-    '- 첫 장면의 시간대: ' + seed.when
+    '- 첫 장면의 시간대: ' + seed.when,
+    '- 지금 직업을 갖게 된 경로: ' + seed.jobPath
   ];
   if (seed.temper) L.push('- {{user}}를 대하는 온도: ' + seed.temper);
+  const st = seed.stats || {};
+  L.push('- 인물 스탯 (0~100): ' + STAT_KEYS.filter(k => k !== 'drk')
+      .map(k => STAT_LABEL[k] + ' ' + st[k] + '(' + statWord(st[k]) + ')').join(' · '));
+  L.push('  이 수치가 인물의 근거다. 지능과 체력은 직업 · 학력의 개연성에, 매력과 욕구는 성장 배경 · 연애 이력에,');
+  L.push('  호감 · 반감 · 경계는 {{user}}를 대하는 태도에, 욕심 · 대담은 그것을 겉으로 드러내고 행동에 옮기는 방식에 반영한다.');
+  L.push('  반감은 호감의 반대가 아니라 별개다. 욕심은 바라는 크기이고 대담은 그것을 꺼내는 힘이라, 욕심이 높고 대담이 낮으면 속으로만 앓는 인물이 된다. 본문에 숫자를 그대로 적지는 않는다.');
   if (taste) L.push('', '[선호 스타일 — 이 범위 안에서 쓴다]', taste);
   L.push(
     '',
     '[작성 규격 — 전체 분량을 지켜라. 각 섹션은 배정된 분량 안에서 문장을 끝맺어야 하며, 쓰다 만 문장으로 잘리면 안 된다.]',
-    '- 이름은 한국식 세 글자. 재료와 어울리되 흔하지 않은 이름으로 짓는다.',
+    '- NAME 은 위 고정 재료의 이름을 그대로 쓴다. 새로 짓지 않는다.',
+    '- [성장배경]에는 위 "직업을 갖게 된 경로"가 자연스럽게 드러나야 한다. 경로가 부모와 무관하면 부모의 직업과 인물의 직업을 임의로 연결하지 않는다. 가족 이야기는 직업과 별개의 사실로 쓴다.',
+    '- {{user}}의 직업 · 나이 · 성별 · 이름을 단정하지 않는다. 관계에서 필연적으로 따라오는 것(예: 상사라면 같은 직장에 다닌다)만 전제하고, 그 밖의 {{user}} 개인 정보는 쓰지 않는다. {{user}}가 무엇을 하는 사람인지는 대화에서 정해진다.',
+    '- 단어를 임의로 줄이지 않는다. "검지톱"이 아니라 "검지손톱", "왼손 검지 손톱을 만지작거린다"처럼 온전한 형태로 쓴다. 문장은 반드시 끝맺는다.',
     '- DESCRIPTION 은 아래 일곱 섹션을 이 순서대로, 대괄호 제목을 그대로 써서, 섹션당 1~2문장으로 짧게 채운다. 전체 DESCRIPTION은 500자를 넘기지 않는다.',
     '  (나이 · 직업 · 신체는 이미 위 재료와 EDU~DATING 항목에 있으니 여기서 다시 쓰지 않는다.)',
     '  [성장배경] 가정환경을 포함한 과거. 가정환경도 다른 요소만큼 비중 있게 한 문장으로 쓴다.',
@@ -2588,9 +3074,16 @@ function cardPrompt(seed, mode, gender){
     '  [가치관과 기준] 양보 못 하는 것 · 판단 기준 · 거절 방식 · 스스로 정한 규칙',
     '  [주도적으로 하는 행동] 먼저 꺼내는 화제와 행동',
     '  [{{user}}에 대한 현재 감정] 호감이든 반감이든 지금의 기본선',
-    '- PERSONALITY 는 겉면 / 내면 / 반응 양상 세 줄로, 각 줄 20자 이내로 짧게 쓴다.',
+    '- PERSONALITY 는 이 인물을 실존 인물처럼 만드는 가장 중요한 항목이다. 아래 다섯 항목을 이 순서로, 대괄호 제목을 그대로 써서 각 두세 문장씩 쓴다. 전체 450자 안팎.',
+    '  [겉면] 처음 본 사람이 받는 인상과, 실제로 어떻게 행동하는지',
+    '  [내면] 스스로도 잘 인정하지 않는 욕구와 두려움',
+    '  [반응 양상] 당황할 때 · 기쁠 때 · 불쾌할 때가 각각 어떻게 다르게 드러나는지',
+    '  [말버릇과 습관] 자주 쓰는 표현, 손이나 시선의 구체적인 버릇',
+    '  [모순] 겉과 속이 어긋나는 지점을 구체적인 상황 하나로',
     '- SCENARIO 는 첫 장면의 시간 · 장소 · 두 사람이 마주치는 계기를 두 문장 이내로 쓴다.',
-    '- FIRST_MES 는 전지적 작가 시점 서술로 열고, 대사는 이름 다음에 공백과 콜론을 두고 큰따옴표로 감싼다. 별표를 쓰지 않는다. 다섯 문장 이내.',
+    '- FIRST_MES 는 실제 응답과 똑같은 형식이어야 한다. 전지적 작가 시점 서술로 열고, 대사가 나올 때는 반드시 줄을 바꿔',
+    '    ' + '{{char}} : "대사 내용"',
+    '  형식으로 쓴다. 별표나 괄호를 쓰지 않고, 서술은 완결된 문장으로 맺는다. 서술 두세 문장에 대사 한두 개.',
     '- MES_EXAMPLE 은 아래 두 줄과 정확히 같은 형식으로, 그 형식만 써야 한다. 다른 어떤 줄도 섞지 않는다.',
     '    {{user}} : "실제 대사 문장"',
     '    ' + '{{char}} : "지문 없이 서술로 시작해 반응을 짧게 묘사한 뒤" 여기에 대사가 있다면 큰따옴표로. 지문만 있다면 따옴표 없이.',
@@ -2601,8 +3094,9 @@ function cardPrompt(seed, mode, gender){
     '  뻔한 미인형 조합("long straight black hair, almond eyes" 같은 상투구)을 그대로 반복하지 않는다. 위의 성향 · 결핍 · 직업과 어울리는 구체적이고 개성 있는 디테일을 최소 하나 넣는다 — 예: 특이한 흉터나 점, 비대칭적인 이목구비, 독특한 헤어스타일이나 색, 손이나 자세의 습관적 특징, 나이나 직업에서 오는 현실적인 흔적(굳은살, 다크서클, 자세 등). 매번 같은 미모의 공식을 재사용하지 않는다.',
     '- OUTFIT 은 평소 복장의 영어 태그다. 쉼표로 나열하고 15단어 이내로 쓴다.',
     '- TRAITS 는 성격을 12자 이내 한 줄로 줄인 말이다.',
-    '- EDU · FINANCE · LIVING 은 각각 한 줄, 15자 안팎으로 짧게 쓴다 (학력 / 재정수준 / 거주환경).',
-    '- DATING 은 한 줄로, 연애 경험치와 지금의 싱글 여부를 쓴다. 위 DESCRIPTION의 [연인관계]와 반드시 같은 사실이어야 한다.',
+    '- GROWTH · EDU · FINANCE · LIVING · FRIENDS 는 각각 한 줄로, 공백을 뺀 글자 수가 15~25자가 되게 쓴다.',
+    '  (성장배경 = 가정 구성과 자란 환경 / 학력 / 재정수준 / 거주환경 / 교우관계 = 친구 관계의 폭과 깊이)',
+    '- DATING 도 같은 분량으로, 연애 경험치와 지금의 싱글 여부를 쓴다. 위 DESCRIPTION의 [연인관계]와 반드시 같은 사실이어야 한다.',
     '- 위 배경 항목들은 서로 앞뒤가 맞아야 한다. 예: 재정수준이 빠듯하면 거주환경도 그에 맞게 쓴다.',
     '- 다른 인물의 이름을 섞지 않는다. 상대는 언제나 {{user}} 로만 쓴다.',
     '- LOOK과 OUTFIT을 제외한 모든 항목은 한국어로만 쓴다. 영어 단어, 러시아어, 한자를 섞지 않는다.',
@@ -2610,7 +3104,7 @@ function cardPrompt(seed, mode, gender){
     '[출력 형식] 아래 구분선을 하나도 빠뜨리지 말고 그대로 쓴다. 앞뒤에 다른 말을 덧붙이지 않는다. 각 섹션은 위에 적힌 분량을 넘기지 않아야, 전체가 끊기지 않고 끝까지 나온다.',
     '===NAME===', '===TRAITS===', '===LOOK===', '===DESCRIPTION===',
     '===OUTFIT===', '===PERSONALITY===', '===SCENARIO===', '===FIRST_MES===', '===MES_EXAMPLE===',
-    '===EDU===', '===FINANCE===', '===LIVING===', '===DATING===',
+    '===GROWTH===', '===EDU===', '===FINANCE===', '===LIVING===', '===FRIENDS===', '===DATING===',
     '===END==='
   );
   return L.join('\n');
@@ -2625,12 +3119,19 @@ async function generateCharacter(mode, gender){
   toast((mode === 'taste' ? '선호형' : '무작위') + ' 인물을 만드는 중입니다 — 보통 20~50초 걸려요. 끝나면 자동으로 열립니다.');
   try{
     const seed = rollSeeds(mode, gender);
-    const sec = parseSections(await askText(cardPrompt(seed, mode, gender), 3200, 1.0));
+    const sec = parseSections(await askText(cardPrompt(seed, mode, gender), 4200, 1.0));
     if (!sec.name || !sec.description) throw new Error('형식이 어긋났습니다. 다시 눌러보십시오');
 
-    let name = sec.name.split('\n')[0].replace(/["'()\[\]{}]/g, '').trim().slice(0, 12);
-    if (!name) throw new Error('이름을 받지 못했습니다');
-    while (S.characters.some(c => c.name === name)) name += '·';
+    let name = (sec.name || '').split('\n')[0].replace(/["'()\[\]{}·・]/g, '').trim().slice(0, 12);
+    /* 모델이 딴 이름을 지어 왔거나 비워 왔으면 앱이 뽑은 이름을 쓴다 */
+    if (!name || !/^[가-힣]{2,5}$/.test(name)) name = seed.name;
+    /* 같은 이름이 있으면 숫자를 붙인다. 예전에는 가운뎃점을 붙여 이름이 지저분해졌다. */
+    if (S.characters.some(c => c.name === name)){
+      const base = name;
+      let i = 2;
+      while (S.characters.some(c => c.name === base + ' ' + i)) i++;
+      name = base + ' ' + i;
+    }
 
     const c = {
       id: uid(), spec:'chara_card_v2', name,
@@ -2645,7 +3146,9 @@ async function generateCharacter(mode, gender){
         seed: String(seed.imgSeed),
         /* 쓰리사이즈는 본문(신체)이 아니라 숨김 항목에만 들어간다 */
         bust: seed.bust || '', waist: seed.waist || '', hip: seed.hip || '',
-        edu: sec.edu || '', finance: sec.finance || '', living: sec.living || '', dating: sec.dating || ''
+        growth: sec.growth || '', edu: sec.edu || '', finance: sec.finance || '',
+        living: sec.living || '', friends: sec.friends || '', dating: sec.dating || '',
+        stats: seed.stats
       },
       accent: pick(PALETTE), preferredModel:'', temperature:null,
       createdAt: now(), updatedAt: now()
@@ -2664,7 +3167,8 @@ async function generateCharacter(mode, gender){
    섹션 하나만 다시 채운다. 지금 폼에 있는 값들을 맥락으로 준다. */
 const SECTION_FIELD_MAP = {
   age:'ceAge', job:'ceJob', body:'ceBody',
-  edu:'ceEdu', finance:'ceFinance', living:'ceLiving', dating:'ceDating', traits:'ceTraits',
+  growth:'ceGrowth', edu:'ceEdu', finance:'ceFinance', living:'ceLiving',
+  friends:'ceFriends', dating:'ceDating', traits:'ceTraits',
   desc:'ceDesc', pers:'cePers', scen:'ceScen', rel:'ceRel',
   first:'ceFirst', ex:'ceEx',
   look:'ceLook', outfit:'ceOutfit'
@@ -2675,21 +3179,25 @@ const SECTION_DEFS = {
     'JOB 은 짧게, 화려하거나 유명하지 않은 현실적인 직업으로.',
     'BODY 는 "키cm/몸무게kg" 형식으로만 쓴다. 쓰리사이즈는 여기 넣지 않는다.'
   ]},
-  bg: { label:'성장 배경', fields:['edu','finance','living','dating','traits'], instr:[
-    'EDU 학력, 한 줄로 짧게.',
-    'FINANCE 재정수준, 한 줄로 짧게.',
-    'LIVING 거주환경, 한 줄로 짧게.',
-    'DATING 연애이력과 지금 싱글인지, 한 줄. 85% 확률로 지금은 솔로로 설정한다(과거 연애 경험은 있을 수 있음).',
+  bg: { label:'성장 배경', fields:['growth','edu','finance','living','friends','dating','traits'], instr:[
+    '아래 여섯 항목(GROWTH~DATING)은 각각 한 줄이며, 공백을 뺀 글자 수가 15~25자가 되게 쓴다.',
+    'GROWTH 성장배경 — 가정 구성(부모 · 형제)과 자란 환경. 부모의 직업과 인물의 직업을 임의로 연결하지 않는다.',
+    'EDU 학력.',
+    'FINANCE 재정수준.',
+    'LIVING 거주환경.',
+    'FRIENDS 교우관계 — 친구 관계의 폭과 깊이.',
+    'DATING 연애이력과 지금 싱글인지. 85% 확률로 지금은 솔로로 설정한다(과거 연애 경험은 있을 수 있음).',
     'TRAITS 성격을 12자 이내 한 줄로.'
   ]},
   detail: { label:'세부 설정', fields:['desc','pers','scen','rel'], instr:[
+    '단어를 임의로 줄이지 않는다. "검지톱"이 아니라 "검지손톱"처럼 온전한 형태로 쓰고, 문장은 반드시 끝맺는다.',
     'DESC 는 설정(description)이다. [성장배경](가정환경 포함) [{{user}}와의 관계] [연인관계](연애 스타일 포함, 위 DATING과 같은 사실) [취향](취미 포함) [가치관과 기준] [주도적으로 하는 행동] [{{user}}에 대한 현재 감정] 일곱 섹션을 대괄호 제목 그대로, 섹션당 1~2문장으로 채운다. 전체 500자 이내, 문장이 중간에 끊기지 않게 한다.',
-    'PERS 는 성격(personality). 겉면 / 내면 / 반응 양상 세 줄, 각 줄 20자 이내.',
+    'PERS 는 성격(personality)이며 이 인물의 핵심이다. [겉면] [내면] [반응 양상] [말버릇과 습관] [모순] 다섯 항목을 대괄호 제목 그대로, 각 두세 문장씩 쓴다. 전체 450자 안팎.',
     'SCEN 는 상황(scenario). 시간 · 장소 · 마주치는 계기를 두 문장 이내로.',
-    'REL 은 {{user}}와의 관계, 한 줄.'
+    'REL 은 {{user}}에게 이 인물이 무엇인지를 한 줄로 쓴다. 반드시 이 인물이 주어다 (예: "자주 가는 가게의 주인"). {{user}}의 직업이나 신상을 단정하지 않는다.'
   ]},
   dialogue: { label:'대화 방식', fields:['first','ex'], instr:[
-    'FIRST 는 첫 대사(first_mes). 전지적 작가 시점 서술로 열고, 대사는 이름 다음 공백+콜론 뒤 큰따옴표. 별표 금지. 다섯 문장 이내.',
+    'FIRST 는 첫 대사(first_mes)이며 실제 응답과 똑같은 형식이어야 한다. 전지적 작가 시점 서술로 열고, 대사는 줄을 바꿔 {{char}} : "대사" 형식으로 쓴다. 별표 · 괄호 금지. 서술 두세 문장에 대사 한두 개.',
     'EX 는 예시 대화(mes_example). 반드시 정확히 두 줄만 쓴다:\n' +
       '    {{user}} : "실제 대사 문장"\n' +
       '    {{char}} : 지문으로 반응을 짧게 묘사한 뒤 대사가 있다면 큰따옴표로 잇는다.\n' +
@@ -2705,14 +3213,43 @@ function currentCharContext(){
   const parts = ['성별: ' + ($('ceGender').value === 'm' ? '남성' : '여성')];
   const add = (label, id) => { const v = $(id).value.trim(); if (v) parts.push(label + ': ' + v); };
   add('이름','ceName'); add('나이','ceAge'); add('직업','ceJob'); add('신체','ceBody');
-  add('학력','ceEdu'); add('재정수준','ceFinance'); add('거주환경','ceLiving'); add('연애이력','ceDating');
+  add('성장배경','ceGrowth'); add('학력','ceEdu'); add('재정수준','ceFinance');
+  add('거주환경','ceLiving'); add('교우관계','ceFriends'); add('연애이력','ceDating');
+  const st = STAT_KEYS.map(k => {
+    const v = ($('ceSt' + k[0].toUpperCase() + k.slice(1))?.value || '').trim();
+    return v === '' ? null : STAT_LABEL[k] + ' ' + v;
+  }).filter(Boolean);
+  if (st.length) parts.push('인물 스탯(0~100): ' + st.join(' · '));
   add('성격 한 줄','ceTraits'); add('설정','ceDesc'); add('성격','cePers'); add('상황','ceScen');
-  add('주인공과의 관계','ceRel'); add('첫 대사','ceFirst'); add('예시 대화','ceEx');
+  add('나에게 이 캐릭터는','ceRel'); add('첫 대사','ceFirst'); add('예시 대화','ceEx');
   add('외형 태그','ceLook'); add('기본 복장 태그','ceOutfit');
   return parts.join('\n');
 }
 
-async function autofillSection(key, btn){
+/* 이미 채워진 섹션에 자동생성을 누르면, 기존 값을 어떻게 다룰지 먼저 묻는다. */
+const AUTOGEN_MODES = [
+  {key:'fresh',  label:'기존 값을 지우고 새로 작성',      hint:'현재 값을 참고하지 않습니다'},
+  {key:'rebase', label:'입력값에 근거하여 새로 작성',      hint:'현재 값을 재료로 삼아 다시 씁니다'},
+  {key:'fill',   label:'비어 있는 항목만 채우기',          hint:'채워진 항목은 건드리지 않습니다'},
+  {key:'enrich', label:'입력값을 살려 풍성하게 보완',      hint:'사실은 유지하고 살만 붙입니다'}
+];
+const AUTOGEN_INSTR = {
+  fresh:  '아래 [이미 정해진 설정]에서 이번에 채울 항목의 기존 값은 무시하고, 완전히 새로 쓴다.',
+  rebase: '아래 [이미 정해진 설정]의 기존 값을 재료로 삼되, 표현과 구성은 새로 쓴다.',
+  fill:   '아래 [이미 정해진 설정]에 이미 값이 있는 항목은 그대로 두고, 비어 있는 항목만 채운다.',
+  enrich: '아래 [이미 정해진 설정]의 사실 관계는 그대로 유지하고, 부족한 부분을 덧붙여 더 구체적으로 만든다. 기존 사실을 바꾸지 않는다.'
+};
+
+function startAutofill(key, btn){
+  const def = SECTION_DEFS[key];
+  if (!def) return;
+  const hasValue = def.fields.some(f => ($(SECTION_FIELD_MAP[f])?.value || '').trim());
+  if (!hasValue) return autofillSection(key, btn, 'fresh');
+  sheet(def.label + ' — 기존 값을 어떻게 할까요',
+    AUTOGEN_MODES.map(m => ({label: m.label + ' — ' + m.hint, run: () => autofillSection(key, btn, m.key)})));
+}
+
+async function autofillSection(key, btn, mode){
   const def = SECTION_DEFS[key];
   if (!def) return;
   if (!localStorage.getItem(LS.key)){ show('vSettings'); return toast('API 키를 먼저 입력하십시오'); }
@@ -2720,9 +3257,19 @@ async function autofillSection(key, btn){
   if (btn){ btn.disabled = true; btn.textContent = '만드는 중…'; }
   try{
     const ctx = currentCharContext();
-    const markers = def.fields.map(f => f.toUpperCase());
+    /* '비어 있는 항목만' 모드에서는 이미 값이 있는 항목을 아예 요청하지 않는다 */
+    const targets = mode === 'fill'
+      ? def.fields.filter(f => !($(SECTION_FIELD_MAP[f])?.value || '').trim())
+      : def.fields;
+    if (!targets.length){
+      toast('비어 있는 항목이 없습니다');
+      if (btn){ btn.disabled = false; btn.textContent = '✦ 자동생성'; }
+      return;
+    }
+    const markers = targets.map(f => f.toUpperCase());
     const prompt = [
-      '너는 롤플레잉 인물 카드를 다듬는 작가다. 아래는 이미 정해진 설정이다 — 바꾸지 말고 참고만 한다.',
+      '너는 롤플레잉 인물 카드를 다듬는 작가다.',
+      AUTOGEN_INSTR[mode] || AUTOGEN_INSTR.fresh,
       '[이미 정해진 설정]', ctx || '(아직 정해진 것 없음)',
       '',
       '[요청] 아래 항목만 새로 채워라. 다른 항목은 언급하지 않는다.',
@@ -2733,9 +3280,9 @@ async function autofillSection(key, btn){
       ...markers.map(m => '===' + m + '==='),
       '===END==='
     ].join('\n');
-    const sec = parseSections(await askText(prompt, 1200, 0.9));
+    const sec = parseSections(await askText(prompt, 1800, 0.9));
     let filled = 0;
-    def.fields.forEach(f => {
+    targets.forEach(f => {
       const val = sec[f];
       if (val){ $(SECTION_FIELD_MAP[f]).value = val.trim(); filled++; }
     });
@@ -2746,16 +3293,16 @@ async function autofillSection(key, btn){
     if (btn){ btn.disabled = false; btn.textContent = '✦ 자동생성'; }
   }
 }
-document.querySelectorAll('.autogen').forEach(b => b.onclick = () => autofillSection(b.dataset.sec, b));
+document.querySelectorAll('.autogen').forEach(b => b.onclick = () => startAutofill(b.dataset.sec, b));
 
 $('bRandChar').onclick = () => sheet('성별 선택', [
-  {label:'여성', run: () => sheet('무작위로 인물 만들기', [
-    {label:'🎯 선호형 — 내 선호 스타일 안에서', run: () => generateCharacter('taste','f')},
-    {label:'🎲 완전 랜덤 — 결을 가리지 않고',   run: () => generateCharacter('wild','f')}
-  ])},
   {label:'남성', run: () => sheet('무작위로 인물 만들기', [
     {label:'🎯 선호형 — 내 선호 스타일 안에서', run: () => generateCharacter('taste','m')},
     {label:'🎲 완전 랜덤 — 결을 가리지 않고',   run: () => generateCharacter('wild','m')}
+  ])},
+  {label:'여성', run: () => sheet('무작위로 인물 만들기', [
+    {label:'🎯 선호형 — 내 선호 스타일 안에서', run: () => generateCharacter('taste','f')},
+    {label:'🎲 완전 랜덤 — 결을 가리지 않고',   run: () => generateCharacter('wild','f')}
   ])}
 ]);
 
@@ -2828,20 +3375,24 @@ function renderChars(){
     return;
   }
   /* 편집 화면에 들어가지 않아도 누가 누구인지 알아볼 수 있어야 한다.
-     대신 세 줄로 잘라, 인물이 늘어나도 목록을 훑는 데 방해가 되지 않게 한다. */
+     1줄 이름·성별·나이·직업 / 2줄 관계·성격 / 3줄 신장체중. */
   box.innerHTML = S.characters.map(c => {
     const p = c.profile || {};
-    const genderTag = p.gender === 'm' ? '남' : '여';
-    const cap = [genderTag, p.age && (String(p.age).replace(/세$/,'') + '세'), p.job].filter(Boolean).join(' · ');
-    const l1 = p.body || '';
-    const l2 = [p.traits, p.relation].filter(Boolean).join(' · ')
+    const cap = [p.gender === 'm' ? '남' : '여',
+                 p.age && (String(p.age).replace(/세$/,'') + '세'),
+                 p.job].filter(Boolean).join(' · ');
+    const l2 = [p.relation, p.traits].filter(Boolean).join(' · ')
             || (c.personality || c.description || '설명 없음').replace(/\n/g, ' ').slice(0, 44);
+    const l3 = p.body || '';
+    const av = p.avatar
+      ? `<div class="av pic0"><img src="${p.avatar}" alt=""></div>`
+      : `<div class="av" style="background:${c.accent||PALETTE[0]}">${esc(initial(c.name))}</div>`;
     return `
     <div class="card chr" data-id="${c.id}">
-      <div class="av" style="background:${c.accent||PALETTE[0]}">${esc(initial(c.name))}</div>
+      ${av}
       <div class="t"><b>${esc(c.name)}${cap?`<em>${esc(cap)}</em>`:''}</b>
-        ${l1?`<span>${esc(l1)}</span>`:''}
-        <span class="dim">${esc(l2)}</span></div>
+        <span class="dim">${esc(l2)}</span>
+        ${l3?`<span>${esc(l3)}</span>`:''}</div>
       <button class="btn" data-go="${c.id}" style="padding:6px 11px;font-size:12px">대화</button>
     </div>`;
   }).join('');
@@ -2851,6 +3402,65 @@ function renderChars(){
   });
 }
 $('bNewChar').onclick = () => editChar(null);
+
+const statInputId = k => 'ceSt' + k[0].toUpperCase() + k.slice(1);
+function setStatFields(st){
+  STAT_KEYS.forEach(k => { const el = $(statInputId(k)); if (el) el.value = st?.[k] ?? ''; });
+}
+function readStatFields(){
+  const out = {}; let any = false;
+  STAT_KEYS.forEach(k => {
+    const v = ($(statInputId(k))?.value || '').trim();
+    if (v === '') return;
+    out[k] = Math.max(0, Math.min(100, parseInt(v, 10) || 0)); any = true;
+  });
+  return any ? out : null;
+}
+$('ceStRoll').onclick = () => {
+  /* 관계 칸에 적힌 내용과 같은 관계가 풀에 있으면 그 기준 경계를 쓴다 */
+  const rel = ($('ceRel').value || '').trim();
+  const hit = RELS_WILD.find(r => r[0] === rel);
+  setStatFields(rollStats('taste', hit ? hit[1] : undefined, hit ? hit[2] : undefined, hit ? hit[3] : undefined));
+  toast(hit ? '"' + rel + '" 기준으로 굴렸습니다' : '수치를 새로 굴렸습니다');
+};
+$('ceStClear').onclick = () => setStatFields(null);
+
+/* 목록 썸네일용 인물 사진. 외형·복장 태그로 한 장만 뽑아 카드에 저장한다. */
+function showCeAvatar(src){
+  const el = $('ceAvatar');
+  if (src){ el.src = src; el.style.display = 'block'; }
+  else { el.removeAttribute('src'); el.style.display = 'none'; }
+}
+$('ceAvGen').onclick = async () => {
+  const e = S.editingChar;
+  if (!imgKey()){ show('vSettings'); return toast('설정에서 Venice API 키를 먼저 입력하십시오'); }
+  const look = ($('ceLook').value || '').trim();
+  if (!look) return toast('먼저 아래 외형 태그를 채우십시오');
+  const btn = $('ceAvGen');
+  btn.disabled = true; btn.textContent = '만드는 중…';
+  try{
+    const outfit = ($('ceOutfit').value || '').trim();
+    const prompt = [look, outfit, 'upper body portrait, facing viewer, neutral expression',
+                    'soft even lighting, plain neutral background, photorealistic, sharp focus']
+                   .filter(Boolean).join(', ');
+    const prevBare = S.imgBare, prevTier = S.imgTier;
+    S.imgBare = false; S.imgTier = 'base';        /* 썸네일은 노출 없이 기본 모델로 */
+    let url;
+    try{ url = await veniceImage(prompt, localStorage.getItem(LS.imgModel), 25); }
+    finally{ S.imgBare = prevBare; S.imgTier = prevTier; }
+    e.profile = e.profile || {};
+    e.profile.avatar = url;
+    showCeAvatar(url);
+    toast('프로필 이미지를 만들었습니다 — 저장을 눌러야 반영됩니다');
+  }catch(err){
+    toast('생성 실패: ' + err.message);
+  }finally{ btn.disabled = false; btn.textContent = '✦ 프로필 이미지 생성'; }
+};
+$('ceAvClear').onclick = () => {
+  if (S.editingChar?.profile) S.editingChar.profile.avatar = '';
+  showCeAvatar('');
+  toast('지웠습니다 — 저장을 눌러야 반영됩니다');
+};
 
 function setCeGender(g){
   $('ceGender').value = g;
@@ -2869,7 +3479,7 @@ function editChar(id){
     id: uid(), spec:'chara_card_v2', name:'', description:'', personality:'', scenario:'',
     first_mes:'', mes_example:'', system_prompt:'', post_history_instructions:'',
     profile:{age:'',job:'',body:'',traits:'',relation:'',look:'',outfit:'',seed:'',
-      gender:'f',bust:'',waist:'',hip:''},
+      gender:'f',bust:'',waist:'',hip:'',growth:'',friends:'',stats:null,avatar:''},
     tags:[], accent: PALETTE[Math.floor(Math.random()*PALETTE.length)],
     preferredModel:'', temperature:null, createdAt: now(), updatedAt: now()
   };
@@ -2885,9 +3495,11 @@ function editChar(id){
   $('ceRel').value = pf.relation || '';  $('ceLook').value = pf.look || '';
   $('ceOutfit').value = pf.outfit || '';
   $('ceSeed').value = pf.seed ?? '';
-  $('ceEdu').value = pf.edu || '';
+  $('ceGrowth').value = pf.growth || '';   $('ceEdu').value = pf.edu || '';
   $('ceFinance').value = pf.finance || ''; $('ceLiving').value = pf.living || '';
-  $('ceDating').value = pf.dating || '';
+  $('ceFriends').value = pf.friends || ''; $('ceDating').value = pf.dating || '';
+  setStatFields(pf.stats);
+  showCeAvatar(pf.avatar || '');
   setCeGender(pf.gender || 'f');
   $('ceBust').value = pf.bust || '';  $('ceWaist').value = pf.waist || '';  $('ceHip').value = pf.hip || '';
   $('ceTemp').value  = e.temperature ?? '';
@@ -2920,9 +3532,11 @@ $('ceSave').onclick = async () => {
     seed: $('ceSeed').value.trim(),
     gender: $('ceGender').value,
     bust: $('ceBust').value.trim(), waist: $('ceWaist').value.trim(), hip: $('ceHip').value.trim(),
-    edu: $('ceEdu').value.trim(),
+    growth: $('ceGrowth').value.trim(), edu: $('ceEdu').value.trim(),
     finance: $('ceFinance').value.trim(), living: $('ceLiving').value.trim(),
-    dating: $('ceDating').value.trim()
+    friends: $('ceFriends').value.trim(), dating: $('ceDating').value.trim(),
+    stats: readStatFields(),
+    avatar: e.profile?.avatar || ''
   };
   if (S.models.length) e.preferredModel = $('ceModel').value;  /* 목록 미로드 시 기존 값 보존 */
   e.temperature = $('ceTemp').value === '' ? null : parseFloat($('ceTemp').value);
@@ -2933,8 +3547,9 @@ $('ceSave').onclick = async () => {
 $('ceMenu').onclick = () => {
   const e = S.editingChar;
   sheet(e.name, [
-    {label:'프로필 내보내기 (JSON)', run: () => {
-      const {id, createdAt, updatedAt, accent, preferredModel, temperature, profile, ...card} = e;
+    {label:'프로필 내보내기 (JSON · 이미지 제외)', run: () => {
+      const {id, createdAt, updatedAt, accent, preferredModel, temperature, profile: pfAll, ...card} = e;
+      const {avatar, ...profile} = pfAll || {};
       download(e.name + '.json', JSON.stringify(
         {spec:'chara_card_v2', data:{...card, extensions:{accent: e.accent, profile: profile||{}}}}, null, 2));
     }},
@@ -3008,6 +3623,80 @@ function renderPersonas(){
   box.querySelectorAll('.card').forEach(el => el.onclick = () => editPersona(el.dataset.id));
 }
 $('bNewPersona').onclick = () => editPersona(null);
+
+/* 주인공도 뼈대는 앱이 굴리고 살만 모델에게 맡긴다 */
+const PERSONA_JOB = [
+  ['대학생', 20, 25], ['대학원생', 24, 29], ['광고회사 AE', 26, 35], ['IT 기업 기획자', 26, 38],
+  ['프리랜서 개발자', 25, 38], ['출판사 편집자', 26, 38], ['공공기관 주무관', 27, 40],
+  ['물리치료사', 25, 36], ['건축 설계사', 27, 40], ['영업직 직장인', 26, 38],
+  ['사진 스튜디오 운영', 28, 40], ['중고등 교사', 27, 40], ['카페 매니저', 24, 34],
+  ['방송사 조연출', 24, 33], ['제약회사 연구원', 27, 38], ['세무사 사무소 직원', 25, 36]
+];
+const PERSONA_TONE = [
+  '말수가 적고 관찰하는 편', '농담으로 분위기를 푸는 편', '직설적이고 솔직한 편',
+  '조심스럽고 배려가 많은 편', '무심해 보이지만 챙기는 편', '호기심이 많고 질문이 잦은 편',
+  '차분하고 듣는 쪽에 가까운 편', '장난스럽지만 선은 지키는 편'
+];
+const PERSONA_TRAIT = [
+  '남의 눈치를 잘 보지만 정작 자기 얘기는 안 함', '한번 마음먹으면 끝까지 밀어붙임',
+  '거절을 잘 못해 일을 떠안는 편', '혼자 있는 시간이 꼭 필요함',
+  '감정보다 상황을 먼저 정리하려 함', '작은 호의를 오래 기억함',
+  '싫은 것은 분명히 말함', '결정을 미루다 기회를 놓치곤 함'
+];
+
+async function generatePersona(gender){
+  if (!localStorage.getItem(LS.key)){ show('vSettings'); return toast('API 키를 먼저 입력하십시오'); }
+  if (!modelChain().length){ show('vSettings'); return toast('모델을 먼저 선택하십시오'); }
+  if (S.generating) return toast('이미 만드는 중입니다');
+  S.generating = true;
+  toast('주인공을 만드는 중입니다 — 10~30초 걸립니다');
+  try{
+    const job = pick(PERSONA_JOB);
+    const age = randInt(job[1], job[2]);
+    const g = gender === 'm' ? '남성' : '여성';
+    const prompt = [
+      '너는 롤플레잉 앱에 넣을 "주인공" 설정을 쓰는 작가다. 주인공은 사용자가 연기하는 인물이다.',
+      '아래 재료로 ' + g + ' 한 명을 만든다.',
+      '',
+      '[고정 재료 — 그대로 쓴다]',
+      '- 나이: ' + age + '세',
+      '- 직업: ' + job[0],
+      '- 말투: ' + pick(PERSONA_TONE),
+      '- 성격 특징: ' + pick(PERSONA_TRAIT),
+      '',
+      '[작성 규격]',
+      '- NAME 은 한국식 세 글자 이름. 흔하지 않게 짓는다.',
+      '- DESC 는 상대역이 이 사람을 어떻게 인식할지 쓴다. 나이 · 직업 · 성격 · 말투 · 분위기를 담아',
+      '  세 문장에서 다섯 문장, 전체 200자 안팎으로 쓴다. 과장하지 않고 현실에 있을 법한 사람으로.',
+      '- 상대역의 이름이나 관계는 쓰지 않는다. 주인공 자신에 대해서만 쓴다.',
+      '- 한국어로만 쓴다.',
+      '',
+      '[출력 형식] 아래 구분선을 그대로 쓰고 앞뒤에 다른 말을 붙이지 않는다.',
+      '===NAME===', '===DESC===', '===END==='
+    ].join('\n');
+    const sec = parseSections(await askText(prompt, 900, 1.0));
+    let name = (sec.name || '').split('\n')[0].replace(/["'()\[\]{}·]/g, '').trim().slice(0, 12);
+    if (!name) throw new Error('이름을 받지 못했습니다');
+    if (S.personas.some(p => p.name === name)){
+      const base = name; let i = 2;
+      while (S.personas.some(p => p.name === base + ' ' + i)) i++;
+      name = base + ' ' + i;
+    }
+    const p = {
+      id: uid(), name, description: (sec.desc || '').trim(),
+      isDefault: !S.personas.length, createdAt: now(), updatedAt: now()
+    };
+    await dbPut('personas', p);
+    await loadAll(); renderPersonas(); editPersona(p.id);
+    toast(name + ' 생성 완료 — 내용을 확인하십시오');
+  }catch(e){
+    toast('생성 실패: ' + e.message);
+  }finally{ S.generating = false; }
+}
+$('bRandPersona').onclick = () => sheet('주인공 무작위 생성', [
+  {label:'남성', run: () => generatePersona('m')},
+  {label:'여성', run: () => generatePersona('f')}
+]);
 function editPersona(id){
   const p = id ? S.personas.find(x=>x.id===id) : null;
   S.editingPersona = p ? {...p} : {id:uid(), name:'', description:'', isDefault:!S.personas.length,
@@ -3149,7 +3838,8 @@ function loadSettings(){
   $('sNoReason').checked = (localStorage.getItem(LS.noReason) ?? '1') === '1';
   $('sFree').checked = (localStorage.getItem(LS.free) ?? '1') === '1';
   $('sImgKey').value = localStorage.getItem(LS.imgKey) || '';
-  $('sImgUnc').checked = (localStorage.getItem(LS.imgUnc) ?? '1') === '1';
+  $('sImgUnc').checked = (localStorage.getItem(LS.imgUnc) ?? '0') === '1';
+  $('sImgUp').checked  = (localStorage.getItem(LS.imgUp) ?? '1') === '1';
   $('sImgSize').value = localStorage.getItem(LS.imgSize) || '832x1216';
   $('sImgLevel').value = localStorage.getItem(LS.imgLevel) || 'hardcore';
   $('sImgDetail').value = localStorage.getItem(LS.imgDetail) || 'ultra';
@@ -3170,6 +3860,10 @@ $('sImgKey').onchange = () => {
   renderMsgs(false);
 };
 $('sImgModel').onchange = () => { localStorage.setItem(LS.imgModel, $('sImgModel').value); showImgCost(); };
+$('sImgHi').onchange   = () => localStorage.setItem(LS.imgHi, $('sImgHi').value);
+$('sImgNsfw').onchange   = () => localStorage.setItem(LS.imgNsfw, $('sImgNsfw').value);
+$('sImgNsfwHi').onchange = () => localStorage.setItem(LS.imgNsfwHi, $('sImgNsfwHi').value);
+$('sImgUp').onchange     = () => localStorage.setItem(LS.imgUp, $('sImgUp').checked ? '1' : '0');
 $('sImgSize').onchange  = () => localStorage.setItem(LS.imgSize, $('sImgSize').value);
 $('sImgLevel').onchange = () => localStorage.setItem(LS.imgLevel, $('sImgLevel').value);
 $('sImgDetail').onchange = () => localStorage.setItem(LS.imgDetail, $('sImgDetail').value);
@@ -3279,6 +3973,13 @@ async function seed(){
     id: uid(), name:'나', description:'', isDefault:true, createdAt:now(), updatedAt:now()
   });
 }
+
+/* ═══════════════ 버전 ═══════════════ */
+const APP_BUILD = 'b20';
+const APP_BUILT = '2026-08-19 21:50';
+const APP_NOTE  = '욕심 · 대담 축 추가 · 기준값을 상한/회귀점으로 정의 · 반감 축 · 프로필 이미지 · 이미지 2×2 계층';
+$('sVersion').innerHTML =
+  '8단계 · <b style="color:var(--acc)">빌드 ' + APP_BUILD + '</b><br>최종 수정: ' + APP_BUILT + '<br>' + APP_NOTE;
 
 /* ═══════════════ 시작 ═══════════════ */
 if ('serviceWorker' in navigator)
