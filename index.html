@@ -303,6 +303,8 @@
   #novelIn h3{font-size:13px;color:var(--tx2);margin:0 0 10px;font-weight:600}
   #novelX{position:absolute;top:9px;right:9px;width:30px;height:30px;border-radius:8px;
           color:var(--tx2);font-size:15px;display:grid;place-items:center}
+  #novelBar{display:none;height:4px;background:var(--panel2);border-radius:2px;overflow:hidden;margin-top:4px}
+  #novelBar i{display:block;height:100%;background:var(--acc);width:3%;transition:width .3s}
   #novelText{white-space:pre-wrap;font-size:14px;line-height:1.8;max-height:52vh;
              overflow-y:auto;background:var(--bg);border:1px solid var(--line);
              border-radius:10px;padding:12px;margin-bottom:10px;min-height:80px}
@@ -313,6 +315,17 @@
           padding:14px;width:100%;max-width:620px}
   #editIn h3{font-size:13px;color:var(--tx2);margin:0 0 9px;font-weight:600}
   #editTa{height:44vh}
+  /* 지금 무엇을 하는 중이고 자리를 떠도 되는지 알려 준다 */
+  #busy{position:fixed;left:50%;transform:translateX(-50%);z-index:75;
+    top:calc(8px + var(--safe-t));background:var(--panel2);border:1px solid var(--line2);
+    border-radius:10px;padding:7px 13px;font-size:12px;color:var(--tx2);
+    display:none;gap:9px;align-items:center;max-width:92vw;
+    box-shadow:0 3px 14px rgba(0,0,0,.5)}
+  #busy.on{display:flex}
+  #busy b{font-weight:600;color:var(--tx);white-space:nowrap}
+  #busy span{font-size:11px;white-space:nowrap}
+  #busy.warn{border-color:#5c4a2b} #busy.warn span{color:var(--warn)}
+  #busy.ok{border-color:#2f5c40} #busy.ok span{color:var(--ok)}
   #toast{position:fixed;left:50%;bottom:calc(76px + var(--safe-b));transform:translateX(-50%);
          background:#2b3140;border:1px solid var(--line2);color:var(--tx);padding:9px 15px;border-radius:10px;
          font-size:13px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s;max-width:86vw;text-align:center}
@@ -329,7 +342,8 @@
       <button class="ico" id="bSortChat" title="정렬">⇅</button>
       <button class="ico" id="bLoadChat" title="대화 불러오기">⇩</button>
       <button class="ico" id="bNewChat">＋</button></div>
-    <div id="chatFind"><input type="text" id="chatQ" placeholder="대화 · 대상 이름 · 본문 검색">
+    <div id="chatFind"><input type="text" id="chatQ" placeholder="대화 · 대상 · 장소 검색">
+      <button class="btn" id="chatQdeep" title="모든 대화의 본문까지 찾기">본문</button>
       <button class="ico" id="chatQx">✕</button></div>
     <div id="chatFilter"></div>
     <div class="scroll" id="chatList"></div>
@@ -392,12 +406,15 @@
 
       <div class="sect">생성 파라미터</div>
       <div class="fld row">
-        <div><label>온도</label><input type="number" id="sTemp" step="0.05" min="0" max="2"></div>
-        <div><label>최대 출력</label><input type="number" id="sMaxTok" step="32" min="64" max="8192"></div>
+        <div><label>온도</label><input type="number" id="sTemp" step="0.05" min="0" max="2">
+          <div class="hint">권장 0.9</div></div>
+        <div><label>최대 출력</label><input type="number" id="sMaxTok" step="32" min="64" max="8192">
+          <div class="hint">권장 <b id="sMaxTokRec">1300</b> — 응답 분량의 1.4배</div></div>
       </div>
       <div class="fld">
         <label>응답 분량 (한국어 글자 수)</label>
         <input type="number" id="sLen" step="100" min="300" max="3000">
+        <div class="hint">권장 900 — 길수록 비용이 늘고 반복이 잦아집니다</div>
         <div class="hint">
           매 요청 끝에서 다시 한번 지시하는 목표 분량입니다. 대화가 길어지면 모델이 앞선 응답의
           길이를 따라 계속 늘리는 성질이 있어, <b>공통 규칙만으로는 제어되지 않습니다.</b>
@@ -416,6 +433,7 @@
       <div class="fld">
         <label>컨텍스트 예산 (토큰)</label>
         <input type="number" id="sBudget" step="500" min="1000" max="32000">
+        <div class="hint">권장 12000 — 무료 모델도 128k 이상이라 부담이 없습니다</div>
         <div class="hint">
           대화 원문은 전부 보존됩니다. 이 값은 <b>매 요청에 실어 보낼 분량의 상한</b>입니다.
           대화가 길어져도 이 선에서 고정되므로 비용과 속도가 일정하게 유지됩니다.
@@ -537,6 +555,13 @@
           <option value="nude">노출</option>
           <option value="soft">은은하게</option>
         </select>
+        <div class="hint">
+          <b>수위를 낮추면 더 좋은 모델이 쓰입니다.</b> 노출이 없는 장면으로 판정되면
+          무검열 모델 대신 <b>일반 고급 모델</b>(Seedream · Flux 등)이 먼저 걸립니다.
+          얼굴과 손의 완성도는 그쪽이 낫습니다.<br>
+          <b>완전 노출</b>과 <b>노골적</b>에서는 앱이 한국어 장면에서 자세 · 행위 · 체액을
+          직접 읽어내 영어 태그로 덧붙입니다.
+        </div>
       </div>
       <div class="fld">
         <label>프롬프트 상세도</label>
@@ -915,10 +940,15 @@
   <h3>소설 원고</h3>
   <div id="novelText"></div>
   <textarea id="novelAsk" rows="2" placeholder="고칠 점을 적어 주십시오 — 예: 1인칭으로, 대사를 줄이고, 결말을 열어 두고"></textarea>
+  <div id="novelBar"><i></i></div>
   <div class="row" style="margin-top:9px">
+    <button class="btn" id="novelFull">처음부터 쓰기</button>
+    <button class="btn pri" id="novelRun">요청 반영</button>
+  </div>
+  <div class="row" style="margin-top:7px">
     <button class="btn" id="novelCopy">복사</button>
     <button class="btn" id="novelSave">파일로</button>
-    <button class="btn pri" id="novelRun">다시 쓰기</button>
+    <button class="btn" id="novelVerBtn" style="display:none">판본 내역</button>
   </div>
   <div class="hint" id="novelInfo" style="margin-top:7px"></div>
 </div></div>
@@ -931,6 +961,7 @@
     <button class="btn pri" id="editOk">저장</button>
   </div>
 </div></div>
+<div id="busy"><b id="busyWhat"></b><span id="busyCan"></span></div>
 <div id="toast"></div>
 <input type="file" id="filePick" accept=".json" style="display:none">
 
@@ -1315,7 +1346,7 @@ async function dbClear(s){ await wrap(st(s,'readwrite').clear()); }
 /* ═══════════════ 상태 ═══════════════ */
 const S = {
   chats:[], characters:[], personas:[], models:[], imgModels:[],
-  chatQ:'', chatOnly:null, chatHits:null, findHits:[], findAt:-1, whoEdit:false, imgLeads:[],
+  chatQ:'', chatOnly:null, chatHits:null, chatHitsQ:undefined, findHits:[], findAt:-1, whoEdit:false, imgLeads:[],
   pendingGenre:null, genreOpen:false, txtModels:[], generating:false,
   chat:null, character:null, persona:null, messages:[],
   editingChar:null, editingPersona:null,
@@ -1324,6 +1355,25 @@ const S = {
 };
 
 /* ═══════════════ 공통 UI ═══════════════ */
+/* 작업마다 자리를 떠도 되는지 알려 준다.
+     screen — 스트리밍이라 화면을 벗어나면 끊긴다
+     app    — 한 번의 요청이라 화면은 꺼도 되지만 앱은 살아 있어야 한다
+     free   — 다 끝났거나 실패해도 잃을 것이 없다                        */
+const BUSY_CAN = {
+  screen: ['warn', '창을 보고 계십시오'],
+  app:    ['warn', '앱을 유지하십시오 · 화면은 꺼도 됩니다'],
+  free:   ['ok',   '나가셔도 됩니다']
+};
+function busy(kind, what){
+  const el = $('busy');
+  if (!kind){ el.classList.remove('on', 'warn', 'ok'); return; }
+  const [cls, can] = BUSY_CAN[kind] || BUSY_CAN.app;
+  $('busyWhat').textContent = what || '작업 중';
+  $('busyCan').textContent = can;
+  el.classList.remove('warn', 'ok');
+  el.classList.add('on', cls);
+}
+
 let toastT;
 /* CSS 페이드가 0.2초다. 1.5초 동안 온전히 보이게 하려면 그만큼 더 두었다 지운다. */
 const TOAST_HOLD = 1500, TOAST_FADE = 200;
@@ -2778,73 +2828,153 @@ function showMsgFind(){
 /* ═══════════════ 소설 재구성 ═══════════════
    대화 전체를 원고로 바꾼다. 한 번에 끝내지 않고, 팝업에서 모델과 주고받으며 고친다.
    원고와 주고받은 지시는 대화에 저장되어 언제든 다시 열 수 있다.          */
-const NOVEL_CAP = 24000;   /* 프롬프트에 실을 원문 상한. 넘으면 뒤에서부터 자른다. */
+/* ═══════════════ 소설 재구성 ═══════════════
+   대화 전체를 원고로 바꾼다. 뒤에서 잘라내면 앞부분이 통째로 빠지므로
+   처음부터 토막으로 나눠 이어 쓴다. 원고와 지난 판본은 대화에 저장된다. */
+const NOVEL_CHUNK = 12000;   /* 한 번에 넘길 원문 크기 */
+const NOVEL_KEEP  = 1200;    /* 이어 쓸 때 앞 원고에서 물려줄 꼬리 */
+const NOVEL_VERS  = 12;      /* 보관할 판본 수 */
 
-function novelSource(){
+/* 다시 생성한 응답이 여럿이면 **가장 마지막에 만든 것**을 쓴다.
+   화면에 보이는 것(activeVariant)이 아니라 마지막 시도라는 점이 중요하다. */
+function novelLine(m, un, cn){
+  const v = (m.variants && m.variants.length) ? m.variants[m.variants.length - 1] : m.content;
+  const body = String(v).replace(/\n?[ \t]*\[상태\][^\n]*/g, '')
+                        .replace(/^\s*\[지시\][^\n]*$/gm, '').trim();
+  return body ? (m.role === 'user' ? un : cn) + ': ' + body : '';
+}
+
+function novelChunks(){
   const cn = S.character?.name || '상대', un = S.persona?.name || '나';
-  const lines = S.messages.map(m =>
-    (m.role === 'user' ? un : cn) + ': ' +
-    String(m.content).replace(/\n?[ \t]*\[상태\][^\n]*/g, '').trim());
-  let out = lines.join('\n');
-  if (out.length > NOVEL_CAP) out = out.slice(-NOVEL_CAP);
+  const lines = S.messages.map(m => novelLine(m, un, cn)).filter(Boolean);
+  const out = []; let cur = '';
+  for (const l of lines){
+    if (cur.length + l.length > NOVEL_CHUNK && cur){ out.push(cur); cur = ''; }
+    cur += l + '\n';
+  }
+  if (cur.trim()) out.push(cur);
   return out;
 }
 
-async function runNovel(extra){
-  const first = !S.chat.novel?.text;
-  const ask = [
-    first ? '아래 롤플레잉 대화를 하나의 소설로 다시 써라.'
-          : '아래는 앞서 네가 쓴 원고다. 이어지는 요청에 맞춰 고쳐 다시 내놓아라.',
-    '',
-    '지침:',
-    '- 대화 로그 형식을 버리고 산문으로 쓴다. 상태 줄과 지시는 옮기지 않는다.',
-    '- 전지적 작가 시점을 기본으로 하되, 요청이 있으면 그에 따른다.',
-    '- 사건의 순서를 지키되 지루한 반복은 묶는다. 없는 사건을 만들지 않는다.',
-    '- 인물의 이름과 관계, 장소와 시간의 흐름을 원문대로 유지한다.',
-    '- 소설 본문만 출력한다. 머리말이나 설명을 붙이지 않는다.'
-  ].join('\n');
+const NOVEL_RULES = [
+  '지침:',
+  '- 대화 로그 형식을 버리고 산문으로 쓴다. 상태 줄과 [지시] 는 옮기지 않는다.',
+  '- 전지적 작가 시점을 기본으로 하되, 요청이 있으면 그에 따른다.',
+  '- 사건의 순서를 지키되 지루한 반복은 묶는다. 없는 사건을 만들지 않는다.',
+  '- 인물의 이름과 관계, 장소와 시간의 흐름을 원문대로 유지한다.',
+  '- 소설 본문만 출력한다. 머리말이나 설명을 붙이지 않는다.'
+].join('\n');
 
-  const body = first
-    ? '\n\n[대화 원문]\n' + novelSource()
-    : '\n\n[지금 원고]\n' + S.chat.novel.text;
-  const req = extra ? '\n\n[이번 요청]\n' + extra : '';
+/* 판본을 남긴다. 되돌리거나 비교할 수 있어야 고쳐 나갈 수 있다. */
+function pushNovelVer(text, note){
+  const vers = [...(S.chat.novelVers || [])];
+  vers.push({at: now(), note: note || '', text});
+  S.chat.novelVers = vers.slice(-NOVEL_VERS);
+}
 
-  $('novelInfo').textContent = '쓰는 중입니다…';
-  $('novelRun').disabled = true;
+/* 처음부터 — 대화 첫 턴부터 토막으로 이어 쓴다 */
+async function novelFull(){
+  const chunks = novelChunks();
+  if (!chunks.length) return toast('옮길 대화가 없습니다');
+  S.novelStop = false;
+  let text = '';
+  const t0 = performance.now();
+  for (let i = 0; i < chunks.length; i++){
+    if (S.novelStop) break;
+    const per = i ? (performance.now() - t0) / i : 0;
+    const left = per ? Math.round(per * (chunks.length - i) / 1000) : null;
+    const eta = left ? '  ·  남은 시간 약 ' + (left >= 60 ? Math.round(left/60) + '분' : left + '초') : '';
+    novelBusy((i + 1) + '/' + chunks.length + ' 째 토막을 쓰는 중' + eta,
+              Math.round(i / chunks.length * 100));
+    const head = i === 0
+      ? '아래 롤플레잉 대화를 하나의 소설로 다시 써라.'
+      : '아래는 지금까지 쓴 원고의 끝부분과, 그 뒤에 이어지는 대화다. 원고를 자연스럽게 이어 써라. 이미 쓴 부분을 다시 쓰지 않는다.';
+    const tail = i === 0 ? '' : '\n\n[지금까지 쓴 원고의 끝]\n' + text.slice(-NOVEL_KEEP);
+    const ask = head + '\n\n' + NOVEL_RULES + tail + '\n\n[대화 원문]\n' + chunks[i];
+    try{
+      const part = scrubOut(await askText(ask, 4000, 0.85));
+      text += (text ? '\n\n' : '') + part;
+    }catch(e){
+      novelBusy(null);
+      $('novelInfo').textContent = (i + 1) + '째 토막에서 실패: ' + e.message +
+        (text ? '  ·  여기까지는 남겨 두었습니다' : '');
+      if (!text) return;
+      break;
+    }
+  }
+  pushNovelVer(text, S.novelStop ? '중단됨' : '처음부터 · 토막 ' + chunks.length + '개');
+  S.chat.novel = {text, turns: [...(S.chat.novel?.turns || []), '처음부터 다시'], at: now()};
+  await dbPut('chats', S.chat);
+  novelBusy(null);
+  paintNovel();
+}
+
+/* 고치기 — 지금 원고에 요청을 반영한다 */
+async function novelRevise(extra){
+  if (!S.chat.novel?.text) return novelFull();
+  novelBusy('요청을 반영해 고치는 중', 50);
   try{
-    const out = scrubOut(await askText(ask + body + req, 4000, 0.85));
-    S.chat.novel = {
-      text: out,
-      turns: [...(S.chat.novel?.turns || []), ...(extra ? [extra] : ['처음 재구성'])],
-      at: now()
-    };
+    const ask = '아래는 앞서 네가 쓴 원고다. 이어지는 요청에 맞춰 고쳐 다시 내놓아라.\n\n' +
+      NOVEL_RULES + '\n\n[지금 원고]\n' + S.chat.novel.text +
+      (extra ? '\n\n[이번 요청]\n' + extra : '');
+    const out = scrubOut(await askText(ask, 4000, 0.85));
+    pushNovelVer(out, extra || '고침');
+    S.chat.novel = {text: out,
+      turns: [...(S.chat.novel?.turns || []), extra || '고침'], at: now()};
     await dbPut('chats', S.chat);
-    paintNovel();
   }catch(e){ $('novelInfo').textContent = '실패: ' + e.message; }
-  finally{ $('novelRun').disabled = false; }
+  novelBusy(null);
+  paintNovel();
+}
+
+/* 진행 막대와 상태 배너를 함께 움직인다 */
+function novelBusy(what, pct){
+  const bar = $('novelBar');
+  if (!what){
+    busy(null);
+    bar.style.display = 'none';
+    $('novelFull').disabled = false; $('novelRun').disabled = false;
+    return;
+  }
+  busy('app', '소설 재구성');
+  bar.style.display = 'block';
+  bar.firstElementChild.style.width = Math.max(3, Math.min(100, pct || 0)) + '%';
+  $('novelInfo').textContent = what;
+  $('novelFull').disabled = true; $('novelRun').disabled = true;
 }
 
 function paintNovel(){
   const nv = S.chat?.novel;
-  $('novelText').textContent = nv?.text || '아직 원고가 없습니다. 아래 「다시 쓰기」를 누르면 대화 전체를 소설로 옮깁니다.';
+  const vers = S.chat?.novelVers || [];
+  $('novelText').textContent = nv?.text ||
+    '아직 원고가 없습니다. 아래 「처음부터 쓰기」를 누르면 첫 턴부터 옮깁니다.';
+  const chunks = novelChunks();
+  const est = Math.max(1, Math.round(chunks.length * 12));
   $('novelInfo').innerHTML = nv?.text
-    ? esc(nv.text.length.toLocaleString() + '자 · 요청 ' + (nv.turns?.length || 0) + '회') +
-      (nv.turns?.length ? '<br>' + esc(nv.turns.slice(-3).join(' → ')) : '')
-    : '대화 ' + S.messages.length + '개를 원고로 옮깁니다. 원문이 길면 뒤에서부터 ' +
-      NOVEL_CAP.toLocaleString() + '자까지만 씁니다.';
+    ? esc(nv.text.length.toLocaleString() + '자  ·  판본 ' + vers.length + '개  ·  요청 ' +
+          (nv.turns?.length || 0) + '회') +
+      (nv.turns?.length ? '<br>' + esc(nv.turns.slice(-3).join('  →  ')) : '')
+    : esc('대화 ' + S.messages.length + '개 · 원문 ' +
+          chunks.reduce((a, c) => a + c.length, 0).toLocaleString() + '자 · 토막 ' +
+          chunks.length + '개 · 예상 ' + (est >= 60 ? Math.round(est/60) + '분' : est + '초'));
+  $('novelVerBtn').style.display = vers.length ? 'inline-block' : 'none';
 }
 
 function openNovel(fromExport){
   if (!S.chat) return toast('대화를 먼저 여십시오');
-  S.chat.novel = S.chat.novel || null;
   paintNovel();
   $('novelAsk').value = '';
+  $('novelBar').style.display = 'none';
   $('novelBox').classList.add('on');
-  if (fromExport && !S.chat.novel?.text) runNovel(null);
+  if (fromExport && !S.chat.novel?.text) novelFull();
 }
-$('novelX').onclick = () => $('novelBox').classList.remove('on');
-$('novelBox').onclick = e => { if (e.target.id === 'novelBox') $('novelBox').classList.remove('on'); };
-$('novelRun').onclick = () => runNovel($('novelAsk').value.trim() || null);
+$('novelX').onclick = () => { S.novelStop = true; $('novelBox').classList.remove('on'); };
+$('novelBox').onclick = e => { if (e.target.id === 'novelBox'){ S.novelStop = true; $('novelBox').classList.remove('on'); } };
+$('novelFull').onclick = () => {
+  if (S.chat?.novel?.text && !confirm('지금 원고를 새로 씁니다. 이전 판본은 내역에 남습니다.')) return;
+  novelFull();
+};
+$('novelRun').onclick = () => novelRevise($('novelAsk').value.trim() || null);
 $('novelCopy').onclick = () => {
   const t = S.chat?.novel?.text;
   if (!t) return toast('원고가 없습니다');
@@ -2854,7 +2984,23 @@ $('novelSave').onclick = () => {
   const t = S.chat?.novel?.text;
   if (!t) return toast('원고가 없습니다');
   download('소설_' + (S.character?.name || '무명') + '_' + stamp(now()) + '.md',
-           '# ' + (S.chat.title || S.character?.name || '소설') + '\n' + t, 'text/markdown');
+           '# ' + (S.chat.title || S.character?.name || '소설') + '\n\n' + t, 'text/markdown');
+};
+/* 판본 내역을 통째로 내려받아 어느 지시가 무엇을 바꿨는지 비교할 수 있게 한다 */
+$('novelVerBtn').onclick = () => {
+  const vers = S.chat?.novelVers || [];
+  if (!vers.length) return toast('판본이 없습니다');
+  const L = ['# 소설 판본 내역 — ' + (S.chat.title || S.character?.name || ''),
+             '', '- 대화: ' + S.messages.length + '개',
+             '- 판본: ' + vers.length + '개', ''];
+  vers.forEach((v, i) => {
+    L.push('## 판본 ' + (i + 1) + '  ·  ' + new Date(v.at).toLocaleString('ko-KR'));
+    L.push('- 요청: ' + (v.note || '(없음)'));
+    L.push('- 분량: ' + v.text.length.toLocaleString() + '자');
+    L.push('', v.text, '');
+  });
+  download('소설판본_' + (S.character?.name || '무명') + '_' + stamp(now()) + '.md',
+           L.join('\n'), 'text/markdown');
 };
 
 function castSheet(){
@@ -3298,7 +3444,7 @@ async function streamInto(target, msgs, signal){
 
   for (let i = 0; i < chain.length; i++){
     const model = chain[i];
-    let out = '', usage = null, tFirst = null;
+    let out = '', usage = null, tFirst = null, lastPaint = 0;
     const t0 = performance.now();
     target.innerHTML = ''; target.appendChild(cur);
     if (i === 1) toast('응답이 비어 다시 시도합니다');
@@ -3343,7 +3489,14 @@ async function streamInto(target, msgs, signal){
           if (d){
             if (tFirst === null) tFirst = performance.now() - t0;
             out += d;
-            target.innerHTML = fmt(scrubOut(out)); target.appendChild(cur);
+            /* 토큰마다 본문 전체를 다시 그리면 글이 길어질수록 화면이 버벅인다.
+               사람 눈에는 초당 열 번이면 충분하다. */
+            const nowMs = performance.now();
+            if (nowMs - lastPaint > 100){
+              lastPaint = nowMs;
+              target.innerHTML = fmt(scrubOut(out)); target.appendChild(cur);
+              autoScroll();
+            }
             autoScroll();
           }
         }
@@ -3847,6 +4000,7 @@ async function veniceImage(prompt, modelId, steps, seedOverride, negOverride, si
 async function attachImage(msg){
   if (!localStorage.getItem(LS.imgTxt))
     toast('프롬프트 작성 모델이 비어 있습니다 — 수위가 낮게 나올 수 있습니다');
+  busy('app', '이미지를 만드는 중');
   msg.imgPending = true; renderMsgs(false);
   try{
     const mem = await getMem(S.chat.id);
@@ -3866,6 +4020,7 @@ async function attachImage(msg){
     toast('이미지 실패: ' + e.message);
   }finally{
     delete msg.imgPending;
+    busy(null);
     await dbPut('messages', msg);
     renderMsgs(false);
   }
@@ -4015,6 +4170,7 @@ async function send(opts){
 
   S.streaming = true; $('cSend').textContent = '중지';
   $('cSend').classList.add('stop'); $('cSend').classList.remove('pri');
+  busy('screen', '응답을 받는 중');
   S.abort = new AbortController();
 
   try{
@@ -4050,7 +4206,8 @@ async function send(opts){
     }
   }finally{
     S.streaming = false; $('cSend').textContent = '전송';
-    $('cSend').classList.remove('stop'); $('cSend').classList.add('pri'); S.abort = null;
+    $('cSend').classList.remove('stop'); $('cSend').classList.add('pri');
+    busy(null); S.abort = null;
   }
 }
 
@@ -4891,7 +5048,9 @@ async function generateCharacter(mode, gender){
   if (!modelChain().length){ show('vSettings'); return toast('모델을 먼저 선택하십시오'); }
   if (S.generating) return toast("이미 만드는 중입니다");
   S.generating = true;
-  toast((mode === 'taste' ? '선호형' : '무작위') + ' 인물을 만드는 중입니다 — 보통 20~50초 걸려요. 끝나면 자동으로 열립니다.');
+  /* 카드 한 장에 2,000토큰 안팎이라 무료 모델에서는 20~60초가 걸린다. */
+  busy('app', (mode === 'taste' ? '선호형' : '무작위') + ' 인물을 만드는 중  ·  보통 20~60초');
+
   try{
     const seed = rollSeeds(mode, gender);
     const sec = parseSections(await askText(cardPrompt(seed, mode, gender), 4200, 1.0));
@@ -4934,7 +5093,9 @@ async function generateCharacter(mode, gender){
     toast(name + ' 생성 완료 — 목록에서 눌러 확인하십시오', 4000);
   }catch(e){
     toast('생성 실패: ' + e.message);
-  }finally{ S.generating = false; }
+  }finally{
+    S.generating = false; busy(null);
+  }
 }
 
 /* ═══════════════ 섹션별 자동생성 ═══════════════
@@ -5216,10 +5377,20 @@ $('bFindChat').onclick = () => {
   if (on) $('chatQ').focus();
   else { S.chatQ = ''; S.chatHits = null; $('chatQ').value = ''; renderChats(); }
 };
-$('chatQ').oninput = () => { S.chatQ = $('chatQ').value; S.chatHits = null; renderChats(); };
-$('chatQ').onkeydown = e => { if (e.key === 'Enter') searchChatBodies(); };
+/* 한글 입력기는 Enter 뒤에도 input 이벤트를 한 번 더 보낸다.
+   그때마다 결과를 지우면 방금 찾은 것이 곧바로 사라진다. 검색어가 실제로
+   달라졌을 때만 지운다. */
+$('chatQ').oninput = () => {
+  S.chatQ = $('chatQ').value;
+  if (S.chatHitsQ !== undefined && S.chatQ.trim().toLowerCase() !== S.chatHitsQ){
+    S.chatHits = null; S.chatHitsQ = undefined;
+  }
+  renderChats();
+};
+$('chatQ').onkeydown = e => { if (e.key === 'Enter'){ e.preventDefault(); searchChatBodies(); } };
+$('chatQdeep').onclick = searchChatBodies;
 $('chatQx').onclick = () => {
-  S.chatQ = ''; S.chatHits = null; $('chatQ').value = '';
+  S.chatQ = ''; S.chatHits = null; S.chatHitsQ = undefined; $('chatQ').value = '';
   $('chatFind').classList.remove('on'); renderChats();
 };
 
@@ -5227,16 +5398,22 @@ $('chatQx').onclick = () => {
 async function searchChatBodies(){
   const q = (S.chatQ || '').trim().toLowerCase();
   if (q.length < 2) return toast('두 글자 이상 입력하십시오');
-  toast('본문을 찾는 중입니다…');
+  busy('app', '본문을 찾는 중');
   const hits = {};
+  let done = 0;
   for (const ch of S.chats){
     const ms = await dbBy('messages', 'chatId', ch.id);
     const m = ms.find(x => String(x.content).toLowerCase().includes(q));
     if (m) hits[ch.id] = m.content;
+    done++;
+    if (done % 5 === 0) busy('app', '본문을 찾는 중  ' + done + '/' + S.chats.length);
   }
   S.chatHits = hits;
+  S.chatHitsQ = q;
+  busy(null);
   renderChats();
-  toast(Object.keys(hits).length + '개 대화에서 찾았습니다');
+  const cnt = Object.keys(hits).length;
+  toast(cnt ? cnt + '개 대화의 본문에서 찾았습니다' : '본문에서도 찾지 못했습니다');
 }
 
 /* 인물 카드의 (n) 을 누르면 그 인물의 대화만 본다 */
@@ -5726,7 +5903,7 @@ async function generatePersona(gender){
   if (!modelChain().length){ show('vSettings'); return toast('모델을 먼저 선택하십시오'); }
   if (S.generating) return toast('이미 만드는 중입니다');
   S.generating = true;
-  toast('주인공을 만드는 중입니다 — 10~30초 걸립니다');
+  busy('app', '주인공을 만드는 중  ·  보통 10~30초');
   try{
     const job = pick(PERSONA_JOB);
     const age = randInt(job[1], job[2]);
@@ -5769,7 +5946,9 @@ async function generatePersona(gender){
     toast(name + ' 생성 완료 — 목록에서 눌러 확인하십시오', 4000);
   }catch(e){
     toast('생성 실패: ' + e.message);
-  }finally{ S.generating = false; }
+  }finally{
+    S.generating = false; busy(null);
+  }
 }
 $('bRandPersona').onclick = () => sheet('주인공 무작위 생성', [
   {label:'남성', run: () => generatePersona('m')},
@@ -5920,6 +6099,7 @@ function loadSettings(){
   $('sMaxTok').value = localStorage.getItem(LS.maxTok) || '2400';
   $('sBudget').value = localStorage.getItem(LS.budget) || '8000';
   $('sLen').value    = localStorage.getItem(LS.len) || '900';
+  showMaxTokRec();
   $('sPen').value    = localStorage.getItem(LS.penalty) ?? '0.3';
   $('sRules').value = localStorage.getItem(LS.rules) || DEFAULT_RULES;
   $('sAutoSum').checked = (localStorage.getItem(LS.autoSum) ?? '1') === '1';
@@ -5968,7 +6148,15 @@ $('sKey').onchange = () => {
 $('sTemp').onchange   = () => localStorage.setItem(LS.temp, $('sTemp').value);
 $('sMaxTok').onchange = () => localStorage.setItem(LS.maxTok, $('sMaxTok').value);
 $('sBudget').onchange = () => localStorage.setItem(LS.budget, $('sBudget').value);
-$('sLen').onchange    = () => localStorage.setItem(LS.len, $('sLen').value);
+$('sLen').onchange    = () => {
+  localStorage.setItem(LS.len, $('sLen').value);
+  showMaxTokRec();
+};
+/* 최대 출력은 분량에 딸린 값이라 권장치를 함께 다시 계산해 보여 준다 */
+function showMaxTokRec(){
+  const el = $('sMaxTokRec'); if (!el) return;
+  el.textContent = String(turnOut());
+}
 $('sPen').onchange    = () => localStorage.setItem(LS.penalty, $('sPen').value);
 $('sRules').onchange = () => localStorage.setItem(LS.rules, $('sRules').value);
 $('sRulesReset').onclick = () => {
@@ -6064,9 +6252,9 @@ async function seed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b46';
-const APP_BUILT = '2026-08-20';
-const APP_NOTE  = '이미지 다양성 · 사진에서 외형 · 조연 목록 · 소설 재구성 · 취기 알코올 계산';
+const APP_BUILD = 'b47';
+const APP_BUILT = '2026-08-20 18:57';
+const APP_NOTE  = '본문 검색 · 권장값 표기 · 작업 상태 배너 · 소설화 전면 개선';
 $('sVersion').innerHTML =
   '8단계 · <b style="color:var(--acc)">빌드 ' + APP_BUILD + '</b><br>최종 수정: ' + APP_BUILT + '<br>' + APP_NOTE;
 
