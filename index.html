@@ -63,6 +63,15 @@
   .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px}
 
   /* ── 하단 탭 ── */
+  /* 설정이 한 화면에 안 들어와 세로로 길었다. 묶음별로 갈라 놓는다 */
+  #setTabs{display:flex;gap:5px;padding:8px 10px;background:var(--panel);
+     border-bottom:1px solid var(--line);overflow-x:auto;flex:0 0 auto;
+     -webkit-overflow-scrolling:touch}
+  #setTabs button{flex:0 0 auto;font-size:12px;color:var(--tx3);padding:6px 12px;
+     border-radius:8px;border:1px solid var(--line);white-space:nowrap}
+  #setTabs button.on{color:var(--acc);border-color:var(--acc);background:#1b2130}
+  .spane{display:none}
+  .spane.on{display:block}
   #nav{
     display:flex;flex:0 0 auto;background:var(--panel);border-top:1px solid var(--line);
     padding-bottom:var(--safe-b);
@@ -83,6 +92,7 @@
   .card .t b{display:block;font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .card .t span{display:block;font-size:11.5px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
   .card .t b em{font-style:normal;font-weight:400;font-size:11.5px;color:var(--tx3);margin-left:6px}
+  .thumbBtn.on{color:var(--acc)}
   .card .t b i.cnt{font-style:normal;font-weight:600;font-size:11.5px;color:var(--acc);margin-left:5px;
      padding:1px 4px;border-radius:5px}
   .card .t b i.cnt:active{background:var(--panel2)}
@@ -92,6 +102,8 @@
   #msgFind .ico{width:28px;height:28px;font-size:14px}
   #msgNth{font-size:11.5px;color:var(--tx3);white-space:nowrap;min-width:44px;text-align:center}
   .msg.hit .body{outline:1px solid var(--acc);outline-offset:2px}
+  #chatFind .btn{flex:0 0 auto;white-space:nowrap;padding:7px 10px;font-size:12px}
+  #chatFind input{flex:1;min-width:0}
   #chatFind{display:none;gap:7px;padding:8px 12px;background:var(--panel);
      border-bottom:1px solid var(--line);align-items:center}
   #chatFind.on{display:flex}
@@ -166,6 +178,13 @@
   .pic.collapsed img{display:none}
   .pic.collapsed .picfold{position:static;background:none;border:none;color:var(--tx3);float:right}
   .pic.collapsed::before{content:'🖼 이미지 (접힘)'}
+  .hints{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 0}
+  .hchip{font-size:12px;line-height:1.45;color:var(--tx2);background:var(--panel2);
+     border:1px solid var(--line);border-radius:9px;padding:6px 9px;text-align:left;
+     max-width:100%;white-space:normal}
+  .hchip:active{background:#2b3140}
+  .hchip.x{color:var(--tx3);padding:6px 8px}
+  .hints i{font-size:11.5px;color:var(--tx3);font-style:normal;padding:5px 2px}
   .imgwait{display:flex;align-items:center;gap:8px;margin-top:10px;padding:11px 13px;
            border:1px dashed var(--line2);border-radius:11px;color:var(--tx3);font-size:12.5px}
   .imgwait::before{content:'';width:13px;height:13px;border-radius:50%;flex:0 0 auto;
@@ -213,6 +232,19 @@
             background:var(--panel);border-top:1px solid var(--line);padding-bottom:calc(9px + var(--safe-b))}
   #inp{max-height:32vh}
   #composer .btn{flex:0 0 auto;height:42px;padding:0 16px;line-height:42px}
+  /* 수위 카드 — 슬롯을 늘어놓는 대신 수위별로 묶어 보여 준다 */
+  .lvCard{background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+          padding:9px 11px;margin-bottom:7px}
+  .lvCard.on{border-color:var(--acc)}
+  .lvTop{display:flex;align-items:baseline;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+  .lvTop b{font-size:13px;font-weight:600}
+  .lvTop span{font-size:11px;color:var(--tx3)}
+  .lvRow{display:flex;align-items:center;gap:8px;margin-top:4px}
+  .lvRow i{font-style:normal;font-size:10.5px;color:var(--tx3);width:28px;flex:0 0 auto}
+  .lvRow button{flex:1;min-width:0;text-align:left;font-size:12px;color:var(--tx2);
+     background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:5px 9px;
+     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lvRow button:active{border-color:var(--line2)}
   #cImgAutoWrap{flex:0 0 auto;width:42px;height:42px;border-radius:9px;border:1px solid var(--line);
     background:var(--panel2);display:grid;place-items:center;font-size:17px;cursor:pointer;position:relative}
   #cImgAutoWrap input{position:absolute;inset:0;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
@@ -235,6 +267,17 @@
         background:var(--panel2);border:1px solid var(--line);color:var(--tx3);vertical-align:middle}
   .ptag.ax{color:var(--tx2)}
   .ptag.hot{background:var(--accent,#7c9cff);border-color:transparent;color:#0b0d12;font-weight:600}
+  .cmGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+  .cmGrid button{background:var(--panel);border:1px solid var(--line);border-radius:11px;
+     padding:11px 4px 9px;display:grid;justify-items:center;gap:3px}
+  .cmGrid button:active{background:#2b3140}
+  .cmGrid button.dan{border-color:#4a2b30}
+  .cmGrid button.dan b{color:var(--err)}
+  .cmGrid i{font-style:normal;font-size:19px;line-height:1}
+  .cmGrid b{font-size:11px;font-weight:600;color:var(--tx2);
+     max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cmGrid u{text-decoration:none;font-size:9.5px;color:var(--tx3);
+     max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sinfo{padding:11px 12px;border-radius:10px;background:var(--panel2);margin-bottom:6px}
   .pguide{display:block;font-size:12px;line-height:1.8;color:var(--tx2)}
   .pguide .dim{display:block;margin-top:7px;color:var(--tx3);font-size:11px}
@@ -295,19 +338,33 @@
   .gsec code{background:var(--panel2);border:1px solid var(--line);border-radius:5px;
              padding:1px 6px;color:var(--tx);font-size:12px}
   .gsec.dimq{color:var(--tx3);font-size:12px;border-top:1px solid var(--line);padding-top:11px}
-  #novelBox{position:fixed;inset:0;background:rgba(0,0,0,.66);display:none;
-            align-items:center;justify-content:center;z-index:58;padding:14px}
-  #novelBox.on{display:flex}
-  #novelIn{background:var(--panel);border:1px solid var(--line2);border-radius:14px;
-           padding:15px;width:100%;max-width:620px;max-height:88vh;overflow-y:auto;position:relative}
-  #novelIn h3{font-size:13px;color:var(--tx2);margin:0 0 10px;font-weight:600}
-  #novelX{position:absolute;top:9px;right:9px;width:30px;height:30px;border-radius:8px;
-          color:var(--tx2);font-size:15px;display:grid;place-items:center}
-  #novelBar{display:none;height:4px;background:var(--panel2);border-radius:2px;overflow:hidden;margin-top:4px}
+  /* 소설 화면 — 장 단위 카드로 쌓고, 긴 본문은 접어 둔다 */
+  #vNovel{position:relative}
+  #novelBar{display:none;height:3px;background:var(--panel2);flex:0 0 auto}
   #novelBar i{display:block;height:100%;background:var(--acc);width:3%;transition:width .3s}
-  #novelText{white-space:pre-wrap;font-size:14px;line-height:1.8;max-height:52vh;
-             overflow-y:auto;background:var(--bg);border:1px solid var(--line);
-             border-radius:10px;padding:12px;margin-bottom:10px;min-height:80px}
+  #novelBody{padding:11px 12px 4px}
+  .nvCard{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+          padding:11px 13px;margin-bottom:9px}
+  .nvCard.nvEmpty{color:var(--tx3);font-size:12.5px;text-align:center;padding:20px 14px}
+  .nvTop{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+  .nvTop b{font-size:13.5px;font-weight:600}
+  .nvTop span{font-size:11px;color:var(--tx3)}
+  .nvBtn{font-size:11.5px;color:var(--acc);padding:3px 7px;border-radius:6px}
+  .nvBtn:active{background:var(--panel2)}
+  .nvBody{white-space:pre-wrap;font-size:14px;line-height:1.85;color:var(--tx)}
+  .nvDots{display:block;color:var(--acc);font-weight:700;letter-spacing:2px;
+          text-align:center;padding:5px 0}
+  .nvMore{display:block;width:100%;margin-top:7px;font-size:12px;
+          font-weight:700;color:var(--acc);padding:5px 0}
+  .nvMore:active{background:var(--panel2);border-radius:7px}
+  #novelFoot{flex:0 0 auto;background:var(--panel);border-top:1px solid var(--line);
+             padding:9px 12px calc(9px + var(--safe-b));display:flex;
+             flex-direction:column;gap:7px}
+  #novelFoot .nvRow{display:flex;gap:7px;align-items:center}
+  #novelFoot .nvRow input{flex:1;min-width:0;font-size:12.5px;padding:8px 10px}
+  #novelFoot .nvRow .btn{flex:0 0 auto;padding:8px 12px;font-size:12.5px}
+  #nvModelBtn{align-self:flex-start;padding:4px 10px;font-size:11.5px;color:var(--tx3)}
+  #nvModelBtn b{color:var(--acc);font-weight:600}
   #editBox{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;
            align-items:center;justify-content:center;z-index:55;padding:16px}
   #editBox.on{display:flex}
@@ -322,8 +379,10 @@
     display:none;gap:9px;align-items:center;max-width:92vw;
     box-shadow:0 3px 14px rgba(0,0,0,.5)}
   #busy.on{display:flex}
+  /* 안내 문구가 길어졌다. 폭이 모자라면 아래로 접어 넣는다 */
+  #busy{flex-wrap:wrap;justify-content:center;text-align:center}
   #busy b{font-weight:600;color:var(--tx);white-space:nowrap}
-  #busy span{font-size:11px;white-space:nowrap}
+  #busy span{font-size:11px;line-height:1.5}
   #busy.warn{border-color:#5c4a2b} #busy.warn span{color:var(--warn)}
   #busy.ok{border-color:#2f5c40} #busy.ok span{color:var(--ok)}
   #toast{position:fixed;left:50%;bottom:calc(76px + var(--safe-b));transform:translateX(-50%);
@@ -338,6 +397,7 @@
   <!-- ══════════ 대화 목록 ══════════ -->
   <section class="view on" id="vChats">
     <div class="bar"><h2>대화</h2>
+      <button class="ico thumbBtn" data-thumb="1" title="사진 보기">🖼</button>
       <button class="ico" id="bFindChat" title="검색">🔍</button>
       <button class="ico" id="bSortChat" title="정렬">⇅</button>
       <button class="ico" id="bLoadChat" title="대화 불러오기">⇩</button>
@@ -352,6 +412,7 @@
   <!-- ══════════ 캐릭터 ══════════ -->
   <section class="view" id="vChars">
     <div class="bar"><h2>대상<span class="sub">상대역이 되는 등장인물</span></h2>
+      <button class="ico thumbBtn" data-thumb="1" title="사진 보기">🖼</button>
       <button class="ico" id="bSortChar" title="정렬 기준">⇅</button>
       <button class="ico" id="bRandChar" title="무작위 생성">🎲</button>
       <button class="ico" id="bImportChar" title="프로필 가져오기 (여러 개 선택 가능)">⇩</button>
@@ -369,7 +430,8 @@
 
   <!-- ══════════ 설정 ══════════ -->
   <section class="view" id="vSettings">
-    <div class="bar"><h2>설정</h2></div>
+    <div class="bar"><h2>설정<span class="sub" id="setWhere"></span></h2></div>
+    <div id="setTabs"></div>
     <div class="scroll">
       <div class="sect">연결</div>
       <div class="fld">
@@ -488,6 +550,29 @@
         </div>
       </div>
 
+      <div class="sect">장르</div>
+      <div class="fld">
+        <label>새 대화의 기본 장르</label>
+        <select id="sGenre"></select>
+        <div class="hint">대화를 열 때 이 장르가 먼저 골라져 있습니다. 그 자리에서 바꿀 수 있습니다.</div>
+      </div>
+      <div class="fld">
+        <label>빈칸 채우는 방식</label>
+        <select id="sGenreFill">
+          <option value="random">무작위로 채움</option>
+          <option value="ask">대화를 열 때 직접 입력</option>
+        </select>
+        <div class="hint">
+          장르마다 <b>소재 · 방식 · 변수</b>가 빈칸으로 남아 있습니다.
+          무작위로 두면 매번 다른 이야기가 되고, 직접 입력하면 원하는 판을 짤 수 있습니다.
+        </div>
+      </div>
+      <div class="fld">
+        <label>장르별 빈칸 기본값</label>
+        <div id="gnCards"></div>
+        <div class="hint">비워 두면 그 칸만 무작위로 채워집니다.</div>
+      </div>
+
       <div class="sect">이미지 생성</div>
       <div class="fld">
         <label>Venice AI API 키</label>
@@ -498,42 +583,23 @@
         </div>
       </div>
       <div class="fld">
-        <label>일반 장면 모델 <span id="sImgCost" style="color:var(--tx3);font-weight:400"></span></label>
-        <select id="sImgModel"><option value="">— 키를 입력하면 불러옵니다 —</option></select>
-        <div class="hint">노출이 없는 장면의 기본값입니다. 싸고 빠른 쪽을 고르십시오.</div>
-      </div>
-      <div class="fld">
-        <label>고급 모델 (품질 우선)</label>
-        <select id="sImgHi"><option value="">— 키를 입력하면 불러옵니다 —</option></select>
+        <label>수위별 모델 묶음 <span id="sImgCost" style="color:var(--tx3);font-weight:400"></span></label>
+        <div id="lvCards"></div>
         <div class="hint">
-          일반 장면에서 기본 모델이 실패했을 때, 또는 이미지 아이콘을 길게 눌러
-          <b>고급</b>을 고를 때 씁니다. 비싸지만 구도와 프롬프트 이해도가 낫습니다.
+          <b>수위만 고르면 모델이 따라옵니다.</b> 아래 <b>노출 수위</b>에서 기본값을 정하고,
+          대화별로 다르게 쓰려면 채팅 안의 <b>🖼</b>을 길게 눌러 바꾸십시오.<br>
+          장면이 그 수위에 못 미치면 <b>자동으로 한 단계 낮은 묶음</b>이 쓰입니다.
+          카페에서 대화만 하는 장면에 무검열 모델을 쓸 이유가 없기 때문입니다.
         </div>
-      </div>
-      <div class="fld">
-        <label>무검열 모델 (성인향 장면)</label>
-        <select id="sImgNsfw"><option value="">— 키를 입력하면 불러옵니다 —</option></select>
-        <div class="hint">
-          노출이 있는 장면은 <b>수위와 무관하게 이 모델로 갑니다.</b>
-          Flux 같은 고급 모델은 성인향을 거부하거나 뭉개므로 여기에 지정하지 마십시오.
-        </div>
-      </div>
-      <div class="fld">
-        <label>무검열 고급 모델</label>
-        <select id="sImgNsfwHi"><option value="">— 키를 입력하면 불러옵니다 —</option></select>
-        <div class="sw" style="margin-top:8px">
+        <div class="sw" style="margin-top:9px">
           <input type="checkbox" id="sImgUp" checked>
           <label for="sImgUp" style="margin:0">고급일 때 2배 업스케일 (+$0.02)</label>
         </div>
-        <div class="hint">
-          무검열 계열에는 더 비싼 상위 모델이 없습니다. 대신 <b>스텝을 40으로 올리고
-          2배 업스케일</b>을 걸어 품질을 끌어올립니다. 합계 약 $0.03으로 일반 고급과 같습니다.
-        </div>
       </div>
       <div class="fld">
-        <input type="text" id="sImgFilter" placeholder="세 목록 공통 검색 — lustify, flux, qwen ...">
+        <input type="text" id="sImgFilter" placeholder="모델 검색 — lustify, seedream, qwen ...">
         <div class="sw" style="margin-top:8px">
-          <input type="checkbox" id="sImgUnc"><label for="sImgUnc" style="margin:0">일반 · 고급 목록도 무검열만</label>
+          <input type="checkbox" id="sImgUnc"><label for="sImgUnc" style="margin:0">무검열만</label>
           <div class="sp"></div>
           <button class="btn" id="sImgReload" style="padding:5px 11px;font-size:12px">목록 새로고침</button>
         </div>
@@ -542,18 +608,18 @@
         <label>프롬프트 작성 모델</label>
         <select id="sImgTxt"><option value="">— 키를 입력하면 불러옵니다 —</option></select>
         <div class="hint">
-          장면을 영어 태그로 옮기는 데 씁니다. OpenRouter의 무료 모델은 수위가 있는 장면에서
-          <b>작업을 거부</b>하고, 그 거부 문장이 그대로 그림 프롬프트가 되어 엉뚱한 이미지가 나옵니다.
-          Venice의 무검열 텍스트 모델을 쓰면 이 문제가 없습니다. 장당 $0.001 미만입니다.
+          장면을 영어 태그로 옮기는 데 씁니다. <b>수위와 무관하게 하나면 됩니다</b> —
+          무검열 텍스트 모델은 얌전한 장면도 잘 쓰기 때문입니다. 반대로 일반 모델은
+          수위가 있는 장면에서 <b>작업을 거부</b>하고, 그 거부 문장이 그대로 그림 프롬프트가 됩니다.
+          장당 $0.001 미만입니다.
         </div>
       </div>
       <div class="fld">
         <label>노출 수위</label>
         <select id="sImgLevel">
-          <option value="hardcore">완전 노출</option>
-          <option value="explicit">노골적</option>
-          <option value="nude">노출</option>
-          <option value="soft">은은하게</option>
+          <option value="soft">은은하게 — 품질 최상 · 직접 노출 없음</option>
+          <option value="nude">노출 — 품질 상 · 전라까지, 행위는 암시</option>
+          <option value="explicit">노골적 — 품질 중 · 행위와 부위, 체액까지</option>
         </select>
         <div class="hint">
           <b>수위를 낮추면 더 좋은 모델이 쓰입니다.</b> 노출이 없는 장면으로 판정되면
@@ -637,6 +703,34 @@
       </label>
       <textarea id="inp" rows="1" placeholder="메시지"></textarea>
       <button class="btn pri" id="cSend">전송</button>
+    </div>
+  </section>
+
+  <!-- ══════════ 소설 ══════════ -->
+  <section class="view" id="vNovel">
+    <div class="bar">
+      <button class="ico" id="novelBack">‹</button>
+      <h2>소설<span class="sub" id="novelInfo"></span></h2>
+      <button class="ico" id="novelCopy" title="복사">⧉</button>
+      <button class="ico" id="novelSave" title="파일로">⇩</button>
+      <button class="ico" id="novelVerBtn" title="판본 내역" style="display:none">🗂</button>
+    </div>
+    <div id="novelBar"><i></i></div>
+    <div class="scroll" id="novelBody"></div>
+    <div id="novelFoot">
+      <button class="btn" id="nvModelBtn">모델 <b id="nvModel">—</b></button>
+      <div class="nvRow">
+        <input type="text" id="novelOnceIn" placeholder="이번만 반영 — 예: 3장을 짧게">
+        <button class="btn" id="novelOnce">적용</button>
+      </div>
+      <div class="nvRow">
+        <input type="text" id="novelKeepIn" placeholder="계속 적용 — 예: 1인칭으로, 대사를 줄여서">
+        <button class="btn" id="novelKeep">새기기</button>
+      </div>
+      <div class="row">
+        <button class="btn" id="novelPlan">설계도 뽑기</button>
+        <button class="btn pri" id="novelFull">처음부터 쓰기</button>
+      </div>
     </div>
   </section>
 
@@ -821,7 +915,8 @@
         <div class="hint">같은 숫자를 고정해 두면 인물의 인상이 덜 흔들립니다.</div></div>
 
       <div class="sect">고급</div>
-      <div class="fld"><label>전용 시스템 규칙</label>
+      <div class="fld"><label>전용 시스템 규칙
+        <button class="btn" id="ceSeeRules" style="float:right;padding:2px 8px;font-size:11px">앱 기본규칙 보기</button></label>
         <textarea id="ceSys" rows="4" placeholder="비우면 앱 기본 규칙을 사용합니다"></textarea></div>
       <div class="fld"><label>전용 모델 <span id="ceModelCount" style="color:var(--tx3);font-weight:400"></span></label>
         <input type="text" id="ceFilter" placeholder="모델 검색 — glm, nemotron, gemma ..." style="margin-bottom:7px">
@@ -935,23 +1030,6 @@
   <button class="btn" id="whoEdit" style="width:100%;margin-top:14px">편집하기</button>
   <div class="hint" style="text-align:center;margin-top:6px">채팅에서 잠시 이탈합니다</div>
 </div></div>
-<div id="novelBox"><div id="novelIn">
-  <button id="novelX" title="닫기">✕</button>
-  <h3>소설 원고</h3>
-  <div id="novelText"></div>
-  <textarea id="novelAsk" rows="2" placeholder="고칠 점을 적어 주십시오 — 예: 1인칭으로, 대사를 줄이고, 결말을 열어 두고"></textarea>
-  <div id="novelBar"><i></i></div>
-  <div class="row" style="margin-top:9px">
-    <button class="btn" id="novelFull">처음부터 쓰기</button>
-    <button class="btn pri" id="novelRun">요청 반영</button>
-  </div>
-  <div class="row" style="margin-top:7px">
-    <button class="btn" id="novelCopy">복사</button>
-    <button class="btn" id="novelSave">파일로</button>
-    <button class="btn" id="novelVerBtn" style="display:none">판본 내역</button>
-  </div>
-  <div class="hint" id="novelInfo" style="margin-top:7px"></div>
-</div></div>
 <div id="editBox"><div id="editIn">
   <h3 id="editWho">메시지 편집</h3>
   <textarea id="editTa"></textarea>
@@ -979,8 +1057,8 @@ const LS = {
   imgKey:'rp_imgkey', imgModel:'rp_imgmodel', imgSize:'rp_imgsize', imgUnc:'rp_imgunc',
   imgHi:'rp_imghi', imgNsfw:'rp_imgnsfw', imgNsfwHi:'rp_imgnsfwhi',
   imgTier:'rp_imgtier', imgUp:'rp_imgup',
-  taste:'rp_taste', ageMin:'rp_agemin', ageMax:'rp_agemax', noReason:'rp_noreason',
-  len:'rp_len', imgTxt:'rp_imgtxt', imgLevel:'rp_imglevel', imgDetail:'rp_imgdetail',
+  thumbs:'rp_thumbs', setPane:'rp_setpane', genreDef:'rp_genredef', genreFill:'rp_genrefill', genreSlots:'rp_genreslots', taste:'rp_taste', ageMin:'rp_agemin', ageMax:'rp_agemax', noReason:'rp_noreason',
+  len:'rp_len', imgTxt:'rp_imgtxt', novelModel:'rp_novelmodel', lvModels:'rp_lvmodels', imgLevel:'rp_imglevel', imgDetail:'rp_imgdetail',
   charSort:'rp_charsort', chatSort:'rp_chatsort', guide:'rp_guideoff', chatModel:'rp_chatmodel',
   penalty:'rp_penalty'
 };
@@ -996,29 +1074,30 @@ const IMG_NEG = 'cartoon, anime, illustration, painting, 3d render, cgi, doll, p
 
 /* 노출 수위. 무검열 모델을 써도 프롬프트가 얌전하면 얌전한 그림이 나온다.
    태그와 네거티브, 그리고 태그 작성 모델에 주는 지시를 함께 바꾼다. */
+/* 노출 수위는 셋이면 충분하다. 넷으로 나눠 봐야 「노골적」과 「완전 노출」의
+   실질 차이가 없었다. 진짜 차이는 **어느 세대의 모델을 쓰느냐**에서 온다.
+     은은 → 최신 대형 모델. 프롬프트 이해와 얼굴·손이 가장 좋다. 대신 직접 노출이 안 된다
+     노출 → 무검열이면서 최신인 것. 전라까지 되고 품질도 괜찮다
+     노골 → SDXL 계열 특화 모델. 해부학과 체액은 이쪽뿐이지만 나머지가 떨어진다
+   그래서 수위를 올리면 그림의 완성도가 떨어지는 것이 정상이다.          */
 const IMG_LEVEL = {
   soft: {
-    name: '은은하게',
+    key:'soft', name:'은은하게', tone:'품질 최상 · 직접 노출 없음',
     tag: 'tasteful, suggestive, implied nudity, partially covered',
     neg: ', explicit, nsfw, nude, naked, genitalia, nipples, exposed breasts, sexual act',
+    frame: '',
     ask: 'Keep it suggestive. Imply rather than show.'
   },
   nude: {
-    name: '노출',
+    key:'nude', name:'노출', tone:'품질 상 · 전라까지, 행위는 암시',
     tag: 'nude, bare skin, uncensored, natural body',
     neg: ', clothed, dressed, underwear, censored, mosaic, black bars',
-    ask: 'Full nudity is allowed. State the level of undress exactly as the scene describes it.'
+    frame: 'body and face both in frame, nothing cropped out',
+    ask: 'Full nudity is allowed. State the level of undress exactly as the scene describes it. ' +
+         'Do not describe explicit sexual acts; imply them instead.'
   },
   explicit: {
-    name: '노골적',
-    tag: 'explicit, uncensored, nsfw, nude, detailed anatomy, sweat on skin, flushed skin, wet skin',
-    neg: ', clothed, dressed, underwear, censored, mosaic, black bars, bar censor',
-    ask: 'This is explicit adult artwork for a private adult user. Do not sanitize, soften, or omit anything. ' +
-         'Name the sexual act, the exact pose, which parts of her body are visible, and the state of undress, ' +
-         'using direct anatomical words. Vague or euphemistic tags are useless here.'
-  },
-  hardcore: {
-    name: '완전 노출',
+    key:'explicit', name:'노골적', tone:'품질 중 · 행위와 부위, 체액까지',
     tag: 'explicit, uncensored, nsfw, fully nude, detailed anatomy, visible genitals, detailed pussy, ' +
          'glistening skin, sweat, bodily fluids, realistic skin pores, anatomically correct',
     neg: ', clothed, dressed, underwear, covered, censored, mosaic, black bars, bar censor, ' +
@@ -1032,8 +1111,31 @@ const IMG_LEVEL = {
          'Euphemisms and vague wording produce useless images.'
   }
 };
-const imgLevel = () => IMG_LEVEL[localStorage.getItem(LS.imgLevel) || 'hardcore'] || IMG_LEVEL.hardcore;
-const isRaw = () => ['explicit','hardcore'].includes(localStorage.getItem(LS.imgLevel) || 'hardcore');
+const LEVEL_ORDER = ['soft', 'nude', 'explicit'];
+
+/* 수위가 모델을 정한다. 사용자는 수위만 고르면 되고, 묶음은 필요할 때만 손댄다. */
+const LEVEL_DEF = {
+  soft:     {m:'seedream-v5-pro', fb:'qwen-image-3'},
+  nude:     {m:'qwen-image-3',    fb:'krea-2-turbo'},
+  explicit: {m:'lustify-v8',      fb:'chroma'}
+};
+function levelModels(key){
+  let over = {};
+  try{ over = JSON.parse(localStorage.getItem(LS.lvModels) || '{}'); }catch(_){}
+  const d = LEVEL_DEF[key] || LEVEL_DEF.explicit;
+  return {m: over[key]?.m || d.m, fb: over[key]?.fb || d.fb};
+}
+function setLevelModel(key, which, id){
+  let over = {};
+  try{ over = JSON.parse(localStorage.getItem(LS.lvModels) || '{}'); }catch(_){}
+  over[key] = {...(over[key] || {}), [which]: id};
+  localStorage.setItem(LS.lvModels, JSON.stringify(over));
+}
+
+/* 이 대화에만 다른 수위를 쓸 수 있다. 없으면 설정의 기본값을 따른다. */
+const imgLevelKey = () => S.chat?.imgLevel || localStorage.getItem(LS.imgLevel) || 'explicit';
+const imgLevel = () => IMG_LEVEL[imgLevelKey()] || IMG_LEVEL.explicit;
+const isRaw = () => imgLevelKey() !== 'soft';
 
 /* 8/20 기록 검토 결과. 수위 태그를 장면과 무관하게 무조건 붙이고 있었다.
    카페에서 대화만 하는 장면에도 fully nude, visible genitals 가 들어갔다.
@@ -1047,11 +1149,10 @@ function sceneHeat(scene, stateCard){
   return 0;
 }
 function effLevel(scene, stateCard){
-  const order = ['soft', 'nude', 'explicit', 'hardcore'];
-  const want = order.indexOf(localStorage.getItem(LS.imgLevel) || 'hardcore');
+  const want = Math.max(0, LEVEL_ORDER.indexOf(imgLevelKey()));
   const heat = sceneHeat(scene, stateCard);
-  const cap = heat === 2 ? 3 : heat === 1 ? 1 : 0;
-  return IMG_LEVEL[order[Math.min(want < 0 ? 3 : want, cap)]];
+  const cap = heat === 2 ? 2 : heat === 1 ? 1 : 0;
+  return IMG_LEVEL[LEVEL_ORDER[Math.min(want, cap)]];
 }
 
 /* 프롬프트 상세도. SDXL 계열은 CLIP 이 77토큰 단위로 끊어 읽으므로,
@@ -1347,7 +1448,7 @@ async function dbClear(s){ await wrap(st(s,'readwrite').clear()); }
 const S = {
   chats:[], characters:[], personas:[], models:[], imgModels:[],
   chatQ:'', chatOnly:null, chatHits:null, chatHitsQ:undefined, findHits:[], findAt:-1, whoEdit:false, imgLeads:[],
-  pendingGenre:null, genreOpen:false, txtModels:[], generating:false,
+  pendingGenre:null, genreOpen:false, txtModels:[], generating:false, novelStop:false, novelOpen:{},
   chat:null, character:null, persona:null, messages:[],
   editingChar:null, editingPersona:null,
   streaming:false, abort:null, view:'vChats', lastCtx:null, stick:true,
@@ -1355,19 +1456,27 @@ const S = {
 };
 
 /* ═══════════════ 공통 UI ═══════════════ */
-/* 작업마다 자리를 떠도 되는지 알려 준다.
-     screen — 스트리밍이라 화면을 벗어나면 끊긴다
-     app    — 한 번의 요청이라 화면은 꺼도 되지만 앱은 살아 있어야 한다
-     free   — 다 끝났거나 실패해도 잃을 것이 없다                        */
+/* 「지금 자리를 떠도 되는가」는 브라우저가 실제로 어떻게 동작하느냐에 달려 있다.
+   이 앱은 앱이 아니라 브라우저 탭이므로, 삼성 브라우저·크롬 안드로이드 기준으로 이렇다.
+     - 탭을 벗어나면(다른 앱으로 전환하거나 화면을 끄면) 그 탭은 곧 얼어붙는다.
+       받는 중이던 스트림은 거기서 멈추고, 오래 두면 탭 자체가 메모리에서 버려진다.
+     - 한 번에 받아 오는 요청은 얼어 있는 사이에도 서버가 답을 만들어 두므로,
+       탭이 살아만 있으면 돌아왔을 때 이어받는다.
+     - 이미 IndexedDB 에 들어간 것은 탭이 죽어도 남는다.
+   그래서 「앱을 유지하십시오」 한 줄로 뭉뚱그리지 않고 경우를 나눠 적는다. */
 const BUSY_CAN = {
-  screen: ['warn', '창을 보고 계십시오'],
-  app:    ['warn', '앱을 유지하십시오 · 화면은 꺼도 됩니다'],
+  stream: ['warn', '이 화면을 켜 두십시오 · 화면을 끄면 받던 도중에 끊깁니다'],
+  once:   ['warn', '잠깐 다른 앱을 봐도 됩니다 · 브라우저 탭은 닫지 마십시오'],
+  steps:  ['warn', '탭을 유지하십시오 · 끊겨도 여기까지 쓴 것은 남습니다'],
+  local:  ['ok',   '기기 안에서만 도는 작업입니다 · 언제 멈춰도 됩니다'],
   free:   ['ok',   '나가셔도 됩니다']
 };
+/* 예전 이름으로 부르는 자리가 남아 있어도 그대로 동작하게 둔다 */
+const BUSY_ALIAS = {screen:'stream', app:'once', post:'steps'};
 function busy(kind, what){
   const el = $('busy');
   if (!kind){ el.classList.remove('on', 'warn', 'ok'); return; }
-  const [cls, can] = BUSY_CAN[kind] || BUSY_CAN.app;
+  const [cls, can] = BUSY_CAN[BUSY_ALIAS[kind] || kind] || BUSY_CAN.once;
   $('busyWhat').textContent = what || '작업 중';
   $('busyCan').textContent = can;
   el.classList.remove('warn', 'ok');
@@ -1395,7 +1504,13 @@ function sheet(title, items){
 }
 const closeSheet = () => $('sheet').classList.remove('on');
 $('sheet').onclick = e => { if (e.target.id === 'sheet') closeSheet(); };
-$('editCancel').onclick = () => $('editBox').classList.remove('on');
+/* 읽기 전용으로 띄운 창(기본규칙 보기 · 시작 가이드)을 취소로 닫으면
+   readOnly 가 남아 다음에 여는 편집창까지 못 고치게 된다. 닫을 때 늘 풀어 준다. */
+function closeEdit(){
+  $('editTa').readOnly = false;
+  $('editBox').classList.remove('on');
+}
+$('editCancel').onclick = closeEdit;
 
 function openGuide(force){
   if (!force && localStorage.getItem(LS.guide) === '1') return;
@@ -1408,12 +1523,48 @@ function closeGuide(){
 }
 $('guideX').onclick = closeGuide;
 $('guideBox').onclick = e => { if (e.target.id === 'guideBox') closeGuide(); };
-$('editBox').onclick = e => { if (e.target.id === 'editBox') $('editBox').classList.remove('on'); };
+$('editBox').onclick = e => { if (e.target.id === 'editBox') closeEdit(); };
 
-function show(v){
+/* 삼성 브라우저를 비롯한 모바일 브라우저에서 기기 뒤로가기를 누르면 페이지를 떠난다.
+   앱이 아니라 웹페이지이기 때문이다. 화면 전환을 히스토리에 쌓아 두면
+   뒤로가기가 「앱 안에서 한 단계 뒤로」가 된다. 열려 있는 덮개가 있으면 그것부터 닫는다. */
+const OVERLAYS = ['sheet', 'editBox', 'whoBox', 'imgBox', 'guideBox'];
+function openOverlay(){
+  return OVERLAYS.find(id => $(id) && $(id).classList.contains('on'));
+}
+function closeTopOverlay(){
+  const id = openOverlay();
+  if (!id) return false;
+  if (id === 'editBox') return closeEdit(), true;
+  $(id).classList.remove('on');
+  if (id === 'whoBox') S.whoEdit = false;
+  return true;
+}
+let navLock = false;
+function show(v, fromPop){
+  if (!fromPop && v !== S.view){
+    try{ history.pushState({v}, ''); }catch(_){}
+  }
+  return showRaw(v);
+}
+addEventListener('popstate', e => {
+  if (navLock) return;
+  /* 덮개가 열려 있으면 화면을 옮기지 않고 그것만 닫는다 */
+  if (closeTopOverlay()){
+    navLock = true;
+    try{ history.pushState({v: S.view}, ''); }catch(_){}
+    navLock = false;
+    return;
+  }
+  const v = e.state?.v || 'vChats';
+  showRaw(v);
+});
+
+function showRaw(v){
   document.querySelectorAll('.view').forEach(x => x.classList.toggle('on', x.id === v));
   S.view = v;
   const tabbed = ['vChats','vChars','vPersonas','vSettings'];
+  /* 소설은 대화에서 들어가는 화면이라 하단 탭을 숨긴다 */
   $('nav').style.display = tabbed.includes(v) ? 'flex' : 'none';
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
 }
@@ -1425,6 +1576,27 @@ document.querySelectorAll('#nav button').forEach(b => b.onclick = () => {
 });
 
 const initial = n => (n||'?').trim().charAt(0).toUpperCase();
+
+/* 사진을 끄면 이름 첫 글자로 대신한다. 목록을 훑을 때 글자가 더 빠를 수 있다. */
+const thumbsOn = () => (localStorage.getItem(LS.thumbs) ?? '1') === '1';
+function avatarOf(c){
+  const pic = thumbsOn() && c?.profile?.avatar;
+  return pic
+    ? '<div class="av pic0"><img src="' + c.profile.avatar + '" alt=""></div>'
+    : '<div class="av" style="background:' + (c?.accent || PALETTE[0]) + '">' +
+      esc(initial(c?.name)) + '</div>';
+}
+function syncThumbBtns(){
+  document.querySelectorAll('.thumbBtn').forEach(b => {
+    b.textContent = thumbsOn() ? '🖼' : '🅰';
+    b.title = thumbsOn() ? '사진 끄기' : '사진 켜기';
+    b.classList.toggle('on', thumbsOn());
+  });
+}
+document.querySelectorAll('.thumbBtn').forEach(b => b.onclick = () => {
+  localStorage.setItem(LS.thumbs, thumbsOn() ? '0' : '1');
+  syncThumbBtns(); renderChats(); renderChars();
+});
 const relTime = t => {
   const d = (now() - t) / 1000;
   if (d < 60)    return '방금';
@@ -2305,9 +2477,7 @@ function renderChats(){
   }
   box.innerHTML = list.map(ch => {
     const c = S.characters.find(x=>x.id===ch.characterId);
-    const av = c?.profile?.avatar
-      ? `<div class="av pic0"><img src="${c.profile.avatar}" alt=""></div>`
-      : `<div class="av" style="background:${c?.accent||PALETTE[0]}">${esc(initial(c?.name))}</div>`;
+    const av = avatarOf(c);
     const sc = S.mems?.[ch.id]?.stateCard || {};
     const at = [sc['장소'], sc['일시']].filter(Boolean).join(' · ');
     /* 이름은 위에 이미 있다. 대신 관계가 어디까지 왔는지를 보여준다. */
@@ -2387,11 +2557,37 @@ function pickPersona(characterId){
 }
 
 /* 대화를 열기 전에 장르를 고른다. 고르지 않아도 시작할 수 있다. */
+/* 빈칸을 직접 채우고 싶을 때. 비워 두면 그 칸만 무작위가 된다. */
+function fillGenre(g, characterId, personaId){
+  const slots = Object.keys(g.slots || {});
+  const def = genreSlotDefaults()[g.key] || {};
+  $('editWho').textContent = g.name + ' — 빈칸 채우기 (비우면 무작위)';
+  $('editTa').value = slots.map(sl => sl + ': ' + (def[sl] || '')).join('\n');
+  $('editBox').classList.add('on');
+  $('editOk').onclick = () => {
+    const manual = {};
+    for (const line of $('editTa').value.split('\n')){
+      const i = line.indexOf(':');
+      if (i <= 0) continue;
+      const k = line.slice(0, i).trim(), v = line.slice(i + 1).trim();
+      if (k && v) manual[k] = v;
+    }
+    $('editBox').classList.remove('on');
+    S.pendingGenre = rollGenre(g.key, manual);
+    newChat(characterId, personaId);
+  };
+}
+
 function pickGenre(characterId, personaId){
+  const def = localStorage.getItem(LS.genreDef) || '';
+  const ask = (localStorage.getItem(LS.genreFill) || 'random') === 'ask';
   sheet('장르를 고르십시오', GENRES.map(g => ({
     label: g.name,
-    html: '<b>' + esc(g.name) + '</b><div class="shint">' + esc(g.desc) + '</div>',
+    html: (g.key === def ? '● ' : '○ ') + '<b>' + esc(g.name) + '</b>' +
+      '<div class="shint">' + esc(g.desc) + '</div>',
     run: () => {
+      if (ask && g.key && Object.keys(g.slots || {}).length)
+        return fillGenre(g, characterId, personaId);
       S.pendingGenre = rollGenre(g.key);
       newChat(characterId, personaId);
     }
@@ -2441,7 +2637,54 @@ async function newChat(characterId, personaId){
   }
   await loadAll();
   await openChat(chat.id);
-  openGuide(false);
+  startGuide(c, p);
+}
+
+/* 인물마다 말투와 관계가 다른데 사용법 안내는 늘 같았다.
+   이 대화에서만 필요한 것 — 누가 존대하는지, 무엇으로 시작하는지 — 을 한 번 짚어 준다. */
+const HONOR = [
+  [/{{user}}가 존대/, '{{user}} 가 존대하고 상대는 편하게 말합니다'],
+  [/{{char}}가 존대/, '상대가 존대하고 {{user}} 는 편하게 말합니다'],
+  [/서로 반말/,       '서로 반말입니다'],
+  [/서로 존대/,       '서로 존대합니다']
+];
+function speechHint(sp, un){
+  const t = String(sp || '');
+  for (const [re, msg] of HONOR)
+    if (re.test(t)) return msg.split('{{user}}').join(un);
+  return t.trim() || '관계와 나이에 맞게 정해집니다';
+}
+function startGuide(c, p){
+  const un = p?.name || '나';
+  const pf = c?.profile || {};
+  const rows = [
+    ['말투', speechHint(pf.speech, un)],
+    ['관계', (pf.relation || '').split('{{user}}').join(un) || '아직 정해지지 않았습니다'],
+    ['첫 장면', (c.scenario || '').split('{{user}}').join(un).slice(0, 120)],
+    ['장르', S.chat?.genre?.name || '없음']
+  ].filter(r => r[1]);
+  const care = [];
+  const st = pf.stats || {};
+  if (st.grd >= 60) care.push('경계가 높습니다. 처음부터 몰아붙이면 물러섭니다');
+  if (st.ant >= 20) care.push('반감이 남아 있습니다. 사과나 해명이 먼저일 수 있습니다');
+  if (st.aff >= 45) care.push('호감이 이미 있습니다. 먼저 다가와도 이상하지 않습니다');
+  if (st.brv <= 35) care.push('대담이 낮습니다. 마음이 있어도 먼저 꺼내지 못합니다');
+
+  $('editWho').textContent = c.name + ' — 이 대화를 시작하기 전에';
+  $('editTa').value =
+    rows.map(r => r[0] + ' — ' + r[1]).join('\n') +
+    (care.length ? '\n\n[주의]\n' + care.map(x => '- ' + x).join('\n') : '') +
+    '\n\n[입력]\n- 그냥 쓰면 ' + un + ' 의 대사입니다' +
+    '\n- *별표* 로 감싸면 행동입니다' +
+    '\n- [지시] 로 시작하면 서술자에게만 주는 지시입니다';
+  $('editTa').readOnly = true;
+  $('editBox').classList.add('on');
+  $('editOk').onclick = () => {
+    $('editTa').readOnly = false;
+    $('editBox').classList.remove('on');
+    /* 앱 자체가 처음이라면 이어서 전체 사용법을 한 번 보여 준다 */
+    openGuide(false);
+  };
 }
 
 /* ═══════════════ 채팅 ═══════════════ */
@@ -2632,6 +2875,71 @@ function fmt(t, role){
 }
 /* 메시지 하나의 마크업. 대화가 길어져도 이 함수는 "바뀐 메시지"에만 다시 돈다
    (renderMsgs의 캐시 참고) — 매 턴 전체를 다시 그리던 것이 느려짐의 원인이었다. */
+/* 뽑아 둔 예시는 대화에 저장하지 않는다. 이번에 보고 지나가면 그만인 것들이다. */
+S.hintMap = {};
+function hintBox(m){
+  const h = S.hintMap[m.id];
+  if (!h) return '';
+  if (h === 'wait') return '<div class="hints"><i>예시를 고르는 중…</i></div>';
+  return '<div class="hints">' + h.map((t, i) =>
+    '<button class="hchip" data-act="usehint" data-h="' + i + '">' +
+    esc(t) + '</button>').join('') +
+    '<button class="hchip x" data-act="hintoff">✕</button></div>';
+}
+
+/* 지금 장면에서 「내」가 할 법한 말 세 개를 받아 온다.
+   그대로 보내지 않고 입력창에 넣어만 준다 — 고쳐 쓰라는 뜻이다. */
+async function suggestReplies(id){
+  const m = S.messages.find(x => x.id === id);
+  if (!m) return;
+  if (S.hintMap[id] === 'wait') return;
+  S.hintMap[id] = 'wait'; renderMsgs(false);
+  try{
+    const cn = S.character?.name || '상대', un = S.persona?.name || '나';
+    const recent = S.messages.slice(-8)
+      .map(x => novelLine(x, un, cn)).filter(Boolean).join('\n');
+    const rel = S.character?.profile?.relation || '';
+    const sp  = S.character?.profile?.speech || '';
+    const p = [
+      '아래는 진행 중인 롤플레잉 대화의 최근 장면이다.',
+      un + ' 가 지금 할 법한 말이나 행동을 세 개 제안한다.',
+      rel ? (un + ' 에게 ' + cn + ' 는: ' + rel) : '',
+      sp  ? ('말투: ' + sp) : '',
+      '',
+      '[최근 장면]', recent,
+      '',
+      '[규칙]',
+      '- 세 줄만 쓴다. 번호 · 설명 · 따옴표를 붙이지 않는다.',
+      '- 한 줄은 40자 이내로 짧게 쓴다.',
+      '- 행동은 별표로 감싼다. 예: *한 걸음 다가선다*',
+      '- 행동과 말을 함께 쓸 때는 *행동* 뒤에 말을 잇는다.',
+      '- 세 줄은 서로 결이 달라야 한다. 물러서는 쪽 · 밀고 가는 쪽 · 딴 데를 짚는 쪽으로 나눈다.',
+      '- ' + cn + ' 의 대사를 쓰지 않는다. ' + un + ' 가 하는 말만 쓴다.',
+      '- 지금 장면과 말투에 맞아야 한다. 존대와 반말을 섞지 않는다.'
+    ].filter(Boolean).join('\n');
+    const txt = await askText(p, 420, 1.0);
+    const lines = String(txt).split('\n')
+      .map(t => t.replace(/^\s*(?:[0-9]+[.)]|[-*\u2022])\s*/, '').trim())
+      .filter(t => t && t.length <= 80).slice(0, 3);
+    if (!lines.length) throw new Error('예시를 받지 못했습니다');
+    S.hintMap[id] = lines;
+  }catch(e){
+    delete S.hintMap[id];
+    toast('예시를 받지 못했습니다 — ' + (e.message || e));
+  }
+  renderMsgs(false);
+}
+
+function useHint(id, i){
+  const h = S.hintMap[id];
+  if (!Array.isArray(h)) return;
+  const box = $('inp');
+  box.value = (box.value.trim() ? box.value.trim() + ' ' : '') + h[i];
+  delete S.hintMap[id];
+  renderMsgs(false);
+  box.focus();
+}
+
 function msgHTML(m, isLast){
   const who = m.role === 'user' ? (S.persona?.name || '나') : S.character.name;
   const vs = m.variants || [];
@@ -2649,17 +2957,23 @@ function msgHTML(m, isLast){
   ).join('') + (m.imgPending ? '<div class="imgwait">이미지를 만드는 중입니다…</div>' : '');
   const mkimg = (m.role === 'assistant' && imgKey() && !m.imgPending)
     ? '<button data-act="img">이미지</button>' : '';
+  /* 무슨 말을 해야 할지 막히는 순간이 있다. 마지막 응답 아래에서만 예시를 부른다. */
+  const hintBtn = (m.role === 'assistant' && isLast)
+    ? '<button data-act="hint">답변 예시</button>' : '';
+  const hints = hintBox(m);
   return `<div class="msg ${m.role}" data-id="${m.id}">
     <div class="who">${esc(who)}</div>
-    <div class="body">${fmt(m.content, m.role)}${pics}</div>
-    <div class="act">${nav}${regen}${mkimg}<button data-act="edit">편집</button>
+    <div class="body">${fmt(m.content, m.role)}${pics}</div>${hints}
+    <div class="act">${nav}${regen}${mkimg}${hintBtn}<button data-act="edit">편집</button>
       <button data-act="copy">복사</button><button data-act="drop">빼기</button><button data-act="cut">실행취소</button></div>
   </div>`;
 }
 const MSG_ACT = {
   copy: copyMsg, cut: cutFrom, drop: dropOne, edit: editMsg, regen: () => regenerate(),
   prev: id => swipe(id, -1), next: id => swipe(id, +1),
-  img: id => { const m = S.messages.find(x => x.id === id); if (m) askImageFor(m); }
+  img: id => { const m = S.messages.find(x => x.id === id); if (m) askImageFor(m); },
+  hint: id => suggestReplies(id),
+  hintoff: id => { delete S.hintMap[id]; renderMsgs(false); }
 };
 const msgNodeCache = new Map();   /* id -> {sig, node} — 안 바뀐 메시지는 다시 그리지 않는다 */
 function renderMsgs(toBottom){
@@ -2672,7 +2986,8 @@ function renderMsgs(toBottom){
   S.messages.forEach((m, i) => {
     const isLast = i === last;
     const sig = m.content + '|' + m.activeVariant + '|' + (m.images?.length||0)
-      + '|' + (m.imgPending?1:0) + '|' + isLast + '|' + (imgKey()?1:0) + '|' + (m.imgFold?1:0);
+      + '|' + (m.imgPending?1:0) + '|' + isLast + '|' + (imgKey()?1:0) + '|' + (m.imgFold?1:0)
+      + '|' + JSON.stringify(S.hintMap[m.id] || 0);
     seen.add(m.id);
     let entry = msgNodeCache.get(m.id);
     if (!entry || entry.sig !== sig){
@@ -2688,6 +3003,10 @@ function renderMsgs(toBottom){
             const msg = S.messages.find(x => x.id === node.dataset.id);
             if (msg){ msg.imgFold = on; await dbPut('messages', msg); }
           };
+          return;
+        }
+        if (b.dataset.act === 'usehint'){
+          b.onclick = () => useHint(node.dataset.id, +b.dataset.h);
           return;
         }
         b.onclick = () => { MSG_ACT[b.dataset.act]?.(node.dataset.id); };
@@ -2826,17 +3145,33 @@ function showMsgFind(){
    {{char}} 만큼 자세히 적지 않는다. 이름과 한 줄이면 충분하고, 그 이상은 오히려
    조연이 주인공처럼 굴게 만든다. 연속성에 필요한 최소한만 남긴다.        */
 /* ═══════════════ 소설 재구성 ═══════════════
-   대화 전체를 원고로 바꾼다. 한 번에 끝내지 않고, 팝업에서 모델과 주고받으며 고친다.
-   원고와 주고받은 지시는 대화에 저장되어 언제든 다시 열 수 있다.          */
-/* ═══════════════ 소설 재구성 ═══════════════
-   대화 전체를 원고로 바꾼다. 뒤에서 잘라내면 앞부분이 통째로 빠지므로
-   처음부터 토막으로 나눠 이어 쓴다. 원고와 지난 판본은 대화에 저장된다. */
-const NOVEL_CHUNK = 12000;   /* 한 번에 넘길 원문 크기 */
-const NOVEL_KEEP  = 1200;    /* 이어 쓸 때 앞 원고에서 물려줄 꼬리 */
-const NOVEL_VERS  = 12;      /* 보관할 판본 수 */
+   대화 전체를 한 번에 받으려 하면 max_tokens 에 걸려 잘린다. 고칠 때도 마찬가지라,
+   원고 전체를 다시 받으려다 앞부분이 통째로 사라졌다. 그래서 셋으로 나눈다.
+     1) 설계도 — 전체를 관통하는 기준. 「계속 적용」 요청이 여기에 새겨진다
+     2) 장     — 원문 토막 하나가 장 하나. 잘리면 이어받는다
+     3) 수정   — 원고 전체가 아니라 그 장만 다시 쓴다                     */
+const NOVEL_CHUNK = 5000;    /* 한 장에 넣을 원문. 출력 그릇보다 작아야 한다 */
+const NOVEL_OUT   = 3600;    /* 한 장을 받을 최대 토큰 */
+const NOVEL_KEEP  = 900;     /* 이어 쓸 때 앞 장에서 물려줄 꼬리 */
+const NOVEL_VERS  = 10;      /* 보관할 판본 수 */
+const NOVEL_CONT  = 2;       /* 한 장에서 이어받기를 시도할 최대 횟수 */
 
-/* 다시 생성한 응답이 여럿이면 **가장 마지막에 만든 것**을 쓴다.
-   화면에 보이는 것(activeVariant)이 아니라 마지막 시도라는 점이 중요하다. */
+/* 소설을 쓸 모델. 대표적인 것만 추린다. 값은 OpenRouter 기준. */
+const NOVEL_MODELS = [
+  {id:'', name:'대화와 같은 모델', cost:'대화 설정 그대로',
+   good:'따로 고를 필요 없음', bad:'무료 모델이면 문장이 거칠 수 있음'},
+  {id:'deepseek/deepseek-v4-flash', name:'DeepSeek V4 Flash', cost:'1만자당 약 $0.02',
+   good:'값싸고 한국어 산문이 매끄러움', bad:'묘사가 다소 담백함'},
+  {id:'z-ai/glm-4.7', name:'GLM 4.7', cost:'1만자당 약 $0.08',
+   good:'장면 전환과 구성이 안정적', bad:'가끔 설명조로 흐름'},
+  {id:'anthropic/claude-sonnet-5', name:'Claude Sonnet 5', cost:'1만자당 약 $0.45',
+   good:'문장과 인물 심리가 가장 좋음', bad:'값이 비쌈. 수위가 높으면 완곡해짐'},
+  {id:'nvidia/nemotron-3-ultra-550b-a55b:free', name:'Nemotron 3 Ultra (무료)', cost:'무료',
+   good:'돈이 들지 않음', bad:'대기열이 길고 반복이 잦음'}
+];
+const novelModel = () => localStorage.getItem(LS.novelModel) || '';
+
+/* 다시 생성한 응답이 여럿이면 가장 마지막에 만든 것을 쓴다 */
 function novelLine(m, un, cn){
   const v = (m.variants && m.variants.length) ? m.variants[m.variants.length - 1] : m.content;
   const body = String(v).replace(/\n?[ \t]*\[상태\][^\n]*/g, '')
@@ -2856,148 +3191,339 @@ function novelChunks(){
   return out;
 }
 
+/* 원고의 뼈대. 사용자의 「계속 적용」 요청이 여기에 쌓인다. */
+function novelBook(){
+  S.chat.novel = S.chat.novel || {outline:'', standing:[], sections:[], at:0};
+  return S.chat.novel;
+}
+
 const NOVEL_RULES = [
   '지침:',
   '- 대화 로그 형식을 버리고 산문으로 쓴다. 상태 줄과 [지시] 는 옮기지 않는다.',
-  '- 전지적 작가 시점을 기본으로 하되, 요청이 있으면 그에 따른다.',
   '- 사건의 순서를 지키되 지루한 반복은 묶는다. 없는 사건을 만들지 않는다.',
   '- 인물의 이름과 관계, 장소와 시간의 흐름을 원문대로 유지한다.',
-  '- 소설 본문만 출력한다. 머리말이나 설명을 붙이지 않는다.'
+  '- **원문에서 지시로 건너뛴 자리, 주인공의 대사가 생략된 자리는 최소한으로 메운다.**',
+  '  이 글만 읽는 사람이 「왜 갑자기 이렇게 됐지」 하고 멈추지 않을 만큼만 덧붙인다.',
+  '  없던 사건을 만들지 말고, 이미 일어난 일 사이의 빈 곳만 잇는다.',
+  '- 소설 본문만 출력한다. 머리말 · 장 제목 · 설명을 붙이지 않는다.'
 ].join('\n');
 
-/* 판본을 남긴다. 되돌리거나 비교할 수 있어야 고쳐 나갈 수 있다. */
-function pushNovelVer(text, note){
-  const vers = [...(S.chat.novelVers || [])];
-  vers.push({at: now(), note: note || '', text});
-  S.chat.novelVers = vers.slice(-NOVEL_VERS);
+function novelSpec(){
+  const b = novelBook();
+  const L = [];
+  if (b.outline) L.push('[설계도 — 이 원고 전체의 기준]\n' + b.outline);
+  if (b.standing?.length)
+    L.push('[계속 적용되는 요청]\n' + b.standing.map(x => '- ' + x).join('\n'));
+  return L.join('\n\n');
 }
 
-/* 처음부터 — 대화 첫 턴부터 토막으로 이어 쓴다 */
-async function novelFull(){
+/* ── 1단계 · 설계도 ── */
+async function novelOutline(seedAsk){
   const chunks = novelChunks();
   if (!chunks.length) return toast('옮길 대화가 없습니다');
-  S.novelStop = false;
+  /* 전체를 다 넣을 수 없으므로 앞·중간·뒤를 고르게 뽑아 뼈대만 본다 */
+  const pick3 = [];
+  const step = Math.max(1, Math.floor(chunks.length / 6));
+  for (let i = 0; i < chunks.length; i += step) pick3.push(chunks[i].slice(0, 1400));
+  if (chunks.length > 1) pick3.push(chunks[chunks.length - 1].slice(-1400));
+
+  const mem = S.chat ? (S.mems?.[S.chat.id] || await getMem(S.chat.id)) : null;
+  const ask = [
+    '아래 롤플레잉 대화를 소설로 옮기려 한다. 본문을 쓰기 전에 **설계도**를 먼저 만든다.',
+    '설계도는 이후 모든 장이 참조하는 기준이며, 전체를 관통하는 것만 담는다.',
+    '',
+    '아래 형식 그대로 출력한다. 다른 말을 덧붙이지 않는다.',
+    '',
+    '시점과 문체: (인칭 · 시제 · 문장 호흡 · 어조를 한 줄로)',
+    '인물: (이름과 한 줄 소개. 등장 순서대로)',
+    '장 구성: (전체를 몇 장으로 나눌지와 각 장의 한 줄 요약. 번호를 붙인다)',
+    '관통 요소: (되풀이되는 사물 · 말버릇 · 상징. 없으면 생략)',
+    '주의: (원문에서 건너뛰어 독자가 의문을 가질 만한 지점과 어떻게 메울지)',
+    ''
+  ];
+  if (seedAsk) ask.push('[사용자 요청 — 무엇보다 우선한다]\n' + seedAsk, '');
+  if (mem?.summary) ask.push('[지금까지의 이야기]\n' + mem.summary, '');
+  ask.push('[대화 발췌]\n' + pick3.join('\n…\n'));
+
+  novelBusy('설계도를 뽑는 중', 5);
+  try{
+    const r = await askTextEx(ask.join('\n'), 1600, 0.6, novelModel());
+    const b = novelBook();
+    b.outline = r.text.trim();
+    if (seedAsk) b.standing = [...(b.standing || []), seedAsk];
+    b.at = now();
+    await dbPut('chats', S.chat);
+    novelBusy(null); paintNovel();
+    return true;
+  }catch(e){
+    novelBusy(null); $('novelInfo').textContent = '설계도 실패: ' + e.message;
+    return false;
+  }
+}
+
+/* ── 2단계 · 장 하나 ── */
+async function novelWriteOne(i, extra, prevTail){
+  const chunks = novelChunks();
+  if (i >= chunks.length) return null;
+  const spec = novelSpec();
+  const head = i === 0
+    ? '아래 대화 구간을 소설의 첫 장으로 써라.'
+    : '아래는 앞 장의 끝부분과 이어지는 대화 구간이다. 자연스럽게 이어 써라. 이미 쓴 부분을 되풀이하지 않는다.';
+  const ask = [head, spec, NOVEL_RULES,
+    prevTail ? '[앞 장의 끝]\n' + prevTail : '',
+    extra ? '[이번 장에만 반영할 요청]\n' + extra : '',
+    '[대화 원문]\n' + chunks[i]].filter(Boolean).join('\n\n');
+
   let text = '';
+  let r = await askTextEx(ask, NOVEL_OUT, 0.85, novelModel());
+  text = r.text;
+  /* 잘렸으면 이어받는다. 끝 문장을 물려주어 겹치지 않게 한다. */
+  for (let k = 0; k < NOVEL_CONT && r.cut; k++){
+    novelBusy((i + 1) + '장을 이어받는 중', null);
+    r = await askTextEx('아래 글의 바로 다음부터 이어 써라. 이미 쓴 부분을 되풀이하지 말고, 문장 도중이면 그 문장부터 이어 붙인다.\n\n' +
+      spec + '\n\n[지금까지]\n' + text.slice(-NOVEL_KEEP), NOVEL_OUT, 0.85, novelModel());
+    text += (/[.!?…"”]$/.test(text.trim()) ? '\n\n' : '') + r.text;
+  }
+  return text.trim();
+}
+
+/* ── 전체 집필 ── */
+async function novelWriteAll(){
+  const chunks = novelChunks();
+  if (!chunks.length) return toast('옮길 대화가 없습니다');
+  const b = novelBook();
+  if (!b.outline){ if (!await novelOutline(null)) return; }
+  S.novelStop = false;
   const t0 = performance.now();
+  const sections = [];
   for (let i = 0; i < chunks.length; i++){
     if (S.novelStop) break;
     const per = i ? (performance.now() - t0) / i : 0;
     const left = per ? Math.round(per * (chunks.length - i) / 1000) : null;
-    const eta = left ? '  ·  남은 시간 약 ' + (left >= 60 ? Math.round(left/60) + '분' : left + '초') : '';
-    novelBusy((i + 1) + '/' + chunks.length + ' 째 토막을 쓰는 중' + eta,
+    const eta = left ? '  ·  남은 시간 약 ' + (left >= 60 ? Math.round(left / 60) + '분' : left + '초') : '';
+    novelBusy((i + 1) + '/' + chunks.length + '장을 쓰는 중' + eta,
               Math.round(i / chunks.length * 100));
-    const head = i === 0
-      ? '아래 롤플레잉 대화를 하나의 소설로 다시 써라.'
-      : '아래는 지금까지 쓴 원고의 끝부분과, 그 뒤에 이어지는 대화다. 원고를 자연스럽게 이어 써라. 이미 쓴 부분을 다시 쓰지 않는다.';
-    const tail = i === 0 ? '' : '\n\n[지금까지 쓴 원고의 끝]\n' + text.slice(-NOVEL_KEEP);
-    const ask = head + '\n\n' + NOVEL_RULES + tail + '\n\n[대화 원문]\n' + chunks[i];
     try{
-      const part = scrubOut(await askText(ask, 4000, 0.85));
-      text += (text ? '\n\n' : '') + part;
+      const tail = sections.length ? sections[sections.length - 1].text.slice(-NOVEL_KEEP) : '';
+      const text = await novelWriteOne(i, null, tail);
+      sections.push({i, title: (i + 1) + '장', text, at: now()});
+      b.sections = sections.slice();
+      await dbPut('chats', S.chat);
+      paintNovel();
     }catch(e){
       novelBusy(null);
-      $('novelInfo').textContent = (i + 1) + '째 토막에서 실패: ' + e.message +
-        (text ? '  ·  여기까지는 남겨 두었습니다' : '');
-      if (!text) return;
-      break;
+      $('novelInfo').textContent = (i + 1) + '장에서 실패: ' + e.message +
+        (sections.length ? '  ·  ' + sections.length + '장까지는 남겨 두었습니다' : '');
+      return;
     }
   }
-  pushNovelVer(text, S.novelStop ? '중단됨' : '처음부터 · 토막 ' + chunks.length + '개');
-  S.chat.novel = {text, turns: [...(S.chat.novel?.turns || []), '처음부터 다시'], at: now()};
+  b.sections = sections;
+  b.at = now();
+  pushNovelVer(S.novelStop ? '중단됨' : '처음부터 · ' + sections.length + '장');
   await dbPut('chats', S.chat);
-  novelBusy(null);
-  paintNovel();
+  novelBusy(null); paintNovel();
 }
 
-/* 고치기 — 지금 원고에 요청을 반영한다 */
-async function novelRevise(extra){
-  if (!S.chat.novel?.text) return novelFull();
-  novelBusy('요청을 반영해 고치는 중', 50);
+/* ── 3단계 · 한 장만 다시 ── */
+async function novelRedoOne(i, extra){
+  const b = novelBook();
+  novelBusy((i + 1) + '장을 다시 쓰는 중', 50);
   try{
-    const ask = '아래는 앞서 네가 쓴 원고다. 이어지는 요청에 맞춰 고쳐 다시 내놓아라.\n\n' +
-      NOVEL_RULES + '\n\n[지금 원고]\n' + S.chat.novel.text +
-      (extra ? '\n\n[이번 요청]\n' + extra : '');
-    const out = scrubOut(await askText(ask, 4000, 0.85));
-    pushNovelVer(out, extra || '고침');
-    S.chat.novel = {text: out,
-      turns: [...(S.chat.novel?.turns || []), extra || '고침'], at: now()};
+    const tail = i > 0 && b.sections[i - 1] ? b.sections[i - 1].text.slice(-NOVEL_KEEP) : '';
+    const text = await novelWriteOne(i, extra, tail);
+    b.sections[i] = {i, title: (i + 1) + '장', text, at: now(), note: extra || ''};
+    pushNovelVer((i + 1) + '장 · ' + (extra || '다시 쓰기'));
     await dbPut('chats', S.chat);
   }catch(e){ $('novelInfo').textContent = '실패: ' + e.message; }
-  novelBusy(null);
-  paintNovel();
+  novelBusy(null); paintNovel();
 }
 
-/* 진행 막대와 상태 배너를 함께 움직인다 */
+/* 「계속 적용」은 설계도에 새기고, 영향을 받는 장을 전부 다시 쓴다 */
+async function novelStanding(extra){
+  if (!extra) return toast('반영할 내용을 적어 주십시오');
+  const b = novelBook();
+  if (!b.outline){ if (!await novelOutline(extra)) return; }
+  else {
+    b.standing = [...(b.standing || []), extra];
+    await dbPut('chats', S.chat);
+  }
+  if (!b.sections?.length) return novelWriteAll();
+  if (!confirm('설계도에 새겼습니다.\n이미 쓴 ' + b.sections.length + '개 장을 전부 다시 쓸까요?\n(아니오를 누르면 다음에 쓰는 장부터 적용됩니다)')) {
+    paintNovel(); return;
+  }
+  novelWriteAll();
+}
+
+/* 판본 — 장 배열을 통째로 스냅샷 */
+function pushNovelVer(note){
+  const b = novelBook();
+  const vers = [...(S.chat.novelVers || [])];
+  vers.push({at: now(), note: note || '', outline: b.outline,
+             sections: (b.sections || []).map(x => ({title: x.title, text: x.text}))});
+  S.chat.novelVers = vers.slice(-NOVEL_VERS);
+}
+
+const novelText = () => (novelBook().sections || []).map(x => x.text).join('\n\n');
+
+/* ── 화면 ── */
 function novelBusy(what, pct){
   const bar = $('novelBar');
   if (!what){
     busy(null);
     bar.style.display = 'none';
-    $('novelFull').disabled = false; $('novelRun').disabled = false;
+    ['novelFull','novelOnce','novelKeep','novelPlan'].forEach(id => { const e = $(id); if (e) e.disabled = false; });
     return;
   }
-  busy('app', '소설 재구성');
+  busy('steps', '소설 재구성');
   bar.style.display = 'block';
-  bar.firstElementChild.style.width = Math.max(3, Math.min(100, pct || 0)) + '%';
+  if (pct != null) bar.firstElementChild.style.width = Math.max(3, Math.min(100, pct)) + '%';
   $('novelInfo').textContent = what;
-  $('novelFull').disabled = true; $('novelRun').disabled = true;
+  ['novelFull','novelOnce','novelKeep','novelPlan'].forEach(id => { const e = $(id); if (e) e.disabled = true; });
+}
+
+/* 세 줄만 보이고 나머지는 접는다. 파란 글씨를 누르면 펼쳐진다. */
+function foldText(t, key){
+  const open = S.novelOpen?.[key];
+  const lines = String(t || '').split('\n').filter(x => x.trim());
+  if (open || lines.length <= 3)
+    return '<div class="nvBody">' + esc(lines.join('\n')) + '</div>' +
+      (lines.length > 3 ? '<button class="nvMore" data-fold="' + key + '">접기</button>' : '');
+  return '<div class="nvBody">' + esc(lines[0]) + '\n<span class="nvDots">⋯ ⋯ ⋯</span>\n' +
+    esc(lines[lines.length - 1]) + '</div>' +
+    '<button class="nvMore" data-fold="' + key + '">모두 보기 (' + lines.length + '줄)</button>';
 }
 
 function paintNovel(){
-  const nv = S.chat?.novel;
+  const b = novelBook();
   const vers = S.chat?.novelVers || [];
-  $('novelText').textContent = nv?.text ||
-    '아직 원고가 없습니다. 아래 「처음부터 쓰기」를 누르면 첫 턴부터 옮깁니다.';
   const chunks = novelChunks();
-  const est = Math.max(1, Math.round(chunks.length * 12));
-  $('novelInfo').innerHTML = nv?.text
-    ? esc(nv.text.length.toLocaleString() + '자  ·  판본 ' + vers.length + '개  ·  요청 ' +
-          (nv.turns?.length || 0) + '회') +
-      (nv.turns?.length ? '<br>' + esc(nv.turns.slice(-3).join('  →  ')) : '')
-    : esc('대화 ' + S.messages.length + '개 · 원문 ' +
-          chunks.reduce((a, c) => a + c.length, 0).toLocaleString() + '자 · 토막 ' +
-          chunks.length + '개 · 예상 ' + (est >= 60 ? Math.round(est/60) + '분' : est + '초'));
+  const total = (b.sections || []).reduce((a, x) => a + x.text.length, 0);
+
+  const head = '<div class="nvHead">' +
+    (b.outline
+      ? '<div class="nvCard"><div class="nvTop"><b>설계도</b>' +
+        '<button class="nvBtn" id="novelPlanEdit">고치기</button></div>' +
+        foldText(b.outline, 'plan') + '</div>'
+      : '<div class="nvCard nvEmpty">설계도가 아직 없습니다. 먼저 뽑으면 모든 장이 같은 기준을 따릅니다.</div>') +
+    ((b.standing || []).length
+      ? '<div class="nvCard"><div class="nvTop"><b>계속 적용 중</b></div>' +
+        foldText(b.standing.map(x => '· ' + x).join('\n'), 'stand') + '</div>' : '') +
+    '</div>';
+
+  const list = (b.sections || []).length
+    ? b.sections.map((sec, i) =>
+        '<div class="nvCard"><div class="nvTop"><b>' + esc(sec.title) + '</b>' +
+        '<span>' + sec.text.length.toLocaleString() + '자</span>' +
+        '<div class="sp"></div>' +
+        '<button class="nvBtn" data-redo="' + i + '">고치기</button></div>' +
+        foldText(sec.text, 'sec' + i) + '</div>').join('')
+    : '<div class="nvCard nvEmpty">아직 원고가 없습니다. 아래 「처음부터 쓰기」를 누르십시오.</div>';
+
+  $('novelBody').innerHTML = head + list;
+  $('novelBody').querySelectorAll('[data-fold]').forEach(el => el.onclick = () => {
+    S.novelOpen = S.novelOpen || {};
+    const k = el.dataset.fold;
+    S.novelOpen[k] = !S.novelOpen[k];
+    paintNovel();
+  });
+  $('novelBody').querySelectorAll('[data-redo]').forEach(el => el.onclick = () => {
+    const i = +el.dataset.redo;
+    const extra = $('novelOnceIn').value.trim();
+    novelRedoOne(i, extra || null);
+  });
+  const pe = $('novelPlanEdit');
+  if (pe) pe.onclick = () => editOutline();
+
+  $('novelInfo').textContent = (b.sections || []).length
+    ? b.sections.length + '장  ·  ' + total.toLocaleString() + '자  ·  판본 ' + vers.length + '개'
+    : '대화 ' + S.messages.length + '개 · 원문 ' +
+      chunks.reduce((a, c) => a + c.length, 0).toLocaleString() + '자 · ' +
+      chunks.length + '장 예정 · 예상 ' +
+      (chunks.length * 14 >= 60 ? Math.round(chunks.length * 14 / 60) + '분' : chunks.length * 14 + '초');
   $('novelVerBtn').style.display = vers.length ? 'inline-block' : 'none';
+}
+
+function editOutline(){
+  const b = novelBook();
+  $('editWho').textContent = '설계도 — 이 원고 전체의 기준';
+  $('editTa').value = b.outline || '';
+  $('editBox').classList.add('on');
+  $('editOk').onclick = async () => {
+    b.outline = $('editTa').value.trim();
+    b.at = now();
+    await dbPut('chats', S.chat);
+    $('editBox').classList.remove('on');
+    paintNovel();
+  };
 }
 
 function openNovel(fromExport){
   if (!S.chat) return toast('대화를 먼저 여십시오');
+  novelBook();
+  S.novelOpen = S.novelOpen || {};
   paintNovel();
-  $('novelAsk').value = '';
   $('novelBar').style.display = 'none';
-  $('novelBox').classList.add('on');
-  if (fromExport && !S.chat.novel?.text) novelFull();
+  $('nvModel').textContent = (NOVEL_MODELS.find(m => m.id === novelModel()) || NOVEL_MODELS[0]).name;
+  show('vNovel');
+  if (fromExport && !(S.chat.novel?.sections || []).length) novelWriteAll();
 }
-$('novelX').onclick = () => { S.novelStop = true; $('novelBox').classList.remove('on'); };
-$('novelBox').onclick = e => { if (e.target.id === 'novelBox'){ S.novelStop = true; $('novelBox').classList.remove('on'); } };
+
+$('novelBack').onclick = () => { S.novelStop = true; show('vChat'); };
+$('novelPlan').onclick = () => novelOutline($('novelOnceIn').value.trim() || null);
 $('novelFull').onclick = () => {
-  if (S.chat?.novel?.text && !confirm('지금 원고를 새로 씁니다. 이전 판본은 내역에 남습니다.')) return;
-  novelFull();
+  if ((S.chat?.novel?.sections || []).length &&
+      !confirm('원고를 처음부터 다시 씁니다. 지금 것은 판본에 남습니다.')) return;
+  novelWriteAll();
 };
-$('novelRun').onclick = () => novelRevise($('novelAsk').value.trim() || null);
+$('novelOnce').onclick = () => {
+  const v = $('novelOnceIn').value.trim();
+  if (!v) return toast('이번에 반영할 내용을 적어 주십시오');
+  const b = novelBook();
+  if (!(b.sections || []).length) return toast('먼저 원고를 만드십시오');
+  const last = b.sections.length - 1;
+  sheet('어느 장에 반영할까요', b.sections.map((sec, i) => ({
+    label: sec.title + '  ·  ' + sec.text.length.toLocaleString() + '자',
+    run: () => novelRedoOne(i, v)
+  })));
+};
+$('novelKeep').onclick = () => novelStanding($('novelKeepIn').value.trim() || null);
+$('nvModelBtn').onclick = () => {
+  sheet('소설을 쓸 모델', NOVEL_MODELS.map(m => ({
+    label: m.name,
+    html: '<b>' + esc(m.name) + (m.id === novelModel() ? '  ·  현재' : '') + '</b>' +
+      '<div class="shint">' + esc(m.cost) + '<br>좋은 점 — ' + esc(m.good) +
+      '<br>제약 — ' + esc(m.bad) + '</div>',
+    run: () => {
+      localStorage.setItem(LS.novelModel, m.id);
+      $('nvModel').textContent = m.name;
+      toast(m.name + ' 로 씁니다');
+    }
+  })));
+};
 $('novelCopy').onclick = () => {
-  const t = S.chat?.novel?.text;
+  const t = novelText();
   if (!t) return toast('원고가 없습니다');
   navigator.clipboard?.writeText(t).then(() => toast('복사했습니다'));
 };
 $('novelSave').onclick = () => {
-  const t = S.chat?.novel?.text;
+  const t = novelText();
   if (!t) return toast('원고가 없습니다');
+  const b = novelBook();
   download('소설_' + (S.character?.name || '무명') + '_' + stamp(now()) + '.md',
-           '# ' + (S.chat.title || S.character?.name || '소설') + '\n\n' + t, 'text/markdown');
+    '# ' + (S.chat.title || S.character?.name || '소설') + '\n\n' +
+    (b.outline ? '> ' + b.outline.replace(/\n/g, '\n> ') + '\n\n---\n\n' : '') + t,
+    'text/markdown');
 };
-/* 판본 내역을 통째로 내려받아 어느 지시가 무엇을 바꿨는지 비교할 수 있게 한다 */
 $('novelVerBtn').onclick = () => {
   const vers = S.chat?.novelVers || [];
   if (!vers.length) return toast('판본이 없습니다');
-  const L = ['# 소설 판본 내역 — ' + (S.chat.title || S.character?.name || ''),
-             '', '- 대화: ' + S.messages.length + '개',
-             '- 판본: ' + vers.length + '개', ''];
+  const L = ['# 소설 판본 내역 — ' + (S.chat.title || S.character?.name || ''), ''];
   vers.forEach((v, i) => {
     L.push('## 판본 ' + (i + 1) + '  ·  ' + new Date(v.at).toLocaleString('ko-KR'));
     L.push('- 요청: ' + (v.note || '(없음)'));
-    L.push('- 분량: ' + v.text.length.toLocaleString() + '자');
-    L.push('', v.text, '');
+    if (v.outline) L.push('', '### 설계도', v.outline);
+    (v.sections || []).forEach(sec => L.push('', '### ' + sec.title, sec.text));
+    L.push('');
   });
   download('소설판본_' + (S.character?.name || '무명') + '_' + stamp(now()) + '.md',
            L.join('\n'), 'text/markdown');
@@ -3074,21 +3600,42 @@ function changeGenre(){
   })));
 }
 
-$('cMenu').onclick = () => sheet(S.character?.name, [
-  {label:'이 대화의 모델 변경', run: () => chatModelSheet()},
-  {label:'이미지 품질 — 현재 ' + (imgTier() === 'hi' ? '고급' : '기본'), run: () => imgModelSheet()},
-  {label:'장르 — 현재 ' + (S.chat?.genre?.name || '없음'), run: () => genreSheet()},
-  {label:'조연 목록 (' + (S.chat?.cast?.length || 0) + '명)', run: () => castSheet()},
-  {label:'소설 원고' + (S.chat?.novel?.text ? ' — 작성됨' : ''), run: () => openNovel()},
-  {label:'기억 보기 · 편집', run: () => openMemory()},
-  {label:'⚠ 대화 맥락 새로 정리하기', run: () => resetContext(), danger:true},
-  {label:'이미지 전체 접기', html:'이미지 전체 접기<span class="tgl' + (allFolded()?' on':'') + '"></span>',
-   run: () => toggleAllImages(!allFolded())},
-  {label:'이 대화 내보내기', run: () => exportChat(S.chat.id)},
-  {label:'사용법 다시 보기', run: () => openGuide(true)},
-  {label:'대상 편집', run: () => editChar(S.character.id)},
-  {label:'주인공 편집', run: () => S.persona ? editPersona(S.persona.id) : toast('지정된 주인공이 없습니다')}
-]);
+/* 세로로 열세 줄이던 것을 아이콘 격자로 바꾼다.
+   자주 쓰는 것이 위에 오고, 지금 값은 이름 아래에 작게 적어 둔다. */
+const CHAT_MENU = [
+  {i:'📖', t:'소설',    run: () => openNovel(),
+   now: () => (S.chat?.novel?.sections || []).length ? '작성됨' : ''},
+  {i:'🖼', t:'이미지',  run: () => imgModelSheet(),
+   now: () => imgLevel().name + ' · ' + (imgTier() === 'hi' ? '고급' : '기본')},
+  {i:'🎭', t:'장르',    run: () => genreSheet(),
+   now: () => S.chat?.genre?.name || '없음'},
+  {i:'👥', t:'조연',    run: () => castSheet(),
+   now: () => (S.chat?.cast?.length || 0) + '명'},
+  {i:'🧠', t:'기억',    run: () => openMemory()},
+  {i:'🤖', t:'모델',    run: () => chatModelSheet()},
+  {i:'🗂', t:'이미지 접기', run: () => toggleAllImages(!allFolded()),
+   now: () => allFolded() ? '접힘' : '펼침'},
+  {i:'⇧', t:'내보내기', run: () => exportChat(S.chat.id)},
+  {i:'👤', t:'대상 편집', run: () => editChar(S.character.id)},
+  {i:'🙂', t:'내 정보',  run: () => S.persona ? editPersona(S.persona.id)
+                                             : toast('지정된 주인공이 없습니다')},
+  {i:'❓', t:'사용법',   run: () => openGuide(true)},
+  {i:'⚠', t:'맥락 정리', run: () => resetContext(), danger: true}
+];
+$('cMenu').onclick = () => {
+  const html = '<div class="cmGrid">' + CHAT_MENU.map((m, i) => {
+    const now = m.now ? (m.now() || '') : '';
+    return '<button data-cm="' + i + '"' + (m.danger ? ' class="dan"' : '') + '>' +
+      '<i>' + m.i + '</i><b>' + esc(m.t) + '</b>' +
+      (now ? '<u>' + esc(now) + '</u>' : '') + '</button>';
+  }).join('') + '</div>';
+  sheet(S.character?.name, [{info: true, html}]);
+  $('sheetIn').querySelectorAll('[data-cm]').forEach(b => b.onclick = () => {
+    closeSheet();
+    CHAT_MENU[+b.dataset.cm].run();
+  });
+};
+
 /* 롤플레잉에 쓸 만한 것만 가격대별로 골라 둔다.
    목록에 없거나 사라진 모델은 아래 "전체 목록에서 고르기"로 간다. */
 /* 값이 아니라 "무엇을 잘하는가"로 고르게 한다.
@@ -3545,61 +4092,55 @@ async function fetchImgModels(){
       .sort((a,b) => imgPrice(a) - imgPrice(b));
     renderImgSelect();
   }catch(e){
-    $('sImgModel').innerHTML = `<option value="">— 로드 실패: ${esc(e.message)} —</option>`;
+    toast('이미지 모델 목록을 불러오지 못했습니다: ' + e.message);
   }
 }
 /* 세 목록을 한꺼번에 채운다. 무검열 목록은 항상 무검열 모델만 담는다. */
-function renderImgSelect(){
-  const q = $('sImgFilter').value.trim().toLowerCase();
-  const match = m => !q || (m.id + ' ' + (m.model_spec?.name || '')).toLowerCase().includes(q);
-  const label = m => esc(m.model_spec?.name || m.id) + ' · $' + imgPrice(m) +
-                     (m.model_spec?.uncensored ? ' · 무검열' : '');
-  const fill = (id, key, list, fallback) => {
-    const saved = localStorage.getItem(key) || '';
-    $(id).innerHTML = list.length
-      ? list.map(m => '<option value="' + esc(m.id) + '">' + label(m) + '</option>').join('')
-      : '<option value="">— 조건에 맞는 모델 없음 —</option>';
-    if (saved && list.some(m => m.id === saved)) $(id).value = saved;
-    else {
-      const auto = list.find(m => fallback.test(m.id)) || list[0];
-      if (auto){ $(id).value = auto.id; localStorage.setItem(key, auto.id); }
-    }
+/* 수위별 묶음을 카드로 보여 준다. 슬롯 네 개를 늘어놓던 것을 접었다. */
+function renderLevelCards(){
+  const box = $('lvCards'); if (!box) return;
+  const nameOf = id => {
+    const m = S.imgModels.find(x => x.id === id);
+    return m ? (m.model_spec?.name || m.id) : (id || '(미지정)');
   };
-  const onlyUnc = $('sImgUnc').checked;
-  const general = S.imgModels.filter(m => !onlyUnc || m.model_spec?.uncensored).filter(match);
-  fill('sImgModel', LS.imgModel, general, /z-image|sd35|chroma/i);
-  fill('sImgHi',    LS.imgHi,    S.imgModels.filter(match), /flux-2-pro|flux|seedream|qwen-image/i);
-  const unc = S.imgModels.filter(m => m.model_spec?.uncensored).filter(match);
-  fill('sImgNsfw',   LS.imgNsfw,   unc, /lustify-v8|lustify/i);
-  fill('sImgNsfwHi', LS.imgNsfwHi, unc, /lustify-v8|lustify/i);
-  showImgCost();
+  const priceOf = id => {
+    const m = S.imgModels.find(x => x.id === id);
+    return m ? '$' + imgPrice(m) : '';
+  };
+  const cur = localStorage.getItem(LS.imgLevel) || 'explicit';
+  box.innerHTML = LEVEL_ORDER.map(k => {
+    const L = IMG_LEVEL[k], M = levelModels(k);
+    return '<div class="lvCard' + (k === cur ? ' on' : '') + '">' +
+      '<div class="lvTop"><b>' + esc(L.name) + '</b><span>' + esc(L.tone) + '</span></div>' +
+      '<div class="lvRow"><i>기본</i><button data-lv="' + k + '" data-w="m">' +
+        esc(nameOf(M.m)) + ' ' + priceOf(M.m) + '</button></div>' +
+      '<div class="lvRow"><i>폴백</i><button data-lv="' + k + '" data-w="fb">' +
+        esc(nameOf(M.fb)) + ' ' + priceOf(M.fb) + '</button></div></div>';
+  }).join('');
+  box.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => {
+    const k = b.dataset.lv, w = b.dataset.w;
+    const q = ($('sImgFilter').value || '').trim().toLowerCase();
+    const onlyUnc = k !== 'soft' || $('sImgUnc').checked;
+    const list = S.imgModels
+      .filter(m => !onlyUnc || m.model_spec?.uncensored)
+      .filter(m => !q || (m.id + ' ' + (m.model_spec?.name || '')).toLowerCase().includes(q));
+    if (!list.length) return toast('조건에 맞는 모델이 없습니다');
+    sheet(IMG_LEVEL[k].name + ' · ' + (w === 'm' ? '기본' : '폴백') + ' 모델',
+      list.map(m => ({
+        label: (m.model_spec?.name || m.id) + '  ·  $' + imgPrice(m) +
+               (m.model_spec?.uncensored ? '  ·  무검열' : ''),
+        run: () => { setLevelModel(k, w, m.id); renderLevelCards(); }
+      })));
+  });
 }
 
-/* 장면과 선택한 계층으로 어떤 모델을 쓸지 정한다.
-   성인향 장면은 계층과 무관하게 무검열 모델이 우선이다. 고급 모델은 성인향을 거부한다. */
-/* 어떤 모델로, 몇 스텝으로, 업스케일을 걸지까지 한 번에 정한다.
-   성인향은 계층과 무관하게 무검열 축으로 간다. 고급 모델은 성인향을 거부한다. */
-function imgPlan(bare, tier){
-  const hi   = (tier || imgTier()) === 'hi';
-  const base = localStorage.getItem(LS.imgModel) || '';
-  const gHi  = localStorage.getItem(LS.imgHi) || '';
-  const nsfw = localStorage.getItem(LS.imgNsfw) || '';
-  const nHi  = localStorage.getItem(LS.imgNsfwHi) || nsfw;
-  const up   = (localStorage.getItem(LS.imgUp) ?? '1') === '1';
-  let chain, steps = 25, upscale = 0;
-  if (bare){
-    chain = hi ? [nHi, nsfw, base] : [nsfw, nHi, base];
-    if (hi){ steps = 40; upscale = up ? 2 : 0; }
-  } else if (hi){
-    chain = [gHi, base, nsfw]; steps = 40;
-  } else {
-    chain = [base, gHi, nsfw];
-  }
-  return {chain: chain.filter((m, i, a) => m && a.indexOf(m) === i), steps, upscale};
-}
+function renderImgSelect(){ renderLevelCards(); showImgCost(); }
+
 function showImgCost(){
   const m = imgSpec();
-  $('sImgCost').textContent = m ? `(장당 $${imgPrice(m)})` : '';
+  const k = localStorage.getItem(LS.imgLevel) || 'explicit';
+  const mm = S.imgModels.find(x => x.id === levelModels(k).m);
+  $('sImgCost').textContent = mm ? '기본 장당 $' + imgPrice(mm) : '';
 }
 
 /* 프롬프트 작성용 무검열 텍스트 모델. 거부하지 않는 모델만 추린다. */
@@ -3859,6 +4400,7 @@ async function buildImagePrompt(sceneText, stateTxt, stateCard){
   S.imgBare = bare;   /* 어떤 계층의 모델을 쓸지 정하는 데 쓴다 */
   const outfit = bare ? '' : (pf.outfit || '').trim();
   const L = effLevel(sceneText, stateCard);
+  S.imgLevelKey = L.key;   /* 어느 묶음으로 뽑을지 여기서 정해진다 */
   const ask = tagAsk(sceneText, stateTxt, look, outfit, L);
 
   /* 1단계 Venice → 2단계 OpenRouter → 3단계 로컬 */
@@ -3914,7 +4456,7 @@ async function veniceUpscale(dataUri, scale){
 }
 
 async function veniceImageAuto(prompt){
-  const plan = imgPlan(!!S.imgBare, imgTier());
+  const plan = imgPlan(S.imgLevelKey || imgLevelKey(), imgTier());
   if (!plan.chain.length) throw new Error('이미지 모델이 지정되지 않았습니다');
   let last = null, url = null;
   for (let i = 0; i < plan.chain.length; i++){
@@ -4000,7 +4542,7 @@ async function veniceImage(prompt, modelId, steps, seedOverride, negOverride, si
 async function attachImage(msg){
   if (!localStorage.getItem(LS.imgTxt))
     toast('프롬프트 작성 모델이 비어 있습니다 — 수위가 낮게 나올 수 있습니다');
-  busy('app', '이미지를 만드는 중');
+  busy('once', '이미지를 만드는 중  ·  보통 20~60초');
   msg.imgPending = true; renderMsgs(false);
   try{
     const mem = await getMem(S.chat.id);
@@ -4065,6 +4607,31 @@ function askImage(rest){
 
 /* 이미지 아이콘을 길게 누르면 생성 모델을 고를 수 있다.
    기본은 설정에 지정된 모델이고, 비싸더라도 품질이 좋은 쪽으로 그 자리에서 바꿀 수 있다. */
+/* 이 대화에만 다른 수위를 걸 수 있다. 설정을 건드리지 않는다. */
+function levelSheet(){
+  sheet('이 대화의 노출 수위', [
+    ...LEVEL_ORDER.map(k => {
+      const L = IMG_LEVEL[k], M = levelModels(k);
+      const nm = (S.imgModels.find(x => x.id === M.m)?.model_spec?.name) || M.m;
+      return {
+        label: L.name,
+        html: (S.chat?.imgLevel === k ? '● ' : '○ ') + '<b>' + esc(L.name) + '</b>' +
+          '<div class="shint">' + esc(L.tone) + '<br>모델 ' + esc(nm) + '</div>',
+        run: async () => {
+          S.chat.imgLevel = k;
+          await dbPut('chats', S.chat);
+          toast('이 대화는 ' + L.name + ' 로 뽑습니다');
+        }
+      };
+    }),
+    {label: '설정 기본값 따르기', run: async () => {
+      delete S.chat.imgLevel;
+      await dbPut('chats', S.chat);
+      toast('설정 기본값을 따릅니다');
+    }}
+  ]);
+}
+
 function imgModelSheet(){
   if (!imgKey()){ show('vSettings'); return toast('설정에서 Venice API 키를 먼저 입력하십시오'); }
   const nameOf = id => {
@@ -4073,14 +4640,19 @@ function imgModelSheet(){
   };
   const cur = imgTier();
   const mark = t => (t === cur ? '● ' : '○ ');
-  sheet('이미지 품질', [
-    {label: mark('base') + '기본 — 일반 ' + nameOf(localStorage.getItem(LS.imgModel)) +
-            ' · 성인향 ' + nameOf(localStorage.getItem(LS.imgNsfw)),
+  const lk = imgLevelKey();
+  const own = !!S.chat?.imgLevel;
+  sheet('이미지', [
+    {label: mark('base') + '기본 — 스텝 25 · ' + nameOf(levelModels(lk).m),
      run: () => setImgTier('base')},
-    {label: mark('hi') + '고급 — 일반 ' + nameOf(localStorage.getItem(LS.imgHi)) +
-            ' · 성인향 ' + nameOf(localStorage.getItem(LS.imgNsfwHi)) + ' + 업스케일',
+    {label: mark('hi') + '고급 — 스텝 40 + 업스케일 (+$0.02)',
      run: () => setImgTier('hi')},
-    {label: '⚙ 모델 지정하러 가기', run: () => show('vSettings')}
+    {label: '수위 — ' + IMG_LEVEL[lk].name,
+     html: '<b>수위 — ' + esc(IMG_LEVEL[lk].name) + '</b><div class="shint">' +
+       esc(IMG_LEVEL[lk].tone) + '<br>' +
+       (own ? '이 대화에만 적용 중' : '설정 기본값을 따르는 중') + ' · 눌러서 바꾸기</div>',
+     run: () => levelSheet()},
+    {label: '⚙ 모델 묶음 바꾸러 가기', run: () => show('vSettings')}
   ]);
 }
 const imgTier = () => localStorage.getItem(LS.imgTier) || 'base';
@@ -4170,7 +4742,7 @@ async function send(opts){
 
   S.streaming = true; $('cSend').textContent = '중지';
   $('cSend').classList.add('stop'); $('cSend').classList.remove('pri');
-  busy('screen', '응답을 받는 중');
+  busy('stream', '응답을 받는 중');
   S.abort = new AbortController();
 
   try{
@@ -4351,6 +4923,42 @@ const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 const CW = o => Object.entries(o).flatMap(([k, v]) => Array(v).fill(k));
 
 /* 체형별 실측 범위. 키에서 허리를 비율로 잡고 거기서 가슴·엉덩이를 파생시킨다. */
+/* 키 · 몸무게 · 나이를 구간 안에서 고르게 뽑으면 155cm 와 174cm 가 똑같이 자주 나온다.
+   실제 사람은 가운데에 몰려 있으므로 봉우리를 두고, 양 끝은 드물게 만든다.
+   현실보다 조금 더 좁게 잡는다. 인물 카드는 「있을 법한 사람」이면 충분하고,
+   극단값은 한 명만 나와도 이야기 전체가 그 수치에 끌려가기 때문이다. */
+function gaussIn(mean, sd, lo, hi){
+  for (let i = 0; i < 12; i++){
+    const v = gauss(mean, sd);
+    if (v >= lo && v <= hi) return v;
+  }
+  return Math.max(lo, Math.min(hi, gauss(mean, sd / 2)));
+}
+/* 선호형은 더 좁게 — 취향에 맞는 범위 가운데로 모은다 */
+const NARROW = m => (m === 'taste' ? 0.68 : 1);
+
+/* 20~30대 한국인 평균에 가깝게 두되 표준편차만 줄인다 */
+const HEIGHT = {
+  f: {mean: 161.8, sd: 4.2, lo: 152, hi: 175},
+  m: {mean: 174.4, sd: 4.8, lo: 164, hi: 190}
+};
+function rollHeight(gender, mode){
+  const H = gender === 'm' ? HEIGHT.m : HEIGHT.f;
+  return Math.round(gaussIn(H.mean, H.sd * NARROW(mode), H.lo, H.hi));
+}
+/* 체형이 정한 BMI 구간 안에서도 가운데가 흔하다 */
+const bmiIn = (band, mode) => gaussIn(
+  (band[0] + band[1]) / 2, (band[1] - band[0]) / 4 * NARROW(mode), band[0], band[1]);
+
+/* 나이도 마찬가지다. 고르게 뽑으면 직업이 허용하는 최소 나이가 다른 값과 똑같이 자주 나와
+   「스물둘 강력계 형사」처럼 경력이 안 맞는 인물이 생긴다.
+   구간 한가운데를 봉우리로 두면 경계값은 저절로 드물어진다. */
+function rollAge(lo, hi, mode){
+  if (hi <= lo) return lo;
+  const span = hi - lo;
+  return Math.round(gaussIn(lo + span * 0.46, span / 3.6 * NARROW(mode), lo, hi));
+}
+
 const FRAMES = {
   /* 컵은 A~E 를 체형별 확률로 뽑는다. 같은 글자를 여러 번 넣어 가중치를 준다. */
   '마른':   {bmi:[17.6,18.9], wr:[0.368,0.380], hip:[21,25], cups: CW({A:45, B:40, C:15})},
@@ -4360,10 +4968,10 @@ const FRAMES = {
 };
 const CUPGAP = {A:[16,19], B:[19,22], C:[22,26], D:[26,30], E:[30,34]};
 
-function rollBody(frame){
+function rollBody(frame, mode){
   const F = FRAMES[frame] || FRAMES['보통'];
-  const h  = randInt(155, 174);
-  const w  = Math.round(rnd(F.bmi[0], F.bmi[1]) * Math.pow(h / 100, 2));
+  const h  = rollHeight('f', mode);
+  const w  = Math.round(bmiIn(F.bmi, mode) * Math.pow(h / 100, 2));
   const wa = Math.round(h * rnd(F.wr[0], F.wr[1]));
   const hi = wa + randInt(F.hip[0], F.hip[1]);
   const cup = pick(F.cups);
@@ -4384,10 +4992,10 @@ const FRAMES_M = {
   '다부진': {bmi:[22.5,25.0], wr:[0.45,0.49], chest:[14,20]},
   '건장한': {bmi:[24.0,27.0], wr:[0.46,0.50], chest:[17,24]}
 };
-function rollBodyMale(frame){
+function rollBodyMale(frame, mode){
   const F = FRAMES_M[frame] || FRAMES_M['보통'];
-  const h  = randInt(168, 188);
-  const w  = Math.round(rnd(F.bmi[0], F.bmi[1]) * Math.pow(h / 100, 2));
+  const h  = rollHeight('m', mode);
+  const w  = Math.round(bmiIn(F.bmi, mode) * Math.pow(h / 100, 2));
   const wa = Math.round(h * rnd(F.wr[0], F.wr[1]));
   const ch = wa + randInt(F.chest[0], F.chest[1]);
   const inch = cm => Math.round(cm / 2.54);
@@ -4702,13 +5310,49 @@ const GENRES = [
 ];
 
 /* 빈칸을 굴려 채운다. 채운 결과는 대화에 저장되어 이후 내내 같은 값을 쓴다. */
-function rollGenre(key){
+/* 장르마다 미리 정해 둔 빈칸 값. 비어 있으면 그 칸만 무작위로 채운다. */
+function genreSlotDefaults(){
+  try{ return JSON.parse(localStorage.getItem(LS.genreSlots) || '{}'); }catch(_){ return {}; }
+}
+function setGenreSlot(key, slot, v){
+  const all = genreSlotDefaults();
+  all[key] = {...(all[key] || {}), [slot]: v};
+  localStorage.setItem(LS.genreSlots, JSON.stringify(all));
+}
+
+function renderGenreCards(){
+  const box = $('gnCards'); if (!box) return;
+  const def = genreSlotDefaults();
+  box.innerHTML = GENRES.filter(g => g.key).map(g => {
+    const rows = Object.keys(g.slots || {}).map(sl =>
+      '<div class="lvRow"><i>' + esc(sl) + '</i>' +
+      '<button data-gn="' + g.key + '" data-sl="' + esc(sl) + '">' +
+      esc(def[g.key]?.[sl] || '무작위') + '</button></div>').join('');
+    return '<div class="lvCard"><div class="lvTop"><b>' + esc(g.name) + '</b>' +
+      '<span>' + esc(g.desc) + '</span></div>' + rows + '</div>';
+  }).join('');
+  box.querySelectorAll('[data-gn]').forEach(b => b.onclick = () => {
+    const g = GENRES.find(x => x.key === b.dataset.gn);
+    const sl = b.dataset.sl;
+    sheet(g.name + ' · ' + sl, [
+      {label:'무작위로 두기', run: () => { setGenreSlot(g.key, sl, ''); renderGenreCards(); }},
+      ...(g.slots[sl] || []).map(v => ({
+        label: v,
+        run: () => { setGenreSlot(g.key, sl, v); renderGenreCards(); }
+      }))
+    ]);
+  });
+}
+
+function rollGenre(key, manual){
   const g = GENRES.find(x => x.key === key);
   if (!g || !g.plot) return null;
   const picked = {};
+  const def = genreSlotDefaults()[key] || {};
   let text = g.plot;
   for (const [slot, pool] of Object.entries(g.slots || {})){
-    const v = pool[Math.floor(Math.random() * pool.length)];
+    const v = (manual && manual[slot]) || def[slot] ||
+              pool[Math.floor(Math.random() * pool.length)];
     picked[slot] = v;
     text = text.split('{' + slot + '}').join(v);
   }
@@ -4822,8 +5466,17 @@ const TASTE = {
          '아무도 자신을 진짜로 모른다는 공허','하지 못한 말이 그대로 남아 있음',
          '완벽하지 않으면 가치가 없다는 강박','늦었다는 후회와 늦지 않기를 바라는 마음의 공존',
          '늘 자기 몫을 혼자 감당해 온 습관','거절당할까 봐 먼저 선을 긋는 버릇'],
-  when: ['늦은 밤','새벽 두세 시','비가 그치지 않는 저녁','문 닫을 무렵','퇴근이 한참 지난 밤',
-         '첫눈이 내리는 밤','장마철 새벽','명절 연휴로 텅 빈 밤'],
+  /* 밤과 새벽만 넣어 두었더니 첫 장면이 늘 새벽이었다.
+     아침 · 낮 · 저녁을 절반 넘게 채우고, 밤은 여러 개 중 하나로만 남긴다. */
+  when: ['이른 아침 출근길','아침 햇살이 드는 시간','오전 열한 시쯤','점심시간 직후',
+         '한낮','나른한 오후','퇴근 무렵','해가 넘어가는 시간','비가 그치지 않는 저녁',
+         '저녁 식사 시간','문 닫을 무렵','늦은 밤','퇴근이 한참 지난 밤','첫눈이 내리는 밤',
+         '새벽 두세 시','장마철 새벽','명절 연휴로 텅 빈 밤','휴일 오전','주말 오후'],
+  /* 「사람 없는 곳에서 둘만」 만 반복되면 상황이 판에 박힌다.
+     남이 보는 자리에서 시작하면 말과 행동에 제약이 생겨 대화가 달라진다. */
+  crowd: ['둘만 남는다','주변에 사람이 몇 있지만 이쪽 이야기를 듣지는 않는다',
+          '사람이 많은 자리 한가운데다','아는 사람들이 함께 있는 자리다',
+          '일 때문에 만난 자리라 제3자가 곁에 있다','둘만 남는다','둘만 남는다'],
   frame: ['마른','마른','보통','보통','다부진'],
   temper: []
 };
@@ -4838,7 +5491,9 @@ const WILD = {
   lack: TASTE.lack.concat(['남을 믿었다가 크게 잃은 경험','자신이 위험한 사람이라는 자각',
     '누구에게도 필요하지 않다는 감각','되갚아야 할 빚이 있음','숨기고 있는 과거',
     '가진 것을 잃을까 봐 늘 초조함']),
-  when: TASTE.when.concat(['한낮','출근 시간대','점심 무렵','해질 무렵','휴일 오전','폭염 한가운데']),
+  when: TASTE.when.concat(['출근 시간대','폭염 한가운데','새벽 첫차 시간','한밤중 갑작스레',
+                           '눈이 쌓인 이른 아침','태풍이 지나가는 오후']),
+  crowd: TASTE.crowd.concat(['처음 보는 사람들 틈이다','아무도 없어야 할 시간인데 둘뿐이다']),
   frame: ['마른','보통','보통','다부진','글래머'],
   temper: ['{{user}}에게 호의적이다','{{user}}에게 무관심하다','{{user}}를 경계한다',
            '{{user}}에게 적대적이다','{{user}}에게 흥미를 느낀다','{{user}}를 이용하려 한다']
@@ -4883,11 +5538,11 @@ function rollSeeds(mode, gender){
     }
   }
   const aLo = Math.max(lo, job[1]), aHi = Math.min(hi, job[2]);
-  const age = aLo <= aHi ? randInt(aLo, aHi) : randInt(job[1], job[2]);
+  const age = aLo <= aHi ? rollAge(aLo, aHi, mode) : rollAge(job[1], job[2], mode);
 
   const frameRaw = pick(POOL.frame);
   const frame = gender === 'm' ? frameForMale(frameRaw) : frameRaw;
-  const bodyRoll = gender === 'm' ? rollBodyMale(frame) : rollBody(frame);
+  const bodyRoll = gender === 'm' ? rollBodyMale(frame, mode) : rollBody(frame, mode);
   return {
     age,
     name: rollName(gender),
@@ -4898,6 +5553,7 @@ function rollSeeds(mode, gender){
     surface: pick(POOL.surface),
     lack: pick(POOL.lack),
     when: pick(POOL.when),
+    crowd: pick(POOL.crowd),
     frame,
     body: bodyRoll.body, bust: bodyRoll.bust, waist: bodyRoll.waist, hip: bodyRoll.hip,
     temper: POOL.temper.length ? pick(POOL.temper) : "",
@@ -4924,6 +5580,34 @@ function stripEnglishSections(t){
   return String(t || '')
     .replace(/===LOOK===[\s\S]*?(?====[A-Z_]+===|$)/, '')
     .replace(/===OUTFIT===[\s\S]*?(?====[A-Z_]+===|$)/, '');
+}
+
+/* 소설처럼 긴 글은 max_tokens 에 걸려 문장 한가운데서 끊긴다.
+   끊겼는지를 알아야 이어받을 수 있으므로 finish_reason 을 함께 돌려준다. */
+async function askTextEx(prompt, maxTok, temp, model1){
+  const key = localStorage.getItem(LS.key);
+  const base = model1 ? [model1, ...modelChain()] : modelChain();
+  if (!key) throw new Error('API 키가 없습니다');
+  if (!base.length) throw new Error('모델이 지정되지 않았습니다');
+  const chain = [base[0], ...base];
+  let last = null;
+  for (const model of chain){
+    try{
+      const res = await fetch(API + '/chat/completions', {
+        method:'POST',
+        headers:{'Authorization':'Bearer ' + key, 'Content-Type':'application/json', 'X-Title':'RP App'},
+        body: JSON.stringify({model, messages:[{role:"user", content:prompt}],
+                              temperature: temp ?? 1.0, max_tokens: maxTok || 2000,
+                              ...reasonOff()})
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const j = await res.json();
+      const txt = scrubOut(j.choices?.[0]?.message?.content || '');
+      if (!txt) throw new Error('빈 응답');
+      return {text: txt, cut: j.choices?.[0]?.finish_reason === 'length', model};
+    }catch(e){ last = e; }
+  }
+  throw last;
 }
 
 async function askText(prompt, maxTok, temp){
@@ -4973,7 +5657,9 @@ function cardPrompt(seed, mode, gender){
     '- {{user}}에게 이 인물은: ' + seed.relation + ' (이 인물이 주어다. {{user}}의 직업을 여기서 유추해 확정하지 않는다)',
     '- 겉으로 보이는 성향: ' + seed.surface,
     '- 속에 있는 결핍: ' + seed.lack,
-    '- 첫 장면의 시간대: ' + seed.when,
+    '- 첫 장면의 시간대: ' + seed.when + ' (SCENARIO 와 FIRST_MES 가 이 시간대여야 한다. 밤이나 새벽으로 바꾸지 않는다)',
+    '- 첫 장면의 인적: ' + seed.crowd +
+      ' (사람이 있는 자리라면 그 때문에 말이나 행동에 걸리는 것이 FIRST_MES 에 드러나야 한다)',
     '- 지금 직업을 갖게 된 경로: ' + seed.jobPath,
     '- 학력: ' + seed.edu + ' (EDU 항목에 이 학력을 그대로 쓴다. 임의로 중퇴나 다른 학력으로 바꾸지 않는다)'
   ];
@@ -5049,7 +5735,7 @@ async function generateCharacter(mode, gender){
   if (S.generating) return toast("이미 만드는 중입니다");
   S.generating = true;
   /* 카드 한 장에 2,000토큰 안팎이라 무료 모델에서는 20~60초가 걸린다. */
-  busy('app', (mode === 'taste' ? '선호형' : '무작위') + ' 인물을 만드는 중  ·  보통 20~60초');
+  busy('once', (mode === 'taste' ? '선호형' : '무작위') + ' 인물을 만드는 중  ·  보통 20~60초');
 
   try{
     const seed = rollSeeds(mode, gender);
@@ -5398,7 +6084,7 @@ $('chatQx').onclick = () => {
 async function searchChatBodies(){
   const q = (S.chatQ || '').trim().toLowerCase();
   if (q.length < 2) return toast('두 글자 이상 입력하십시오');
-  busy('app', '본문을 찾는 중');
+  busy('local', '본문을 찾는 중');
   const hits = {};
   let done = 0;
   for (const ch of S.chats){
@@ -5406,7 +6092,7 @@ async function searchChatBodies(){
     const m = ms.find(x => String(x.content).toLowerCase().includes(q));
     if (m) hits[ch.id] = m.content;
     done++;
-    if (done % 5 === 0) busy('app', '본문을 찾는 중  ' + done + '/' + S.chats.length);
+    if (done % 5 === 0) busy('local', '본문을 찾는 중  ' + done + '/' + S.chats.length);
   }
   S.chatHits = hits;
   S.chatHitsQ = q;
@@ -5459,9 +6145,7 @@ function renderChars(){
     const meta = '<div class="cmeta"><span>생성 ' + stampSmart(c.createdAt) + '</span>' +
                  '<span>수정 ' + stampSmart(c.updatedAt) + '</span></div>';
     const cnt = S.chats.filter(x => x.characterId === c.id).length;
-    const av = p.avatar
-      ? `<div class="av pic0"><img src="${p.avatar}" alt=""></div>`
-      : `<div class="av" style="background:${c.accent||PALETTE[0]}">${esc(initial(c.name))}</div>`;
+    const av = avatarOf(c);
     return `
     <div class="card chr" data-id="${c.id}">
       ${av}
@@ -5561,6 +6245,15 @@ $('ceLookFromPic').onclick = async () => {
     toast('사진에서 외형을 옮겼습니다');
   }catch(e){ toast('실패: ' + e.message); }
   finally{ b.textContent = '사진에서 뽑기'; b.disabled = false; }
+};
+/* 무엇 위에 덧쓰는지 모르면 전용 규칙을 쓸 수 없다. 읽기 전용으로 띄운다. */
+$('ceSeeRules').onclick = () => {
+  const r = (localStorage.getItem(LS.rules)?.trim() || DEFAULT_RULES);
+  $('editWho').textContent = '앱 기본규칙 — 읽기 전용';
+  $('editTa').value = r;
+  $('editTa').readOnly = true;
+  $('editBox').classList.add('on');
+  $('editOk').onclick = () => { $('editTa').readOnly = false; $('editBox').classList.remove('on'); };
 };
 $('bNewChar').onclick = () => editChar(null);
 
@@ -5903,7 +6596,7 @@ async function generatePersona(gender){
   if (!modelChain().length){ show('vSettings'); return toast('모델을 먼저 선택하십시오'); }
   if (S.generating) return toast('이미 만드는 중입니다');
   S.generating = true;
-  busy('app', '주인공을 만드는 중  ·  보통 10~30초');
+  busy('once', '주인공을 만드는 중  ·  보통 10~30초');
   try{
     const job = pick(PERSONA_JOB);
     const age = randInt(job[1], job[2]);
@@ -6093,6 +6786,55 @@ $('sPick').onclick = () => pickSheet('기본 모델 고르기',
   });
 
 /* ═══════════════ 설정 ═══════════════ */
+/* 설정 화면을 묶음별로 갈라 탭으로 오간다.
+   섹션 제목(.sect)을 기준으로 열 때 한 번 나누므로 마크업은 그대로 둔다. */
+const SET_PANES = [
+  {key:'conn',  name:'연결',   sects:['연결']},
+  {key:'gen',   name:'생성',   sects:['생성 파라미터', '공통 규칙']},
+  {key:'char',  name:'인물',   sects:['인물 자동 생성']},
+  {key:'genre', name:'장르',   sects:['장르']},
+  {key:'img',   name:'이미지', sects:['이미지 생성']},
+  {key:'etc',   name:'기타',   sects:['데이터', '고급']}
+];
+function buildSettingTabs(){
+  const scroll = $('vSettings').querySelector('.scroll');
+  if (!scroll || scroll.dataset.paned) return;
+  const paneOf = title => (SET_PANES.find(p => p.sects.includes(title)) ||
+                           SET_PANES[SET_PANES.length - 1]).key;
+  const panes = {};
+  SET_PANES.forEach(p => {
+    panes[p.key] = document.createElement('div');
+    panes[p.key].className = 'spane';
+    panes[p.key].dataset.pane = p.key;
+  });
+  let cur = SET_PANES[0].key;
+  [...scroll.childNodes].forEach(node => {
+    if (node.nodeType === 1 && node.classList.contains('sect'))
+      cur = paneOf(node.textContent.trim());
+    panes[cur].appendChild(node);
+  });
+  SET_PANES.forEach(p => scroll.appendChild(panes[p.key]));
+  scroll.dataset.paned = '1';
+
+  $('setTabs').innerHTML = SET_PANES.map(p =>
+    '<button data-pane="' + p.key + '">' + p.name + '</button>').join('');
+  $('setTabs').querySelectorAll('[data-pane]')
+    .forEach(b => b.onclick = () => setPane(b.dataset.pane));
+  setPane(localStorage.getItem(LS.setPane) || 'conn');
+}
+function setPane(key){
+  if (!SET_PANES.some(p => p.key === key)) key = SET_PANES[0].key;
+  localStorage.setItem(LS.setPane, key);
+  document.querySelectorAll('.spane')
+    .forEach(x => x.classList.toggle('on', x.dataset.pane === key));
+  $('setTabs').querySelectorAll('[data-pane]')
+    .forEach(b => b.classList.toggle('on', b.dataset.pane === key));
+  const p = SET_PANES.find(x => x.key === key);
+  $('setWhere').textContent = p ? p.name : '';
+  const sc = $('vSettings').querySelector('.scroll');
+  if (sc) sc.scrollTop = 0;
+}
+
 function loadSettings(){
   $('sKey').value    = localStorage.getItem(LS.key) || '';
   $('sTemp').value   = localStorage.getItem(LS.temp) || '0.9';
@@ -6109,7 +6851,13 @@ function loadSettings(){
   $('sImgUnc').checked = (localStorage.getItem(LS.imgUnc) ?? '0') === '1';
   $('sImgUp').checked  = (localStorage.getItem(LS.imgUp) ?? '1') === '1';
   $('sImgSize').value = localStorage.getItem(LS.imgSize) || '832x1216';
-  $('sImgLevel').value = localStorage.getItem(LS.imgLevel) || 'hardcore';
+  $('sImgLevel').value = localStorage.getItem(LS.imgLevel) || 'explicit';
+  $('sGenre').innerHTML = GENRES.map(g =>
+    '<option value="' + esc(g.key) + '">' + esc(g.name) + '</option>').join('');
+  $('sGenre').value = localStorage.getItem(LS.genreDef) || '';
+  $('sGenreFill').value = localStorage.getItem(LS.genreFill) || 'random';
+  renderGenreCards();
+  syncThumbBtns();
   $('sImgDetail').value = localStorage.getItem(LS.imgDetail) || 'ultra';
   $('sTaste').value  = localStorage.getItem(LS.taste) || DEFAULT_TASTE;
   $('sAgeMin').value = localStorage.getItem(LS.ageMin) || '20';
@@ -6127,13 +6875,15 @@ $('sImgKey').onchange = () => {
   if ($('sImgKey').value.trim() && !S.imgModels.length){ fetchImgModels(); fetchTxtModels(); }
   renderMsgs(false);
 };
-$('sImgModel').onchange = () => { localStorage.setItem(LS.imgModel, $('sImgModel').value); showImgCost(); };
-$('sImgHi').onchange   = () => localStorage.setItem(LS.imgHi, $('sImgHi').value);
-$('sImgNsfw').onchange   = () => localStorage.setItem(LS.imgNsfw, $('sImgNsfw').value);
-$('sImgNsfwHi').onchange = () => localStorage.setItem(LS.imgNsfwHi, $('sImgNsfwHi').value);
+/* 모델 슬롯은 수위 카드로 옮겨졌다 */
 $('sImgUp').onchange     = () => localStorage.setItem(LS.imgUp, $('sImgUp').checked ? '1' : '0');
 $('sImgSize').onchange  = () => localStorage.setItem(LS.imgSize, $('sImgSize').value);
-$('sImgLevel').onchange = () => localStorage.setItem(LS.imgLevel, $('sImgLevel').value);
+$('sImgLevel').onchange = () => {
+  localStorage.setItem(LS.imgLevel, $('sImgLevel').value);
+  renderLevelCards(); showImgCost();
+};
+$('sGenre').onchange = () => localStorage.setItem(LS.genreDef, $('sGenre').value);
+$('sGenreFill').onchange = () => localStorage.setItem(LS.genreFill, $('sGenreFill').value);
 $('sImgDetail').onchange = () => localStorage.setItem(LS.imgDetail, $('sImgDetail').value);
 $('sImgFilter').oninput = renderImgSelect;
 $('sImgUnc').onchange   = () => {
@@ -6252,9 +7002,9 @@ async function seed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b47';
-const APP_BUILT = '2026-08-20 18:57';
-const APP_NOTE  = '본문 검색 · 권장값 표기 · 작업 상태 배너 · 소설화 전면 개선';
+const APP_BUILD = 'b48';
+const APP_BUILT = '2026-08-20 21:40';
+const APP_NOTE  = '설정 탭 · 채팅 메뉴 격자 · 답변 예시 · 시작 가이드 · 정규분포 · 상태 배너 세분화';
 $('sVersion').innerHTML =
   '8단계 · <b style="color:var(--acc)">빌드 ' + APP_BUILD + '</b><br>최종 수정: ' + APP_BUILT + '<br>' + APP_NOTE;
 
@@ -6263,6 +7013,11 @@ if ('serviceWorker' in navigator)
   addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 
 /* 긴 서술 포맷 도입에 맞춰 예전 설정값을 한 번만 올려준다 */
+/* 수위가 넷에서 셋으로 줄었다. 옛 값을 옮긴다. */
+(function migrateLevel(){
+  if (localStorage.getItem(LS.imgLevel) === 'hardcore')
+    localStorage.setItem(LS.imgLevel, 'explicit');
+})();
 (function migrate(){
   if (!localStorage.getItem('rp_migrated_v5')){
     if (parseInt(localStorage.getItem(LS.maxTok) || '0', 10) < 1500)
@@ -6288,8 +7043,10 @@ if ('serviceWorker' in navigator)
     await seed();
     await loadAll();
     loadSettings();
+    buildSettingTabs();
     renderChats(); renderChars(); renderPersonas();
-    if (localStorage.getItem(LS.key)) fetchModels();
+    try{ history.replaceState({v: S.view || 'vChats'}, ''); }catch(_){}
+  if (localStorage.getItem(LS.key)) fetchModels();
     else { show('vSettings'); toast('설정에서 API 키를 입력하십시오'); }
     if (localStorage.getItem(LS.imgKey)){ fetchImgModels(); fetchTxtModels(); }
   }catch(e){
