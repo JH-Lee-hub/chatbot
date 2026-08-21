@@ -321,6 +321,7 @@
   .ipNote b{color:var(--warn);font-weight:600}
   /* 고급 칸을 안 채웠으면 기본 것을 물려받는다는 뜻이다 */
   .lvRow button.dim{color:var(--tx3);font-style:italic}
+  .lvAuto{font-size:9.5px;color:var(--tx3);line-height:1.4;margin-top:4px;word-break:keep-all}
   /* 제목과 항목이 같은 크기라 문단이 안 보였다. 제목을 키우고 위를 띄운다 */
   .gsecT{display:block;font-size:13px;font-weight:600;color:var(--tx);margin-top:14px}
   .sinfo>.gsecT:first-child{margin-top:0}
@@ -341,6 +342,15 @@
   .gTick span{flex:1;text-align:center}
   .gTick span:first-child{text-align:left} .gTick span:last-child{text-align:right}
   .gPaceNow{font-size:11px;color:var(--tx2);margin-top:6px}
+  /* 구성 요소보다 한 단 아래. 제목은 더 작게, 값은 옆으로 흘려 담는다 */
+  .gsecT2{display:block;font-size:11px;font-weight:600;color:var(--tx3);margin-top:10px}
+  .sinfo>.gsecT2:first-child{margin-top:0}
+  .gNow{font-size:12.5px;color:var(--tx);margin-top:3px}
+  .gChips{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+  .gChips button{flex:0 0 auto;font-size:11.5px;padding:5px 10px;border-radius:99px;
+    border:1px solid var(--line2);background:var(--panel);color:var(--tx2);font-family:inherit}
+  .gChips button.on{border-color:var(--acc);background:var(--panel2);color:var(--tx)}
+  .gChips button:first-child{color:var(--tx3);font-style:italic}
   .pguide .dim{display:block;margin-top:7px;color:var(--tx3);font-size:11px}
   .stat span[data-keep]{cursor:pointer}
   .stat span[data-keep] em{font-style:normal;color:var(--tx3);margin-left:4px}
@@ -382,8 +392,24 @@
   .whoStats b u{text-decoration:none;color:var(--tx3);font-weight:400;font-size:12px}
   .whoStats em{display:block;font-style:normal;font-size:10px;color:var(--tx3);margin-top:1px}
   .whoNote{font-size:11px;color:var(--tx3);margin-top:8px;text-align:right}
-  .meEras{margin-top:12px;font-size:12px}
+  /* 제목 오른쪽에 찾기. 회차가 수백 개가 되면 눈으로 훑을 수가 없다 */
+  .meFindRow{display:flex;align-items:center;gap:8px;margin-top:14px}
+  .meFindRow>b{flex:0 0 auto;font-size:12.5px;color:var(--tx2)}
+  .meFindRow>input{flex:1;min-width:0;font-size:11.5px;padding:6px 9px;
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;color:var(--tx)}
+  .meFindRow>input:focus{outline:none;border-color:var(--acc)}
+  .meEras{margin-top:8px;font-size:12px}
   .meEras>b{display:block;margin-bottom:7px;color:var(--tx2)}
+  /* 권은 회차보다 한 단 위다. 왼쪽 선으로 구분한다 */
+  .eraRow.vol{border-left:2px solid var(--acc);padding-left:8px;background:var(--panel)}
+  .eraRow.vol>i{color:var(--acc);font-weight:600}
+  .eraRow{cursor:pointer}
+  .eraRow:active{background:var(--panel2)}
+  /* 세 줄까지만 보이고 나머지는 「…」 로 접는다 */
+  .eraRow em{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .eraRow em.op{display:block}
+  .eraMore{color:var(--acc);cursor:pointer;font-size:11px;margin-left:2px}
+  .eraNote{font-size:10.5px;color:var(--tx3);padding:7px 0;border-top:1px solid var(--line)}
   .eraRow{display:flex;gap:9px;padding:8px 0;border-top:1px solid var(--line)}
   .eraRow>i{flex:0 0 34px;font-style:normal;color:var(--tx3);font-size:11px;padding-top:1px}
   .eraRow>span{flex:1;min-width:0}
@@ -470,9 +496,10 @@
   #busyWhy:empty{display:none}
   #busy.warn{border-color:#5c4a2b} #busy.warn span{color:var(--warn)}
   #busy.ok{border-color:#2f5c40} #busy.ok span{color:var(--ok)}
-  #macro{display:flex;gap:5px;padding:0 10px 6px;overflow-x:auto;scrollbar-width:none}
+  #macro{display:flex;gap:3px;align-items:center;padding:0 10px 6px;
+    overflow-x:auto;scrollbar-width:none}
   #macro::-webkit-scrollbar{display:none}
-  #macro button{flex:0 0 auto;width:60px;padding:5px 0;border-radius:8px;
+  #macro>button[data-mc]{flex:0 0 auto;width:52px;padding:5px 0;border-radius:8px;
     background:var(--panel2);border:1px solid var(--line);color:var(--tx2);
     font-size:11px;font-family:inherit;white-space:nowrap;overflow:hidden}
   #macro button.empty{color:var(--tx3);border-style:dashed}
@@ -524,6 +551,21 @@
   @keyframes busyWave{0%{margin-left:-35%}100%{margin-left:100%}}
   #busyEta{flex:1 0 100%;color:var(--tx3);font-size:10.5px;margin-top:1px}
   #busyEta:empty{display:none}
+  /* 정작 필요한 순간에 설정을 뒤지게 하지 않는다 */
+  #busyWake{display:none;margin-top:3px;font-size:10px;padding:3px 9px;border-radius:99px;
+    border:1px solid var(--line2);background:var(--panel);color:var(--tx3);font-family:inherit}
+  #busyWake.on{display:block}
+  #busyWake.lit{border-color:var(--ok);color:var(--ok)}
+  /* 채팅 이미지 창과 매크로 줄에 붙는 작은 체크 */
+  .ipChk{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--tx2)}
+  .ipChk input{width:15px;height:15px;accent-color:var(--acc)}
+  .ipWhy,.mcWhy{width:19px;height:19px;border-radius:99px;border:1px solid var(--line2);
+    background:var(--panel);color:var(--tx3);font-size:10.5px;line-height:1;margin-left:7px;
+    font-family:inherit;vertical-align:middle}
+  .mcChk{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;font-size:10px;
+    color:var(--tx3);white-space:nowrap;padding-left:3px}
+  .mcChk input{width:13px;height:13px;margin:0;accent-color:var(--acc)}
+  .mcWhy{flex:0 0 auto;width:17px;height:17px;font-size:10px}
   #toast{position:fixed;left:50%;bottom:calc(76px + var(--safe-b));transform:translateX(-50%);
          background:rgba(43,49,64,.88);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
          border:1px solid var(--line2);color:var(--tx);padding:9px 15px;border-radius:10px;
@@ -632,6 +674,19 @@
         </div>
       </div>
       <div class="fld">
+        <div class="fld">
+          <label>한 장에 낼 수 있는 최대 금액</label>
+          <select id="sImgCap">
+            <option value="0.10">$0.10 까지 (권장)</option>
+            <option value="0.15">$0.15 까지</option>
+          </select>
+          <div class="hint">
+            <b>고를 때의 기준이 아니라 넘지 말아야 할 선입니다.</b> 비싼 모델이 늘 나은 것은 아니므로,
+            앱은 가격이 아니라 <b>그 수위가 중시하는 축</b>(얼굴 · 질감 · 해부 등)으로 고르고
+            이 금액을 넘는 것만 제외합니다.<br>
+            지금 쓰는 모델은 대체로 장당 <b>$0.01 안팎</b>이라 이 상한에 걸릴 일은 드뭅니다.
+          </div>
+        </div>
         <label class="sw"><input type="checkbox" id="sImgAuto">
           <span>장면에 맞춰 이미지 수위를 낮추기 (기본 켜짐)</span></label>
         <div class="hint">
@@ -794,7 +849,7 @@
         <select id="sImgLevel">
           <option value="soft">은은하게 — 품질 최상 · 직접 노출 없음</option>
           <option value="nude">노출 — 품질 상 · 전라까지, 행위는 암시</option>
-          <option value="explicit">노골적 — 품질 중 · 행위와 부위, 체액까지</option>
+          <option value="explicit">노골적 — 제한 없음 · 최소한의 제약</option>
         </select>
         <div class="hint">
           <b>수위를 낮추면 더 좋은 모델이 쓰입니다.</b> 노출이 없는 장면으로 판정되면
@@ -920,12 +975,12 @@
 
   <!-- ══════════ 캐릭터 편집 ══════════ -->
   <section class="view" id="vCharEdit">
-    <div id="ceTabs"></div>
     <div class="bar">
       <button class="ico" id="ceBack">‹</button><h2 id="ceTitle">대상</h2>
       <button class="ico" id="ceMenu">⋯</button>
       <button class="btn pri" id="ceSave" style="padding:7px 14px">저장</button>
     </div>
+    <div id="ceTabs"></div>
     <div class="scroll">
       <div class="fld"><label>성별</label>
         <div class="row" id="ceGenderRow">
@@ -1149,10 +1204,17 @@
       <div class="fld">
         <label>지금까지의 이야기</label>
         <textarea id="meSummary" rows="5" placeholder="회차로 접히기 전의 이야기가 있으면 여기에 적습니다."></textarea>
+        <div class="meFindRow">
+          <b id="meFindTitle">쌓인 기억</b>
+          <input id="meFind" placeholder="찾기 — 제목과 내용에서">
+        </div>
         <div id="meEras" class="meEras"></div>
         <div class="hint">
-          캐릭터의 장기 기억입니다. 자동 갱신되지만 <b>직접 고칠 수 있습니다.</b>
-          틀린 내용이 쌓이면 이후 대화가 계속 어긋나므로, 가끔 확인하시는 편이 좋습니다.
+          캐릭터의 장기 기억입니다. <b>권이나 회차를 눌러 직접 고칠 수 있습니다.</b>
+          틀린 내용이 쌓이면 이후 대화가 계속 어긋나므로, 가끔 확인하시는 편이 좋습니다.<br>
+          회차 <b>20개</b>가 차면 한 권으로 접힙니다. 접을 때는 낱낱이 남기지 않고
+          <b>자주 있던 것</b>과 <b>강했던 것</b>만 남깁니다 — 사람이 오래된 일을 기억하는 방식입니다.
+          접힌 회차는 지워지지 않고 감춰지며, 찾으면 나옵니다.
         </div>
       </div>
       <div class="fld">
@@ -1232,6 +1294,7 @@
   <span id="busyCan"></span>
   <span id="busyWhy"></span>
   <span id="busyEta"></span>
+  <button id="busyWake" type="button"></button>
 </div>
 <div id="toast"></div>
 <input type="file" id="filePick" accept=".json" style="display:none">
@@ -1247,7 +1310,7 @@ const LS = {
   key:'rp_apikey', model:'rp_model', temp:'rp_temp', maxTok:'rp_maxtok',
   window:'rp_windowTurns', free:'rp_free', lastChat:'rp_lastChatId',
   budget:'rp_budget', autoSum:'rp_autoSummary', fallbacks:'rp_fallbacks', rules:'rp_rules',
-  preHint:'rp_prehint', imgAuto:'rp_imgauto',
+  preHint:'rp_prehint', imgAuto:'rp_imgauto', imgCap:'rp_imgcap',
   imgKey:'rp_imgkey', imgModel:'rp_imgmodel', imgSize:'rp_imgsize', imgUnc:'rp_imgunc',
   imgHi:'rp_imghi', imgNsfw:'rp_imgnsfw', imgNsfwHi:'rp_imgnsfwhi',
   imgTier:'rp_imgtier', imgUp:'rp_imgup',
@@ -1277,6 +1340,64 @@ const IMG_NEG = 'cartoon, anime, illustration, painting, 3d render, cgi, doll, p
    그래서 수위를 올리면 그림의 완성도가 떨어지는 것이 정상이다.          */
 /* 이름만 봐서는 무엇이 다른지 알 수 없다. 아는 만큼 한 줄로 적어 둔다.
    목록에 없는 새 모델은 이름의 결로 어림해 적는다. */
+/* 모델이 무엇을 잘하고 무엇이 약한가. 설명(IMG_NOTE)과 같은 근거에서 뽑았다.
+   q 는 그 계열의 기본 완성도(1~5). 가격과는 별개다 — 싸고 좋은 것도 비싸고 어중간한 것도 있다. */
+const IMG_TRAIT = [
+  [/seedream/i,             {q:5, good:['얼굴','프롬프트','구도'], bad:['노출','해부']}],
+  [/qwen.?image/i,          {q:4, good:['얼굴','프롬프트','노출']}],
+  [/krea/i,                 {q:4, good:['질감','실사'],           bad:['구도']}],
+  [/flux/i,                 {q:4, good:['프롬프트','구도'],        bad:['노출','해부']}],
+  [/lustify/i,              {q:3, good:['해부','체액','노출'],     bad:['얼굴']}],
+  [/chroma/i,               {q:3, good:['해부','노출','질감'],     bad:['손']}],
+  [/pony|hassaku|wai/i,     {q:3, good:['노출'],                  bad:['실사','얼굴']}],
+  [/sd.?xl|stable/i,        {q:2, good:[]}],
+  [/turbo|lightning|fast/i, {q:1, good:[],                        bad:['질감','구도']}]
+];
+const traitOf = m => {
+  const t = (m?.id || '') + ' ' + (m?.model_spec?.name || '');
+  return (IMG_TRAIT.find(([re]) => re.test(t)) || [null, {q:2, good:[], bad:[]}])[1];
+};
+/* 수위마다 중요한 축이 다르다. 은은하게는 얼굴과 질감, 노골적은 해부가 먼저다 */
+const LEVEL_WANT = {
+  soft:     ['얼굴','프롬프트','질감','구도'],
+  nude:     ['노출','얼굴','질감'],
+  explicit: ['해부','노출','체액'],
+  raw:      ['해부','체액','노출']
+};
+/* 한 장에 얼마까지 낼 것인가. 고르는 기준이 아니라 넘지 말아야 할 선이다 */
+const IMG_CAPS = [0.10, 0.15];
+const imgCap = () => parseFloat(localStorage.getItem(LS.imgCap) || '0.10') || 0.10;
+
+/* 그 수위에서 지금 모델보다 나은 것을 상한 안에서 고른다.
+   점수는 「그 수위가 원하는 축을 몇 개 갖췄나」가 먼저고, 계열 완성도가 그다음이다. */
+function betterModel(levelKey, baseId){
+  const want = LEVEL_WANT[levelKey] || LEVEL_WANT.explicit;
+  const cap = imgCap();
+  const needUnc = levelKey !== 'soft';
+  const score = m => {
+    const t = traitOf(m);
+    let v = 0;
+    want.forEach((w, i) => {
+      const weight = want.length - i;                 /* 앞쪽 축일수록 무겁게 */
+      if (t.good.includes(w)) v += weight * 2;
+      if ((t.bad || []).includes(w)) v -= weight * 2;
+    });
+    return v * 10 + t.q;
+  };
+  const base = S.imgModels.find(m => m.id === baseId);
+  const pool = S.imgModels.filter(m =>
+    imgPrice(m) <= cap && (!needUnc || m.model_spec?.uncensored));
+  if (!pool.length) return null;
+  const best = pool.slice().sort((a, b) => {
+    const d = score(b) - score(a);
+    /* 점수가 같으면 싼 쪽. 비싸다고 나은 것이 아니다 */
+    return d !== 0 ? d : imgPrice(a) - imgPrice(b);
+  })[0];
+  if (!best || (base && best.id === base.id)) return null;
+  if (base && score(best) <= score(base)) return null;
+  return best;
+}
+
 const IMG_NOTE = [
   [/seedream/i,        '최신 대형 · 프롬프트 이해와 얼굴이 가장 좋음 · 노출은 막힘'],
   [/qwen.?image/i,     '무검열이면서 최신 · 전라까지 되고 품질도 준수'],
@@ -1316,7 +1437,7 @@ const IMG_LEVEL = {
          'Do not describe explicit sexual acts; imply them instead.'
   },
   explicit: {
-    key:'explicit', name:'노골적', tone:'품질 중 · 행위와 부위, 체액까지',
+    key:'explicit', name:'노골적', tone:'제한 없음 · 최소한의 제약',
     tag: 'explicit, uncensored, nsfw, fully nude, detailed anatomy, visible genitals, detailed pussy, ' +
          'glistening skin, sweat, bodily fluids, realistic skin pores, anatomically correct',
     neg: ', clothed, dressed, underwear, covered, censored, mosaic, black bars, bar censor, ' +
@@ -1345,8 +1466,11 @@ function levelModels(key, tier){
   const o = over[key] || {};
   const base = {m: o.m || d.m, fb: o.fb || d.fb};
   if (tier !== 'hi') return base;
-  /* 고급 칸을 안 채웠으면 기본 것을 그대로 쓴다. 그 경우 달라지는 것은 스텝과 업스케일뿐이다 */
-  return {m: o.hiM || base.m, fb: o.hiFb || base.fb, own: !!(o.hiM || o.hiFb)};
+  if (o.hiM || o.hiFb) return {m: o.hiM || base.m, fb: o.hiFb || base.fb, own: true};
+  /* 손으로 안 정했으면 그 수위가 중시하는 축에서 더 나은 것을 상한 안에서 찾는다.
+     못 찾으면 기본 것을 그대로 쓴다 — 그때 달라지는 것은 스텝과 업스케일뿐이다 */
+  const auto = betterModel(key, base.m);
+  return auto ? {m: auto.id, fb: base.m, own: false, auto: true} : {...base, own: false};
 }
 function setLevelModel(key, which, id){
   let over = {};
@@ -1371,9 +1495,14 @@ function sceneHeat(scene, stateCard){
   if (HEAT1.test(t)) return 1;
   return 0;
 }
+/* 이 대화에서 따로 정한 적이 있으면 그것을, 없으면 설정값을 따른다 */
+function autoDown(){
+  if (S.chat && S.chat.imgAuto != null) return !!S.chat.imgAuto;
+  return localStorage.getItem(LS.imgAuto) !== '0';
+}
 function effLevel(scene, stateCard){
   const want = Math.max(0, LEVEL_ORDER.indexOf(imgLevelKey()));
-  if (localStorage.getItem(LS.imgAuto) === '0') return IMG_LEVEL[LEVEL_ORDER[want]];
+  if (!autoDown()) return IMG_LEVEL[LEVEL_ORDER[want]];
   const heat = sceneHeat(scene, stateCard);
   const cap = heat === 2 ? 2 : heat === 1 ? 1 : 0;
   return IMG_LEVEL[LEVEL_ORDER[Math.min(want, cap)]];
@@ -1773,6 +1902,7 @@ function busy(kind, what, opt){
     el.classList.remove('on', 'warn', 'ok');
     bar.classList.remove('on', 'wave');
     stop.classList.remove('on');
+    paintWake(false);
     S.job = null;
     wakeOff();
     return;
@@ -1798,7 +1928,26 @@ function busy(kind, what, opt){
   /* 멈출 수 있는 작업에만 중지 단추를 띄운다 */
   if (o.stop){ stop.classList.add('on'); S.job = {stop: o.stop, what}; wakeOn(); }
   else { stop.classList.remove('on'); S.job = null; }
+  /* 오래 도는 작업에서만 화면 켜기를 묻는다. 한 턴짜리 요청에는 필요 없다 */
+  paintWake(kind === 'resume' || kind === 'steps' || !!o.stop);
 }
+function paintWake(show){
+  const b = $('busyWake');
+  if (!b) return;
+  b.classList.toggle('on', !!show);
+  if (!show) return;
+  const on = localStorage.getItem(LS.wake) === '1';
+  b.textContent = on ? '🔆 화면 켜짐 유지중' : '화면 켜짐을 유지할까요?';
+  b.classList.toggle('lit', on);
+}
+$('busyWake').onclick = () => {
+  const on = localStorage.getItem(LS.wake) !== '1';
+  localStorage.setItem(LS.wake, on ? '1' : '0');
+  if ($('sWake')) $('sWake').checked = on;
+  if (on) wakeOn(); else wakeOff();
+  paintWake(true);
+  toast(on ? '화면이 꺼지지 않습니다 — 배터리를 더 씁니다' : '화면 잠금을 원래대로 두었습니다');
+};
 $('busyStop').onclick = () => {
   if (!S.job) return;
   S.job.stop();
@@ -1926,9 +2075,28 @@ function editMacro(i){
 function paintMacros(){
   const box = $('macro');
   if (!box) return;
+  const on = localStorage.getItem(LS.preHint) === '1';
   box.innerHTML = macros().map((m, i) =>
     '<button type="button" data-mc="' + i + '"' + (m.v ? '' : ' class="empty"') +
-    ' title="' + esc(m.v || '길게 눌러 채우십시오') + '">' + esc(m.n) + '</button>').join('');
+    ' title="' + esc(m.v || '길게 눌러 채우십시오') + '">' + esc(m.n) + '</button>').join('') +
+    '<label class="mcChk" id="mcHintWrap"><input type="checkbox" id="mcHint"' +
+    (on ? ' checked' : '') + '><span>답변 예시 미리 생성</span></label>' +
+    '<button type="button" class="mcWhy" id="mcHintWhy">?</button>';
+  const h = $('mcHint');
+  if (h) h.onchange = () => {
+    localStorage.setItem(LS.preHint, h.checked ? '1' : '0');
+    if ($('sPreHint')) $('sPreHint').checked = h.checked;
+    toast(h.checked ? '응답마다 예시를 미리 만듭니다' : '누를 때만 만듭니다');
+  };
+  const hw = $('mcHintWhy');
+  if (hw) hw.onclick = () => sheet('답변 예시 미리 생성', [
+    {info: true, html: '<span class="pguide">' +
+      '켜 두면 상대의 응답이 끝날 때마다 <b>내가 할 법한 말 세 개를 미리 만들어</b> 둡니다. ' +
+      '접힌 채로 붙어 있다가 「답변 예시」를 누르면 기다리지 않고 바로 펼쳐집니다.<br><br>' +
+      '<b>매 턴 요청이 한 번씩 더 나갑니다.</b> 한 번에 $0.001 안팎이지만 안 쓰는 턴에도 나갑니다.<br><br>' +
+      '막힐 때만 눌러 쓰신다면 꺼 두는 편이 낫습니다. 예시를 자주 쓰면 대화의 결이 ' +
+      '모델 쪽으로 끌려가기도 합니다.</span>'}
+  ]);
   box.querySelectorAll('[data-mc]').forEach(b => {
     const i = +b.dataset.mc;
     let timer = null, held = false;
@@ -2007,14 +2175,17 @@ function closeEdit(){
 }
 $('editCancel').onclick = closeEdit;
 
-function openGuide(force){
+function openGuide(force, back){
   if (!force && localStorage.getItem(LS.guide) === '1') return;
   $('guideNo').checked = false;
+  S.guideBack = back || null;
   $('guideBox').classList.add('on');
 }
 function closeGuide(){
   if ($('guideNo').checked) localStorage.setItem(LS.guide, '1');
   $('guideBox').classList.remove('on');
+  const b = S.guideBack; S.guideBack = null;
+  if (b) b();
 }
 $('guideX').onclick = closeGuide;
 $('guideBox').onclick = e => { if (e.target.id === 'guideBox') closeGuide(); };
@@ -2250,24 +2421,107 @@ const SUM_TRIGGER = 6;   /* 창 밖으로 밀려난 턴이 이만큼 쌓이면 �
 const ERA_TURNS  = 20;   /* 한 회차에 담을 최대 턴 */
 const ERA_MIN    = 6;    /* 이보다 적으면 아직 회차를 닫지 않는다 */
 const ERA_CHARS  = 260;  /* 회차 본문 길이 */
+const VOL_ERAS   = 20;   /* 회차 이만큼이 차면 한 권으로 접는다 */
+const VOL_CHARS  = 340;  /* 권 본문 길이 — 회차보다 조금 길게 */
+const VOL_FULL   = 3;    /* 최근 이만큼의 권은 본문까지 싣는다 */
+const VOL_TITLES = 20;   /* 그 앞의 권은 제목만, 최대 이만큼 */
+/* 「7회」보다 「1권 7회」가 어디쯤인지 가늠된다. 번호는 저장하지 않고 그때그때 셈한다 */
+const volNo  = eraN => Math.floor((eraN - 1) / VOL_ERAS) + 1;
+const volPos = eraN => ((eraN - 1) % VOL_ERAS) + 1;
+const eraLabel = e => volNo(e.n) + '권 ' + volPos(e.n) + '회';
 const ERA_FULL   = 2;    /* 본문까지 싣는 최근 회차 수 */
 const ERA_TITLES = 15;   /* 제목만 싣는 최대 회차 수 */
 
 /* 회차를 프롬프트 한 덩이로 만든다. 오래된 것은 제목만 남기고 최근 것은 본문까지 싣는다. */
 function fmtEras(mem){
   const eras = mem?.eras || [];
+  const vols = mem?.vols || [];
   const old  = String(mem?.summary || '').trim();
-  if (!eras.length) return old;
+  if (!eras.length && !vols.length) return old;
   const L = [];
   if (old) L.push('이전 이야기: ' + old);
-  const headAll = eras.slice(0, Math.max(0, eras.length - ERA_FULL));
+
+  /* 1층 — 접힌 권. 오래된 것은 제목만 남는다 */
+  if (vols.length){
+    const headAll = vols.slice(0, Math.max(0, vols.length - VOL_FULL));
+    const head = headAll.slice(-VOL_TITLES);
+    if (headAll.length > head.length)
+      L.push('(그보다 앞선 ' + (headAll.length - head.length) + '권은 기억에 남아 있지 않습니다)');
+    for (const v of head) L.push(v.n + '권 · ' + v.title);
+    for (const v of vols.slice(-VOL_FULL))
+      L.push(v.n + '권 · ' + v.title + '\n  ' + v.text);
+  }
+
+  /* 2층 — 아직 권으로 안 접힌 회차 */
+  const loose = eras.filter(e => e.n > vols.length * VOL_ERAS);
+  const headAll = loose.slice(0, Math.max(0, loose.length - ERA_FULL));
   const head = headAll.slice(-ERA_TITLES);
   if (headAll.length > head.length)
     L.push('(앞선 ' + (headAll.length - head.length) + '회는 줄였습니다)');
-  for (const e of head) L.push(e.n + '회 · ' + e.title);
-  for (const e of eras.slice(-ERA_FULL))
-    L.push(e.n + '회 · ' + e.title + '\n  ' + e.text);
+  for (const e of head) L.push(eraLabel(e) + ' · ' + e.title);
+
+  /* 3층 — 가장 최근 회차는 본문까지 */
+  for (const e of loose.slice(-ERA_FULL))
+    L.push(eraLabel(e) + ' · ' + e.title + '\n  ' + e.text);
   return L.join('\n');
+}
+
+/* 회차 스무 개가 찼으면 한 권으로 접는다.
+   사람이 오래된 일을 기억하는 방식 — 자주 있던 일과 강했던 일만 남는다 — 을 기준으로 삼는다. */
+async function maybeVolume(chatId, mem){
+  const eras = mem.eras || [];
+  const vols = mem.vols || [];
+  const from = vols.length * VOL_ERAS;
+  if (eras.length < from + VOL_ERAS) return mem;
+  const batch = eras.slice(from, from + VOL_ERAS);
+  const volN = vols.length + 1;
+
+  const key = localStorage.getItem(LS.key);
+  const model = S.chat?.model || S.character?.preferredModel || localStorage.getItem(LS.model);
+  if (!key || !model) return mem;
+
+  const prompt =
+    '너는 롤플레잉 대화의 기록 관리자다. 아래 회차 ' + batch.length + '개를 **한 권**으로 접어라.\n\n' +
+    '이것은 사람이 오래된 일을 기억하는 방식으로 남기는 것이다. 낱낱이 적지 않는다.\n' +
+    '아래 둘만 남긴다.\n' +
+    '- **자주 있던 것** — 되풀이된 자리 · 습관 · 늘 하던 말과 행동. 몇 회에 있었는지는 쓰지 않는다.\n' +
+    '- **강했던 것** — 처음이었던 일 · 크게 틀어진 지점 · 되돌릴 수 없게 된 순간 · 아직 안 끝난 약속.\n' +
+    '\n규칙:\n' +
+    '- title 은 이 시기를 한마디로 부르는 이름. 20자 이내. 「' + volN + '권」 같은 번호는 넣지 않는다.\n' +
+    '- text 는 ' + VOL_CHARS + '자 이내. 한 번 있었을 뿐인 사소한 일은 버린다.\n' +
+    '- **사람이 잊는 것은 잊은 채로 둔다.** 다 담으려 하지 않는다.\n' +
+    '- 오직 JSON만 출력한다.\n\n' +
+    '출력 형식:\n{"title":"...","text":"..."}\n\n' +
+    '[이번 권에 담을 회차]\n' +
+    batch.map(e => volPos(e.n) + '회 · ' + e.title + '\n  ' + e.text).join('\n');
+
+  try{
+    const res = await fetch(API + '/chat/completions', {
+      method:'POST',
+      headers:{'Authorization':'Bearer ' + key, 'Content-Type':'application/json', 'X-Title':'RP App'},
+      body: JSON.stringify({model, messages:[{role:'user', content:prompt}],
+                            temperature: 0.3, max_tokens: 900, ...reasonOff()})
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const txt = scrubOut((await res.json()).choices?.[0]?.message?.content || '');
+    const j = JSON.parse((txt.match(/\{[\s\S]*\}/) || ['{}'])[0]);
+    const vol = {
+      n: volN,
+      title: String(j.title || (volN + '권')).trim().slice(0, 24),
+      text:  String(j.text || '').trim().slice(0, VOL_CHARS + 60),
+      from: batch[0].n, to: batch[batch.length - 1].n,
+      at: now()
+    };
+    if (!vol.text) return mem;
+    /* 회차는 지우지 않는다. 권은 그 위에 얹는 것이며, 되돌리기와 검색은 회차를 본다 */
+    const next = {...mem, vols: [...vols, vol], updatedAt: now()};
+    await dbPut('memory', next);
+    toast(volN + '권 · ' + vol.title + ' 으로 접었습니다', 3000);
+    return next;
+  }catch(e){
+    console.warn('권 접기 실패', e);
+    return mem;
+  }
 }
 /* 회차를 어디서 끊을지 — 스무 턴이 차거나, 날이 바뀌면 거기서 닫는다.
    하루가 한 회차가 되면 사람이 기억하는 단위와 맞는다. */
@@ -3181,7 +3435,7 @@ async function maybeSummarize(oldestKept, silent){
     '출력 형식:\n' +
     '{"title":"...","text":"...","state":{"관계":"","분위기":""}}\n\n' +
     '[앞선 회차 — 참고만 한다. 다시 쓰지 않는다]\n' +
-    ((mem.eras || []).map(e => e.n + '회 · ' + e.title).join('\n') || '(없음)') + '\n\n' +
+    ((mem.eras || []).slice(-VOL_ERAS).map(e => eraLabel(e) + ' · ' + e.title).join('\n') || '(없음)') + '\n\n' +
     '[기존 상태]\n' + (fmtState(mem.stateCard) || '(없음)') + '\n\n' +
     '[이번 구간]\n' + batch.map(m => who(m) + ': ' + m.content).join('\n');
 
@@ -3224,8 +3478,9 @@ async function maybeSummarize(oldestKept, silent){
       updatedAt: now()
     };
     await dbPut('memory', next);
-    if (!silent) toast(era.n + '회 · ' + era.title + ' 로 정리했습니다', 3000);
-    return next;
+    if (!silent) toast(eraLabel(era) + ' · ' + era.title + ' 로 정리했습니다', 3000);
+    /* 스무 회차가 찼으면 이어서 한 권으로 접는다 */
+    return await maybeVolume(chatId, next);
   }catch(e){
     /* 요약 실패가 대화를 막아서는 안 된다 */
     if (!silent) toast('요약 실패: ' + e.message);
@@ -3836,10 +4091,18 @@ function renderMsgs(toBottom){
 /* 입력창 체크박스를 켜 두었다면 이미 비용을 감수하겠다는 뜻이므로 다시 묻지 않는다.
    어느 쪽으로 만들든 모델 계층 · 수위 · 상세도는 같은 설정을 쓴다. */
 function askImageFor(msg){
-  const m = imgSpec();
   if ($('cImgAuto')?.checked) return attachImage(msg);
-  if (!confirm(`이 장면의 이미지를 생성합니다.\n모델 ${m?.model_spec?.name || '미지정'} · 예상 비용 $${imgPrice(m).toFixed(3)}` +
-               `\n수위 ${imgLevel().name} · 상세도 ${imgDetail().name} · 계층 ${imgTier() === 'hi' ? '고급' : '기본'}`)) return;
+  const eff = effLevel(msg.content, {});
+  const m = liveModel(eff.key);
+  const set = imgLevel().name;
+  const line = eff.key === imgLevelKey()
+    ? '수위 ' + set
+    : '수위 ' + set + ' → 이 장면은 ' + eff.name;
+  if (!confirm('이 장면의 이미지를 생성합니다.\n' +
+               '모델 ' + (m?.model_spec?.name || '미지정') +
+               ' · 예상 비용 $' + imgPrice(m).toFixed(3) + '\n' +
+               line + ' · 상세도 ' + imgDetail().name +
+               ' · ' + (imgTier() === 'hi' ? '고급' : '기본'))) return;
   attachImage(msg);
 }
 
@@ -3917,6 +4180,9 @@ async function rebuildMemory(chatId, msgs){
   mem.eras = (mem.eras || []).filter(e => e.to <= lastTurn);
   mem.eras.forEach((e, i) => { e.n = i + 1; });
   const lost = mem.eras.length < before;
+  /* 권은 회차 위에 얹은 것이므로, 담고 있던 회차가 사라지면 권도 사라져야 한다.
+     남겨 두면 「3권인데 회차는 40개」 같은 상태가 되어 다음 권부터 번호가 어긋난다. */
+  mem.vols = (mem.vols || []).filter(v => v.to <= mem.eras.length);
   mem.summarizedUpTo = mem.eras.length ? mem.eras[mem.eras.length - 1].to : -1;
   mem.updatedAt = now();
   await dbPut('memory', mem);
@@ -4725,19 +4991,26 @@ function editGenreSlot(slot){
   const def = GENRES.find(x => x.key === g.key);
   const pool = def?.slots?.[slot] || [];
   const put = async v => {
-    await saveGenre({...g, slots: {...g.slots, [slot]: v},
-                     text: rollGenre(g.key, {...g.slots, [slot]: v}, g).text});
-    genreSheet();
+    const next = {...g.slots, [slot]: v};
+    await saveGenre({...g, slots: next, text: rollGenre(g.key, next, g).text});
   };
+  const again = () => editGenreSlot(slot);
+  const chips = ['', ...pool].map(v =>
+    '<button data-gv="' + esc(v) + '"' + (v === (g.slots[slot] || '') ? ' class="on"' : '') + '>' +
+    (v ? esc(v) : '적용 안함') + '</button>').join('');
   sheet(g.name + ' · ' + slot, [
-    {info: true, html: '<span class="pguide">지금 <b>' + esc(g.slots[slot]) + '</b></span>'},
+    {info: true, html:
+      '<span class="gsecT2">지금</span>' +
+      '<div class="gNow">' + esc(g.slots[slot] || '(적용 안함)') + '</div>' +
+      '<span class="gsecT2">고르기</span>' +
+      '<div class="gChips">' + chips + '</div>'},
     {label: (g.lock?.[slot] ? '🔒 잠금 풀기' : '이 칸 잠그기 — 다시 굴려도 안 바뀝니다'),
+     keep: again,
      run: async () => {
        const lock = {...(g.lock || {})};
        lock[slot] ? delete lock[slot] : (lock[slot] = true);
        await saveGenre({...g, lock});
        toast(lock[slot] ? '잠갔습니다' : '잠금을 풀었습니다');
-       genreSheet();
      }},
     {label:'직접 적기', run: () => {
       $('editWho').textContent = g.name + ' · ' + slot;
@@ -4746,11 +5019,19 @@ function editGenreSlot(slot){
       $('editOk').onclick = async () => {
         const v = $('editTa').value.trim();
         closeEdit();
-        if (v) await put(v);
+        await put(v);
       };
-    }},
-    ...pool.map(v => ({label: (v === g.slots[slot] ? '● ' : '○ ') + v, run: () => put(v)}))
+    }}
   ], genreSheet);
+
+  /* 칩은 그 자리에서 표시만 옮긴다. 창을 다시 그리면 스크롤이 튄다 */
+  $('sheetIn').querySelectorAll('[data-gv]').forEach(b => b.onclick = async () => {
+    await put(b.dataset.gv);
+    $('sheetIn').querySelectorAll('[data-gv]').forEach(x =>
+      x.classList.toggle('on', x.dataset.gv === b.dataset.gv));
+    const now = $('sheetIn').querySelector('.gNow');
+    if (now) now.textContent = b.dataset.gv || '(적용 안함)';
+  });
 }
 function changeGenre(){
   sheet('바꿀 장르', GENRES.map(x => ({
@@ -4773,26 +5054,27 @@ function changeGenre(){
 /* 세로로 열세 줄이던 것을 아이콘 격자로 바꾼다.
    자주 쓰는 것이 위에 오고, 지금 값은 이름 아래에 작게 적어 둔다. */
 const CHAT_MENU = [
-  {i:'📖', t:'소설',    run: () => openNovel(),
-   now: () => (S.chat?.novel?.sections || []).length ? '작성됨' : ''},
-  {i:'🖼', t:'이미지',  run: () => imgModelSheet(),
-   now: () => imgLevel().name + ' · ' + (imgTier() === 'hi' ? '고급' : '기본')},
+  {i:'🤖', t:'모델',    run: () => chatModelSheet(),
+   now: () => (S.chat?.model || '').split('/').pop() || '기본'},
   {i:'🎭', t:'장르',    run: () => genreSheet(),
    now: () => S.chat?.genre?.name
      ? S.chat.genre.name + ' · ' + paceOf(S.chat.genre.pace).t
      : '없음'},
-  {i:'👥', t:'조연',    run: () => castSheet(),
-   now: () => (S.chat?.cast?.length || 0) + '명'},
-  {i:'🧠', t:'기억',    run: () => openMemory()},
-  {i:'🤖', t:'모델',    run: () => chatModelSheet()},
+  {i:'🖼', t:'이미지',  run: () => imgModelSheet(),
+   now: () => imgLevel().name + ' · ' + (imgTier() === 'hi' ? '고급' : '기본')},
   {i:'🗂', t:'이미지 접기', run: () => toggleAllImages(!allFolded()),
    now: () => allFolded() ? '접힘' : '펼침'},
-  {i:'⇧', t:'내보내기', run: () => exportChat(S.chat.id)},
+  {i:'🧠', t:'기억',    run: () => openMemory()},
+  {i:'👥', t:'조연',    run: () => castSheet(),
+   now: () => (S.chat?.cast?.length || 0) + '명'},
   {i:'👤', t:'대상 편집', run: () => editChar(S.character.id, true)},
   {i:'🙂', t:'내 정보',  run: () => S.persona ? editPersona(S.persona.id, true)
                                              : toast('지정된 주인공이 없습니다')},
-  {i:'❓', t:'사용법',   run: () => openGuide(true)},
-  {i:'⚠', t:'맥락 정리', run: () => resetContext(), danger: true}
+  {i:'⚠', t:'맥락 정리', run: () => resetContext(), danger: true},
+  {i:'📖', t:'소설',    run: () => openNovel(),
+   now: () => (S.chat?.novel?.sections || []).length ? '작성됨' : ''},
+  {i:'⇧', t:'내보내기', run: () => exportChat(S.chat.id, false, chatSettingsMenu)},
+  {i:'❓', t:'사용법',   run: () => openGuide(true, chatSettingsMenu)}
 ];
 /* 채팅 화면 우상단의 설정 격자. 대화 목록의 chatMenu(id) 와는 다른 창이다 */
 function chatSettingsMenu(){
@@ -5308,7 +5590,13 @@ async function streamInto(target, msgs, signal){
    한국어 서술을 그대로 넣으면 품질이 무너지므로 영어 태그로 한 번 옮겨서 보낸다.   */
 
 const imgKey   = () => (localStorage.getItem(LS.imgKey) || '').trim();
+/* 옛 단일 모델 설정. 수위별 묶음이 생기기 전의 것이라 이제 화면 표기에 쓰지 않는다 */
 const imgSpec  = () => S.imgModels.find(m => m.id === localStorage.getItem(LS.imgModel));
+/* 지금 이 대화에서 실제로 쓰일 모델. 수위와 품질을 모두 본다 */
+function liveModel(levelKey){
+  const plan = imgPlan(levelKey || imgLevelKey(), imgTier());
+  return S.imgModels.find(m => m.id === plan.chain[0]);
+}
 const imgPrice = m => (m?.model_spec?.pricing?.generation?.usd)
                    ?? (m?.model_spec?.pricing?.resolutions?.['1K']?.usd) ?? 0;
 
@@ -5349,18 +5637,24 @@ function renderLevelCards(){
       '<div class="lvTop"><b>' + esc(L.name) + '</b><span>' + esc(L.tone) + '</span></div>' +
       row('m',  '기본',   M.m) +
       row('fb', '폴백',   M.fb) +
-      row('hiM','고급',   H.hiM || M.m,  !H.hiM) +
-      row('hiFb','고급 폴백', H.hiFb || M.fb, !H.hiFb) +
+      row('hiM','고급',   H.hiM || levelModels(k, 'hi').m,  !H.hiM) +
+      row('hiFb','고급 폴백', H.hiFb || levelModels(k, 'hi').fb, !H.hiFb) +
+      (H.hiM ? '' : '<div class="lvAuto">고급은 ' +
+        esc((LEVEL_WANT[k] || []).slice(0, 2).join(' · ')) +
+        ' 에 강한 모델을 $' + imgCap().toFixed(2) + ' 안에서 자동으로 고릅니다 · 눌러서 직접 정할 수 있습니다</div>') +
       '</div>';
   }).join('');
   box.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => {
     const k = b.dataset.lv, w = b.dataset.w;
     const q = ($('sImgFilter').value || '').trim().toLowerCase();
     const onlyUnc = k !== 'soft' || $('sImgUnc').checked;
+    const cap = imgCap();
     const list = S.imgModels
       .filter(m => !onlyUnc || m.model_spec?.uncensored)
-      .filter(m => !q || (m.id + ' ' + (m.model_spec?.name || '')).toLowerCase().includes(q));
-    if (!list.length) return toast('조건에 맞는 모델이 없습니다');
+      .filter(m => !q || (m.id + ' ' + (m.model_spec?.name || '')).toLowerCase().includes(q))
+      /* 상한을 넘는 것은 아예 안 보여 준다. 실수로 고르면 장당 값이 몇 배가 된다 */
+      .filter(m => imgPrice(m) <= cap);
+    if (!list.length) return toast('$' + cap.toFixed(2) + ' 안에서 조건에 맞는 모델이 없습니다');
     const W = {m:'기본', fb:'폴백', hiM:'고급', hiFb:'고급 폴백'}[w] || w;
     sheet(IMG_LEVEL[k].name + ' · ' + W + ' 모델',
       list.map(m => ({
@@ -5376,7 +5670,6 @@ function renderLevelCards(){
 function renderImgSelect(){ renderLevelCards(); showImgCost(); }
 
 function showImgCost(){
-  const m = imgSpec();
   const k = localStorage.getItem(LS.imgLevel) || 'explicit';
   const t = imgTier();
   const mm = S.imgModels.find(x => x.id === levelModels(k, t).m);
@@ -5907,7 +6200,7 @@ function extractImageRequest(text){
 }
 function askImage(rest){
   if (!imgKey()){ show('vSettings'); return toast('설정에서 Venice API 키를 먼저 입력하십시오'); }
-  const m = imgSpec();
+  const m = liveModel();
   const cost = imgPrice(m);
   const card = document.createElement('div');
   card.className = 'msg sys';
@@ -5962,6 +6255,10 @@ function imgModelSheet(){
       '<div class="ipNote">' +
       (own ? '이 대화에만 걸어 둔 수위입니다' : '설정 기본값을 따르는 중입니다') +
       autoNote(lk) + '</div>'},
+    {info: true, html:
+      '<label class="ipChk"><input type="checkbox" id="ipAuto"' + (autoDown() ? ' checked' : '') + '>' +
+      '<span>장면에 맞춰 수위 낮추기</span></label>' +
+      '<button class="ipWhy" id="ipAutoWhy">i</button>'},
     {label: '⚙ 모델 묶음 바꾸러 가기 — 고급에 다른 모델을 둘 수 있습니다',
      run: () => show('vSettings')}
   ], chatSettingsMenu);
@@ -5982,13 +6279,31 @@ function imgModelSheet(){
     setImgTier(b.dataset.tier);
     imgModelSheet();
   });
+  const chk = $('ipAuto');
+  if (chk) chk.onchange = async () => {
+    S.chat.imgAuto = chk.checked ? 1 : 0;
+    await dbPut('chats', S.chat);
+    imgModelSheet();
+  };
+  const why = $('ipAutoWhy');
+  if (why) why.onclick = () => sheet('장면에 맞춰 수위 낮추기', [
+    {info: true, html: '<span class="pguide">' +
+      '켜 두면 <b>그 장면에 없는 것은 그리지 않습니다.</b> 대화만 하는 장면에 걸어 둔 수위를 ' +
+      '그대로 쓰면 장면과 무관한 그림이 나옵니다.<br><br>' +
+      '<b>수위가 내려가면 값도 내려갑니다.</b> 낮은 수위일수록 싼 모델을 쓰기 때문입니다. ' +
+      '끄면 늘 걸어 둔 수위로 그리므로 장당 값이 올라갑니다.<br><br>' +
+      '스크롤을 올려 예전 장면에서 이미지를 만들면 <b>그 장면 기준으로 다시 판정</b>합니다. ' +
+      '설정과 다른 모델이 뜨는 것은 그 때문입니다.' +
+      '<span class="dim">여기서 정한 것은 이 대화에만 남습니다. ' +
+      '새 대화는 설정의 값을 따라갑니다.</span></span>'}
+  ], imgModelSheet);
   paint();
 }
 
 /* 장면이 얌전하면 걸어 둔 수위가 그대로 안 쓰인다.
    그 사실을 화면에 밝히지 않아 「표기와 다르다」는 오해가 났다. */
 function autoNote(lk){
-  if (localStorage.getItem(LS.imgAuto) === '0') return '';
+  if (!autoDown()) return '';
   const last = [...(S.messages || [])].reverse().find(m => m.role === 'assistant');
   if (!last) return '';
   const eff = effLevel(last.content, {});
@@ -6211,17 +6526,8 @@ async function openMemory(){
   const mem = await getMem(S.chat.id);
   $('meSub').textContent = S.character.name;
   $('meSummary').value = mem.summary || '';
-  /* 회차는 한 번 적히면 다시 쓰지 않는다. 여기서는 무엇이 쌓였는지 보여 주기만 한다. */
-  const eras = mem.eras || [];
-  $('meEras').innerHTML = eras.length
-    ? '<b>쌓인 회차 ' + eras.length + '개</b>' +
-      eras.map(e => '<div class="eraRow"><i>' + e.n + '회</i>' +
-        '<span><b>' + esc(e.title) + '</b>' +
-        '<u>' + (e.from + 1) + '~' + (e.to + 1) + '턴</u>' +
-        '<em>' + esc(e.text) + '</em></span></div>').join('')
-    : '<b>아직 쌓인 회차가 없습니다</b><div class="shint">' +
-      '대화가 창 밖으로 밀려나면 ' + ERA_MIN + '턴 이상씩 회차로 접힙니다. ' +
-      '한 번 접힌 회차는 다시 고쳐 쓰지 않으므로 옛 사건이 사라지지 않습니다.</div>';
+  S.mem = mem;
+  paintEras('');
   $('meState').value = fmtState(mem.stateCard);
   const pend = S.messages.filter(m => m.turnIndex > mem.summarizedUpTo).length;
   const dr = mem.drift && Object.entries(mem.drift).filter(([,v]) => v);
@@ -6234,6 +6540,98 @@ async function openMemory(){
     (mem.updatedAt ? ` 최종 갱신 ${relTime(mem.updatedAt)}.` : '');
   show('vMemory');
 }
+/* 한 회차 본문이 길면 세 줄만 보이고 나머지는 「…」 로 접는다.
+   회차가 수백 개가 되면 접지 않고는 훑을 수가 없다. */
+const ERA_LINES = 3;
+S.eraOpen = S.eraOpen || {};
+
+function eraHit(e, q){
+  if (!q) return true;
+  return (e.title + ' ' + e.text).toLowerCase().includes(q);
+}
+/* 세 줄이 넘칠지는 글자 수로 어림한다. 폭을 모르므로 재지 않고 잡는다 */
+const ERA_FOLD_AT = 96;
+function eraBody(key, text, open){
+  const t = String(text || '');
+  if (t.length <= ERA_FOLD_AT || open)
+    return '<em class="' + (open ? 'op' : '') + '">' + esc(t) +
+      (t.length > ERA_FOLD_AT ? ' <a class="eraMore" data-fold="' + key + '">접기</a>' : '') + '</em>';
+  return '<em>' + esc(t.slice(0, ERA_FOLD_AT)) +
+    '<a class="eraMore" data-fold="' + key + '">…</a></em>';
+}
+
+function paintEras(q){
+  const mem = S.mem || {};
+  const eras = mem.eras || [];
+  const vols = mem.vols || [];
+  const key = String(q || '').trim().toLowerCase();
+  const box = $('meEras');
+  if (!eras.length && !vols.length){
+    box.innerHTML = '<b>아직 쌓인 회차가 없습니다</b><div class="shint">' +
+      '대화가 창 밖으로 밀려나면 ' + ERA_MIN + '턴 이상씩 회차로 접힙니다. ' +
+      '회차 ' + VOL_ERAS + '개가 차면 다시 한 권으로 접힙니다. ' +
+      '한 번 접힌 것은 고쳐 쓰지 않으므로 옛 사건이 사라지지 않습니다.</div>';
+    return;
+  }
+  const vHit = vols.filter(v => eraHit(v, key));
+  const eHit = eras.filter(e => eraHit(e, key));
+  const head = key
+    ? '<b>「' + esc(q.trim()) + '」 — 권 ' + vHit.length + ' · 회차 ' + eHit.length + '</b>'
+    : '<b>' + (vols.length ? '쌓인 ' + vols.length + '권 · ' : '') + '회차 ' + eras.length + '개</b>';
+
+  const rowV = v => '<div class="eraRow vol" data-v="' + v.n + '">' +
+    '<i>' + v.n + '권</i><span><b>' + esc(v.title) + '</b>' +
+    '<u>' + v.from + '~' + v.to + '회</u>' +
+    eraBody('v' + v.n, v.text, S.eraOpen['v' + v.n]) + '</span></div>';
+  const rowE = e => '<div class="eraRow" data-e="' + e.n + '">' +
+    '<i>' + volNo(e.n) + '-' + volPos(e.n) + '</i><span><b>' + esc(e.title) + '</b>' +
+    '<u>' + (e.from + 1) + '~' + (e.to + 1) + '턴</u>' +
+    eraBody('e' + e.n, e.text, S.eraOpen['e' + e.n]) + '</span></div>';
+
+  /* 검색 중이 아니면 접힌 회차는 권 아래로 숨긴다. 찾을 때는 숨은 것도 보여야 한다 */
+  const folded = vols.length * VOL_ERAS;
+  const loose = eHit.filter(e => key || e.n > folded);
+  const hidden = key ? 0 : eras.filter(e => e.n <= folded).length;
+
+  box.innerHTML = head +
+    vHit.map(rowV).join('') +
+    (hidden ? '<div class="eraNote">위 권에 접힌 회차 ' + hidden + '개는 감췄습니다 · 찾으면 나옵니다</div>' : '') +
+    loose.map(rowE).join('') +
+    (key && !vHit.length && !eHit.length ? '<div class="eraNote">찾는 것이 없습니다</div>' : '');
+
+  box.querySelectorAll('[data-fold]').forEach(a => a.onclick = ev => {
+    ev.stopPropagation();
+    const k = a.dataset.fold;
+    S.eraOpen[k] = !S.eraOpen[k];
+    paintEras($('meFind').value);
+  });
+  /* 권도 회차도 눌러서 고친다. 자동으로 쌓이지만 틀린 채로 굳으면 곤란하다 */
+  box.querySelectorAll('[data-e]').forEach(el => el.onclick = () => editEra('e', +el.dataset.e));
+  box.querySelectorAll('[data-v]').forEach(el => el.onclick = () => editEra('v', +el.dataset.v));
+}
+
+/* 제목과 본문을 손으로 고친다 */
+function editEra(kind, num){
+  const mem = S.mem; if (!mem) return;
+  const list = kind === 'v' ? (mem.vols || []) : (mem.eras || []);
+  const it = list.find(x => x.n === num); if (!it) return;
+  const label = kind === 'v' ? (it.n + '권') : (volNo(it.n) + '권 ' + volPos(it.n) + '회');
+  $('editWho').textContent = label + ' 고치기';
+  $('editTa').value = it.title + '\n\n' + it.text;
+  openEdit(false);
+  $('editOk').onclick = async () => {
+    const v = $('editTa').value.trim();
+    const nl = v.indexOf('\n');
+    it.title = (nl < 0 ? v : v.slice(0, nl)).trim().slice(0, 24);
+    it.text  = (nl < 0 ? '' : v.slice(nl)).trim().slice(0, (kind === 'v' ? VOL_CHARS : ERA_CHARS) + 60);
+    mem.updatedAt = now();
+    await dbPut('memory', mem);
+    closeEdit();
+    paintEras($('meFind').value);
+    toast(label + ' 을 고쳤습니다');
+  };
+}
+
 /* 입력창 위 숫자들이 무엇인지 아무 데도 안 적혀 있었다 */
 $('mHelp').onclick = () => sheet('입력창 위 숫자', [
   {info: true, html: '<span class="pguide">' +
@@ -6250,6 +6648,7 @@ $('noteClear').onclick = () => {
   if (!confirm('알림을 모두 지웁니다.')) return;
   saveNotes([]); paintNotes(); toast('비웠습니다');
 };
+$('meFind').oninput = () => paintEras($('meFind').value);
 $('meBack').onclick = () => show('vChat');
 $('meSave').onclick = async () => {
   const mem = await getMem(S.chat.id);
@@ -6640,10 +7039,12 @@ const GENRES = [
   {
     key:'romance', name:'연애', desc:'가까워지는 과정 자체가 사건이 됩니다',
     /* 연애는 밀고 당기는 리듬이 뼈대다. 사건보다 거리의 변화가 중심이다. */
-    plot:'두 사람은 이미 서로를 알고 있으나 아직 선을 넘지 않았다. {계기}로 예정에 없던 시간을 함께 보내게 되고, ' +
-         '그때 {틈}이 드러난다. 다만 {장애}가 있어 한 걸음 나아갈 때마다 반 걸음을 물린다. ' +
-         '마음이 흔들릴 때면 {버릇}이 나오는데 본인은 그것을 모른다. ' +
-         '{분기}가 오면 미루던 것을 정해야 한다. 결말은 정해져 있지 않다.',
+    plot:'두 사람은 이미 서로를 알고 있으나 아직 선을 넘지 않았다. ' +
+         '{계기}로 예정에 없던 시간을 함께 보내게 되기도 한다. ' +
+         '{틈}이 드러나 상대를 다시 보게 되기도 한다. ' +
+         '다만 {장애}가 있어, 한 걸음 나아가다가도 가끔은 반 걸음을 물린다. ' +
+         '마음이 흔들릴 때면 {버릇}이 나오기도 하는데, 본인은 그것을 모른다. ' +
+         '{분기}가 오면 미루던 것을 정해야 한다. 이것은 두 사람의 시작일 뿐이다.',
     slots:{
       계기:['갑작스러운 비','끊긴 막차','정전','예약이 겹친 자리','두고 간 물건','대신 받은 전화','같은 병원 대기실','엘리베이터 고장','같은 결혼식 하객 자리','맡아 준 택배'],
       틈:['평소와 다른 목소리','지친 얼굴을 숨기지 못한 순간','아무에게도 안 하던 이야기','혼자 있을 때의 습관','서툰 손끝','오래된 흉터'],
@@ -6655,9 +7056,10 @@ const GENRES = [
   {
     key:'thriller', name:'스릴러', desc:'쫓기거나 쫓습니다. 시간이 늘 모자랍니다',
     /* 스릴러는 정보가 뒤집히는 순서가 뼈대다. */
-    plot:'{사건}이 이미 벌어진 뒤에서 이야기가 시작된다. {단서}가 하나씩 드러나지만 그것이 가리키는 방향은 계속 바뀐다. ' +
-         '{시한} 결론을 내야 하고, 잘못 짚으면 되돌릴 수 없다. ' +
-         '{오해}는 한동안 사실처럼 굴러가다 뒤늦게 무너진다. 진실에 닿으려면 {대가}를 각오해야 한다. ' +
+    plot:'{사건}이 이미 벌어진 뒤에서 이야기가 시작된다. {시한} 결론을 내야 하고, 잘못 짚으면 되돌릴 수 없다. ' +
+         '{단서}가 드러나기도 하는데, 그것이 가리키는 방향은 처음 보이던 쪽과 어긋나기도 한다. ' +
+         '{오해}가 사실처럼 굴러가기도 한다. 언젠가는 무너지지만 그전까지는 아무도 모른다. ' +
+         '진실에 닿으려면 {대가}를 각오해야 한다. ' +
          '누구를 믿을지가 매 장면의 선택이다.',
     slots:{
       사건:['이웃의 실종','같은 건물에서 난 화재','계좌에서 사라진 돈','받은 적 없는 소포','지워진 하루의 기억','목격한 뺑소니','문 앞에 놓인 낯선 물건'],
@@ -6671,8 +7073,9 @@ const GENRES = [
     key:'fantasy', name:'현대 판타지', desc:'평범한 도시에 설명되지 않는 것이 섞여 있습니다',
     /* 판타지는 규칙과 대가가 뼈대다. 능력 자체보다 그 값이 이야기를 만든다. */
     plot:'{능력}이 어느 날 갑자기 생겼거나, 오래전부터 있었으나 이제야 드러났다. ' +
-         '{규칙}을 지키는 한 탈이 없지만, 어기면 {대가}가 반드시 따른다. ' +
-         '{추적자}가 그 흔적을 좇고 있고, {목격자}는 이미 무언가를 눈치챘다. ' +
+         '{규칙}을 지키는 한 탈이 없지만, 어기면 {대가}가 따른다. ' +
+         '{추적자}가 그 흔적을 좇고 있기도 하다. ' +
+         '{목격자}가 무언가를 눈치채기도 한다. ' +
          '일상을 지키려면 능력을 숨겨야 하고, 지키고 싶은 것을 지키려면 써야 한다.',
     slots:{
       능력:['남의 다음 한마디를 미리 듣는 힘','만진 물건의 어제를 보는 힘','짧게 시간을 되돌리는 힘','거짓말을 소리로 구별하는 귀','다친 곳을 옮겨 받는 손','잠든 사람의 꿈에 들어가는 재주','한 사람의 이름을 잊히게 하는 힘'],
@@ -6685,8 +7088,9 @@ const GENRES = [
   {
     key:'intrigue', name:'권력과 음모', desc:'자리 · 돈 · 정보를 두고 겨룹니다. 배신과 뒷거래가 섞입니다',
     /* 암투를 이 이름으로 올린다. 정치 · 음모 · 배신 · 뒷거래를 함께 담는 넓은 자리다. */
-    plot:'{판}에서 {몫}을 두고 여럿이 겨룬다. 정면으로는 이길 수 없어 {수단}이 오간다. ' +
-         '{약점}이 잡혀 있고, {협력자}가 손을 내밀지만 그 손이 언제 놓일지는 알 수 없다. ' +
+    plot:'{판}에서 {몫}을 두고 여럿이 겨룬다. 정면으로는 이길 수 없어 {수단}이 오가기도 한다. ' +
+         '{약점}이 잡혀 있어 마음대로 밀어붙이지 못하기도 한다. ' +
+         '{협력자}가 손을 내밀기도 하는데, 그 손이 언제 놓일지는 알 수 없다. ' +
          '배신은 예고 없이 오되 이유가 없지는 않다. 가장 그럴 법한 자리는 {배신}이다. ' +
          '이기는 것보다 무엇을 내주지 않을지가 이 이야기의 문제다.',
     slots:{
@@ -6702,8 +7106,9 @@ const GENRES = [
     key:'vrmmo', name:'가상현실 게임', desc:'규칙이 분명한 세계. 다만 규칙이 전부는 아닙니다',
     /* 게임물은 규칙의 빈틈이 뼈대다. */
     plot:'{세계}에 접속해 있다. {제약}이 걸려 있어 마음대로 나갈 수 없거나, 나가면 잃는 것이 있다. ' +
-         '{목표}를 이루기 위해 다른 접속자와 협력하거나 겨룬다. ' +
-         '{빈틈}을 아는 사람이 소수 있고, {대가}를 치른 뒤에야 그것이 보인다. ' +
+         '{목표}를 이루기 위해 다른 접속자와 협력하거나 겨루기도 한다. ' +
+         '{빈틈}이 드러나기도 하는데, 그것을 아는 사람은 많지 않다. ' +
+         '{대가}를 치르는 자리가 오기도 한다. ' +
          '여기서 쌓은 것이 바깥에도 남는지는 아직 모른다.',
     slots:{
       세계:['중세풍 대륙','폐허가 된 근미래 도시','끝없이 이어지는 던전','바다 위 군도','설산 아래 지하 도시','계절이 하루마다 바뀌는 섬'],
@@ -6717,7 +7122,8 @@ const GENRES = [
     key:'daily', name:'잔잔한 일상', desc:'큰 사건 없이, 사소한 것이 쌓여 관계가 됩니다',
     /* 사건이 아니라 반복과 계절이 뼈대인 자리도 하나 있어야 한다. */
     plot:'{자리}에서 두 사람이 자주 마주친다. 특별한 일은 일어나지 않는다. ' +
-         '{반복}이 쌓이면서 서로의 결을 알게 되고, {계절}에 걸쳐 조금씩 달라진다. ' +
+         '{반복}이 쌓이면서 서로의 결을 알게 되기도 한다. ' +
+         '{계절}에 걸쳐 조금씩 달라지기도 한다. ' +
          '{작은일}이 이따금 균형을 흔들지만 곧 제자리로 돌아온다. ' +
          '무엇이 달라졌는지는 한참 뒤에야 보인다.',
     slots:{
@@ -6767,8 +7173,16 @@ function renderGenreCards(){
 /* 「{계기}가」 에 「정전」 을 그냥 끼우면 「정전가」 가 된다.
    {{user}} 에 쓰던 조사 보정을 여기에도 쓴다. */
 function putSlot(text, slot, v){
+  /* 값이 비면 그 칸이 든 문장을 버린다. 조사만 남으면 문장이 깨진다 */
+  if (!String(v || '').trim()) return dropSentence(text, '{' + slot + '}');
   const re = new RegExp('\\{' + slot + '\\}(?:' + JOSA_RE.source + ')?', 'g');
   return text.replace(re, (_, josa) => v + (josa ? fixJosa(v, josa) : ''));
+}
+/* 마침표를 경계로 문장을 나눠, 그 표가 든 것만 걷어 낸다 */
+function dropSentence(text, mark){
+  const out = String(text).split(/(?<=\.)\s+/)
+    .filter(x => !x.includes(mark));
+  return out.join(' ').replace(/\s{2,}/g, ' ').trim();
 }
 function rollGenre(key, manual, keep){
   const g = GENRES.find(x => x.key === key);
@@ -7475,7 +7889,7 @@ async function exportChatJson(chatId){
     JSON.stringify({app:'rpapp-chat', version:DB_VER,
                     exportedAt:new Date().toISOString(), ...d}));
 }
-function exportChat(chatId, silent){
+function exportChat(chatId, silent, back){
   if (silent) return exportChatJson(chatId);
   sheet('이 대화 내보내기', [
     {label:'📖 이 내용을 소설로 재구성하기', run: () => openNovel(true)},
@@ -7492,7 +7906,7 @@ function exportChat(chatId, silent){
                                exportedAt:new Date().toISOString(), ...d}));
       toast('내보냈습니다');
     }}
-  ]);
+  ], back);
 }
 
 /* ═══════════════ 캐릭터 ═══════════════ */
@@ -7866,13 +8280,15 @@ function popEdit(viewId){
   S.overEdit = viewId;
 }
 /* 팝업을 닫을 때는 화면을 원래 자리로 되돌린다. 안 되돌리면 다음에 전체 화면으로 못 연다 */
-function popClose(){
+function popClose(back){
   if (!S.overEdit) return false;
   const v = $(S.overEdit);
   v.classList.remove('on');
   $('app').appendChild(v);
   $('overWrap').classList.remove('on');
   S.overEdit = null;
+  /* 들어온 자리로 돌려 놓는다. 저장하고 바로 이어 쓸 때는 격자가 걸리적거리므로 뺀다 */
+  if (back !== false && S.chat) chatSettingsMenu();
   return true;
 }
 
@@ -7921,6 +8337,8 @@ function editChar(id, over){
       x.style.outline = x.dataset.c === e.accent ? '2px solid var(--tx)' : '');
   });
   $('ceMenu').style.display = c ? 'grid' : 'none';
+  buildCharTabs();          /* 아직 안 갈렸으면 여기서 가른다 */
+  setCharPane(CE_PANES[0].key);
   if (over) popEdit('vCharEdit'); else show('vCharEdit');
 }
 $('ceBack').onclick = () => {
@@ -7980,7 +8398,7 @@ $('ceSave').onclick = async () => {
   if (live) S.character = {...e};
   await loadAll(); renderChars();
   /* 대화 위에 얹어서 고쳤으면 목록으로 나가지 않는다. 대화가 그 자리에 그대로 있어야 한다 */
-  if (popClose()) renderMsgs(false); else show('vChars');
+  if (popClose(false)) renderMsgs(false); else show('vChars');
   const head = filled.length ? '저장했습니다 — ' + filled.join(' · ') + '을 자동으로 채웠습니다' : '저장했습니다';
   toast(live ? head + ' · 진행 중인 대화에 바로 반영됩니다' : head, live || filled.length ? 4000 : undefined);
 };
@@ -8186,7 +8604,7 @@ $('peSave').onclick = async () => {
   const live = S.chat && S.chat.personaId === e.id;
   if (live) S.persona = {...e};
   await loadAll(); renderPersonas();
-  const wasPop = popClose();
+  const wasPop = popClose(false);
   if (wasPop){ renderMsgs(false); toast('이후 대화부터 반영됩니다'); }
   else if (live){ show('vChat'); renderMsgs(false); toast('이후 대화부터 반영됩니다'); }
   else { show('vPersonas'); toast('저장했습니다'); }
@@ -8352,11 +8770,9 @@ function buildCharTabs(){
 }
 function setCharPane(key){
   if (!CE_PANES.some(p => p.key === key)) key = CE_PANES[0].key;
-  $('vCharEdit').querySelectorAll('[data-cpane]').forEach(el => {
-    const on = el.dataset.cpane === key;
-    if (el.tagName === 'BUTTON') el.classList.toggle('on', on);
-    else el.style.display = on ? '' : 'none';
-  });
+  S.cePane = key;
+  document.querySelectorAll('[data-cpane]').forEach(el =>
+    el.classList.toggle('on', el.dataset.cpane === key));
   const sc = $('vCharEdit').querySelector('.scroll');
   if (sc) sc.scrollTop = 0;
 }
@@ -8424,6 +8840,7 @@ function loadSettings(){
   renderGenreCards();
   syncThumbBtns();
   $('sImgDetail').value = localStorage.getItem(LS.imgDetail) || 'ultra';
+  $('sImgCap').value = String(imgCap().toFixed(2));
   $('sImgAuto').checked = localStorage.getItem(LS.imgAuto) !== '0';
   $('sPreHint').checked = localStorage.getItem(LS.preHint) === '1';
   $('sTaste').value  = localStorage.getItem(LS.taste) || DEFAULT_TASTE;
@@ -8475,6 +8892,11 @@ function showMaxTokRec(){
   el.textContent = String(turnOut());
 }
 $('sPen').onchange    = () => localStorage.setItem(LS.penalty, $('sPen').value);
+$('sImgCap').onchange = () => {
+  localStorage.setItem(LS.imgCap, $('sImgCap').value);
+  renderLevelCards();
+  toast('한 장에 최대 $' + $('sImgCap').value + ' 까지 씁니다');
+};
 $('sImgAuto').onchange = () => {
   const on = $('sImgAuto').checked;
   localStorage.setItem(LS.imgAuto, on ? '1' : '0');
