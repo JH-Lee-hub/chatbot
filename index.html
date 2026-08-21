@@ -257,7 +257,15 @@
   #sheet.on{display:flex}
   #sheetIn{background:var(--panel);width:100%;border-radius:16px 16px 0 0;padding:8px 12px calc(14px + var(--safe-b));
            border-top:1px solid var(--line2);max-height:80vh;overflow-y:auto}
-  #sheetIn h3{font-size:13px;color:var(--tx2);margin:10px 4px 8px;font-weight:600}
+  #sheetIn h3{font-size:13px;color:var(--tx2);margin:10px 4px 8px;font-weight:600;
+    display:flex;align-items:center;gap:4px}
+  .mfind{display:flex;gap:6px;margin-bottom:7px}
+  .mfind input{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);
+    border-radius:8px;padding:7px 10px;color:var(--tx);font-size:12.5px;font-family:inherit}
+  .mfind input:focus{outline:none;border-color:var(--acc)}
+  .mfind .btn{padding:6px 12px;font-size:12px}
+  .shBack{background:none;border:none;color:var(--tx2);font-size:19px;line-height:1;
+    padding:0 4px 0 0;margin-left:-4px;font-family:inherit}
   .sitem{display:block;width:100%;text-align:left;padding:13px 12px;border-radius:10px;
          font-size:14.5px;white-space:pre-line;line-height:1.5}
   .sitem::first-line{font-weight:600}
@@ -279,6 +287,12 @@
   .cmGrid u{text-decoration:none;font-size:9.5px;color:var(--tx3);
      max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sinfo{padding:11px 12px;border-radius:10px;background:var(--panel2);margin-bottom:6px}
+  .castForm{display:flex;flex-direction:column;gap:7px}
+  .castForm label{display:flex;align-items:center;gap:9px}
+  .castForm span{flex:0 0 42px;font-size:12px;color:var(--tx3)}
+  .castForm input{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);
+    border-radius:8px;padding:8px 10px;color:var(--tx);font-size:13px;font-family:inherit}
+  .castForm input:focus{outline:none;border-color:var(--acc)}
   .pguide{display:block;font-size:12px;line-height:1.8;color:var(--tx2)}
   .pguide .dim{display:block;margin-top:7px;color:var(--tx3);font-size:11px}
   .stat span[data-keep]{cursor:pointer}
@@ -321,6 +335,14 @@
   .whoStats b u{text-decoration:none;color:var(--tx3);font-weight:400;font-size:12px}
   .whoStats em{display:block;font-style:normal;font-size:10px;color:var(--tx3);margin-top:1px}
   .whoNote{font-size:11px;color:var(--tx3);margin-top:8px;text-align:right}
+  .meEras{margin-top:12px;font-size:12px}
+  .meEras>b{display:block;margin-bottom:7px;color:var(--tx2)}
+  .eraRow{display:flex;gap:9px;padding:8px 0;border-top:1px solid var(--line)}
+  .eraRow>i{flex:0 0 34px;font-style:normal;color:var(--tx3);font-size:11px;padding-top:1px}
+  .eraRow>span{flex:1;min-width:0}
+  .eraRow b{font-size:12.5px}
+  .eraRow u{text-decoration:none;color:var(--tx3);font-size:11px;margin-left:6px}
+  .eraRow em{display:block;font-style:normal;color:var(--tx2);margin-top:3px;line-height:1.6}
   .whoStats div{background:var(--panel2);border:1px solid var(--line);border-radius:8px;
                 padding:6px 2px;text-align:center}
   .whoStats i{display:block;font-style:normal;font-size:10px;color:var(--tx3);margin-bottom:2px}
@@ -385,8 +407,61 @@
   #busy span{font-size:11px;line-height:1.5}
   #busy.warn{border-color:#5c4a2b} #busy.warn span{color:var(--warn)}
   #busy.ok{border-color:#2f5c40} #busy.ok span{color:var(--ok)}
+  #macro{display:flex;gap:5px;padding:0 10px 6px;overflow-x:auto;scrollbar-width:none}
+  #macro::-webkit-scrollbar{display:none}
+  #macro button{flex:0 0 auto;width:60px;padding:5px 0;border-radius:8px;
+    background:var(--panel2);border:1px solid var(--line);color:var(--tx2);
+    font-size:11px;font-family:inherit;white-space:nowrap;overflow:hidden}
+  #macro button.empty{color:var(--tx3);border-style:dashed}
+  #macro button:active{background:var(--line)}
+  #nav button{position:relative}
+  #nav em{position:absolute;top:3px;left:calc(50% + 7px);min-width:15px;height:15px;
+    border-radius:9px;background:var(--acc);color:#0b0d12;font-size:10px;font-style:normal;
+    font-weight:700;line-height:15px;text-align:center;padding:0 3px;display:none}
+  #nav em.on{display:block}
+  #noteBox{margin-bottom:14px}
+  .noteHead{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .noteHead b{flex:1;font-size:13px;color:var(--tx2)}
+  .noteHead .btn{padding:4px 10px;font-size:11px}
+  .noteRow{padding:9px 11px;border-radius:9px;background:var(--panel2);margin-bottom:6px;
+    border-left:2px solid transparent}
+  .noteRow.new{border-left-color:var(--acc)}
+  .noteRow.bad{border-left-color:#e06b6b}
+  .noteRow b{display:block;font-size:13px}
+  .noteRow span{display:block;font-size:12px;color:var(--tx2);margin-top:2px}
+  .noteRow u{display:block;text-decoration:none;font-size:11px;color:var(--tx3);margin-top:3px}
+  .nvRow textarea{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);
+    border-radius:9px;padding:8px 10px;color:var(--tx);font-size:12.5px;font-family:inherit;
+    resize:vertical;line-height:1.6}
+  .nvRow textarea:focus{outline:none;border-color:var(--acc)}
+  .nvTip{font-size:11px;color:var(--tx3);line-height:1.7;padding:2px 2px 6px}
+  .nvTip b{color:var(--tx2)}
+  .nvResume{border:1px solid var(--acc)}
+  .nvResume .btn{width:100%;margin-top:8px}
+  .nvReport{border:1px solid var(--line2)}
+  .nvRep{font-size:12px;line-height:1.8}
+  .nvRep>div{padding-left:14px;position:relative;color:var(--tx2)}
+  .nvRep>div::before{position:absolute;left:0}
+  .nvRep .ok::before{content:'·';color:var(--tx3)}
+  .nvRep .warn{color:var(--tx)}
+  .nvRep .warn::before{content:'!';color:#e0a94a;font-weight:700}
+  .nvRep .bad{color:var(--tx)}
+  .nvRep .bad::before{content:'×';color:#e06b6b;font-weight:700}
+  .busyTop{display:flex;align-items:center;gap:8px}
+  .busyTop b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #busyStop{flex:0 0 auto;background:none;border:1px solid var(--line2);color:var(--tx2);
+    border-radius:7px;padding:2px 9px;font-size:11px;font-family:inherit;display:none}
+  #busyStop.on{display:block}
+  #busyBar{height:3px;border-radius:2px;background:var(--line);margin:6px 0 5px;overflow:hidden;display:none}
+  #busyBar.on{display:block}
+  #busyBar>i{display:block;height:100%;width:3%;background:var(--acc);border-radius:2px;
+    transition:width .25s}
+  #busyBar.wave>i{width:35%;animation:busyWave 1.4s ease-in-out infinite}
+  @keyframes busyWave{0%{margin-left:-35%}100%{margin-left:100%}}
+  #busyEta{display:block;color:var(--tx3);font-size:11px;margin-top:2px}
   #toast{position:fixed;left:50%;bottom:calc(76px + var(--safe-b));transform:translateX(-50%);
-         background:#2b3140;border:1px solid var(--line2);color:var(--tx);padding:9px 15px;border-radius:10px;
+         background:rgba(43,49,64,.88);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+         border:1px solid var(--line2);color:var(--tx);padding:9px 15px;border-radius:10px;
          font-size:13px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s;max-width:86vw;text-align:center}
   #toast.on{opacity:1}
 </style>
@@ -425,7 +500,13 @@
     <div class="bar"><h2>주인공<span class="sub">내가 연기하는 인물</span></h2>
       <button class="ico" id="bRandPersona" title="무작위 생성">🎲</button>
       <button class="ico" id="bNewPersona">＋</button></div>
-    <div class="scroll" id="personaList"></div>
+    <div class="scroll">
+      <div id="noteBox">
+        <div class="noteHead"><b>알림</b><button class="btn" id="noteClear">비우기</button></div>
+        <div id="noteList"></div>
+      </div>
+      <div id="personaList"></div>
+    </div>
   </section>
 
   <!-- ══════════ 설정 ══════════ -->
@@ -460,7 +541,9 @@
         <select id="sFb1"><option value="">(사용 안 함)</option></select>
         <select id="sFb2" style="margin-top:7px"><option value="">(사용 안 함)</option></select>
         <div class="hint">
-          기본 모델이 429나 장애로 실패하면 위에서부터 순서대로 자동 재시도합니다.
+          기본 모델이 429나 장애로 실패하면 위에서부터 순서대로 자동 재시도합니다.<br>
+          <b>모델이 장면 대신 거절문을 돌려줄 때도 넘어갑니다.</b> 문장이 좋지만 수위 제약이 있는 모델을
+          기본으로 두고, 폴백에 무검열 모델을 넣어 두면 막히는 장면만 그쪽에서 받습니다.
           무료 모델은 거부가 잦으므로 최소 하나는 지정하시는 편이 좋습니다.
           위의 <b>모델 검색</b>과 <b>무료만</b>이 이 목록에도 함께 적용됩니다.
         </div>
@@ -481,6 +564,16 @@
           매 요청 끝에서 다시 한번 지시하는 목표 분량입니다. 대화가 길어지면 모델이 앞선 응답의
           길이를 따라 계속 늘리는 성질이 있어, <b>공통 규칙만으로는 제어되지 않습니다.</b>
           <b>최대 출력</b>은 이 값의 1.5배 안팎으로 두십시오. 너무 낮으면 문장이 잘립니다.
+        </div>
+      </div>
+      <div class="fld">
+        <label class="sw"><input type="checkbox" id="sWake">
+          <span>작업 중에는 화면이 꺼지지 않게 (기본 꺼짐)</span></label>
+        <div class="hint">
+          켜면 소설을 쓰는 동안 <b>화면이 저절로 꺼지지 않습니다.</b> 배터리를 그만큼 씁니다.<br>
+          화면이 꺼지면 브라우저가 탭을 얼리고, 오래 얼어 있으면 탭을 버립니다. 그러면 작업이 거기서 멈춥니다.
+          이 설정은 그 일이 일어나지 않게 막아 한 번에 끝나게 합니다.<br>
+          <b>켜지 않아도 됩니다.</b> 소설은 장마다 저장되므로, 멈춰도 돌아와서 남은 장만 이어 쓰면 됩니다.
         </div>
       </div>
       <div class="fld">
@@ -696,7 +789,9 @@
       <span>전송 <b id="mCtx">—</b></span>
       <span><button id="mRecall" style="font-size:10.5px;color:var(--tx3)">소환 <b>—</b></button></span>
       <span id="mModel"></span>
+      <span><button id="mHelp" style="font-size:10.5px;color:var(--tx3)">?</button></span>
     </div>
+    <div id="macro"></div>
     <div id="composer">
       <label id="cImgAutoWrap" title="전송 시 자동으로 이미지 생성">
         <input type="checkbox" id="cImgAuto"><span>🖼</span>
@@ -720,12 +815,18 @@
     <div id="novelFoot">
       <button class="btn" id="nvModelBtn">모델 <b id="nvModel">—</b></button>
       <div class="nvRow">
-        <input type="text" id="novelOnceIn" placeholder="이번만 반영 — 예: 3장을 짧게">
+        <textarea id="novelOnceIn" rows="2"
+          placeholder="이번만 — 이 요청은 지금 누르는 한 번에만 씁니다&#10;예: 3장을 절반 길이로 · 이 장은 비 오는 밤으로 · 대사를 더 짧게"></textarea>
         <button class="btn" id="novelOnce">적용</button>
       </div>
       <div class="nvRow">
-        <input type="text" id="novelKeepIn" placeholder="계속 적용 — 예: 1인칭으로, 대사를 줄여서">
+        <textarea id="novelKeepIn" rows="2"
+          placeholder="계속 — 설계도에 새겨 이후 모든 장에 씁니다&#10;예: 1인칭 현재시제로 · 지문을 길게, 대사를 줄여서 · 인물의 속마음을 쓰지 말고"></textarea>
         <button class="btn" id="novelKeep">새기기</button>
+      </div>
+      <div class="nvTip">
+        <b>적용</b> 은 지금 이 한 번에만 씁니다. 장 카드의 「고치기」를 누르면 그 장에 들어갑니다.<br>
+        <b>새기기</b> 는 설계도에 남겨 이후 쓰는 모든 장에 계속 씁니다. 이미 쓴 장을 다시 쓸지 물어봅니다.
       </div>
       <div class="row">
         <button class="btn" id="novelPlan">설계도 뽑기</button>
@@ -963,7 +1064,8 @@
     <div class="scroll">
       <div class="fld">
         <label>지금까지의 이야기</label>
-        <textarea id="meSummary" rows="9" placeholder="아직 요약이 없습니다."></textarea>
+        <textarea id="meSummary" rows="5" placeholder="회차로 접히기 전의 이야기가 있으면 여기에 적습니다."></textarea>
+        <div id="meEras" class="meEras"></div>
         <div class="hint">
           캐릭터의 장기 기억입니다. 자동 갱신되지만 <b>직접 고칠 수 있습니다.</b>
           틀린 내용이 쌓이면 이후 대화가 계속 어긋나므로, 가끔 확인하시는 편이 좋습니다.
@@ -989,7 +1091,7 @@
   <nav id="nav">
     <button data-v="vChars"><i>🎭</i>대상</button>
     <button data-v="vChats" class="on"><i>💬</i>대화</button>
-    <button data-v="vPersonas"><i>🙂</i>내 정보</button>
+    <button data-v="vPersonas"><i>🙂</i>내 정보<em id="navNote"></em></button>
     <button data-v="vSettings"><i>⚙️</i>설정</button>
   </nav>
 </div>
@@ -1039,7 +1141,12 @@
     <button class="btn pri" id="editOk">저장</button>
   </div>
 </div></div>
-<div id="busy"><b id="busyWhat"></b><span id="busyCan"></span></div>
+<div id="busy">
+  <div class="busyTop"><b id="busyWhat"></b><button id="busyStop" type="button">중지</button></div>
+  <div id="busyBar"><i></i></div>
+  <span id="busyCan"></span>
+  <span id="busyEta"></span>
+</div>
 <div id="toast"></div>
 <input type="file" id="filePick" accept=".json" style="display:none">
 
@@ -1060,6 +1167,7 @@ const LS = {
   thumbs:'rp_thumbs', setPane:'rp_setpane', genreDef:'rp_genredef', genreFill:'rp_genrefill', genreSlots:'rp_genreslots', taste:'rp_taste', ageMin:'rp_agemin', ageMax:'rp_agemax', noReason:'rp_noreason',
   len:'rp_len', imgTxt:'rp_imgtxt', novelModel:'rp_novelmodel', lvModels:'rp_lvmodels', imgLevel:'rp_imglevel', imgDetail:'rp_imgdetail',
   charSort:'rp_charsort', chatSort:'rp_chatsort', guide:'rp_guideoff', chatModel:'rp_chatmodel',
+  notes:'rp_notes', macro:'rp_macro', wake:'rp_wake',
   penalty:'rp_penalty'
 };
 /* 0 이면 끄고, 0.3 이면 같은 표현을 되풀이할수록 눈에 띄게 눌러 준다 */
@@ -1080,6 +1188,30 @@ const IMG_NEG = 'cartoon, anime, illustration, painting, 3d render, cgi, doll, p
      노출 → 무검열이면서 최신인 것. 전라까지 되고 품질도 괜찮다
      노골 → SDXL 계열 특화 모델. 해부학과 체액은 이쪽뿐이지만 나머지가 떨어진다
    그래서 수위를 올리면 그림의 완성도가 떨어지는 것이 정상이다.          */
+/* 이름만 봐서는 무엇이 다른지 알 수 없다. 아는 만큼 한 줄로 적어 둔다.
+   목록에 없는 새 모델은 이름의 결로 어림해 적는다. */
+const IMG_NOTE = [
+  [/seedream/i,        '최신 대형 · 프롬프트 이해와 얼굴이 가장 좋음 · 노출은 막힘'],
+  [/qwen.?image/i,     '무검열이면서 최신 · 전라까지 되고 품질도 준수'],
+  [/krea/i,            '사실적인 질감에 강함 · 인물 구도는 평범'],
+  [/lustify/i,         'SDXL 성인 특화 · 해부학과 체액은 이쪽뿐 · 얼굴은 떨어짐'],
+  [/chroma/i,          '성인 특화 · 색과 살결이 진함 · 손이 자주 무너짐'],
+  [/flux/i,            '문장형 프롬프트를 잘 읽음 · 노출은 약함'],
+  [/pony|hassaku|wai/i,'애니풍 특화 · 실사에는 안 맞음'],
+  [/sd.?xl|stable/i,   'SDXL 기본형 · 무난하지만 특별한 강점은 없음'],
+  [/turbo|lightning|fast/i, '스텝이 적어 빠름 · 세부는 거침']
+];
+function imgNote(m){
+  const t = (m?.id || '') + ' ' + (m?.model_spec?.name || '');
+  const hit = IMG_NOTE.find(([re]) => re.test(t));
+  const tags = [];
+  if (m?.model_spec?.uncensored) tags.push('무검열');
+  const px = m?.model_spec?.constraints?.widthHeightDivisor;
+  if (px) tags.push('배수 ' + px);
+  return (hit ? hit[1] : '설명이 준비되지 않은 모델입니다') +
+         (tags.length ? '  ·  ' + tags.join(' · ') : '');
+}
+
 const IMG_LEVEL = {
   soft: {
     key:'soft', name:'은은하게', tone:'품질 최상 · 직접 노출 없음',
@@ -1236,6 +1368,9 @@ const DEFAULT_RULES =
    원래 있던 것과 새로 생긴 것을 섞지 않는다. 확인이 안 되면 그 물건을 언급하지 않는다.
 9. [자아와 기준] {{char}}는 실존하는 사람처럼 분명한 가치관과 기준을 가진 독립적인 인물이다. {{user}}의 말에 무조건 동조하거나 끌려다니지 않는다. 자신의 기준에 어긋나는 요구는 거절하고, 납득이 안 되면 되묻는다. 선을 넘으면 화를 내거나 자리를 뜨는 등 그 인물다운 방식으로 반응할 수 있다 — 이것이 유일한 반응은 아니며, 참거나 웃어넘기거나 되받아치는 등 다른 방식을 택할 수도 있다. 동의할 때에도 그 인물 나름의 이유가 있어야 한다.
 10. [주도성] {{char}}는 스스로 화제를 꺼내고, 질문하고, 요구하고, 제안한다. {{user}}의 입력을 기다리기만 하는 수동적 태도를 취하지 않는다. 자신의 하루, 관심사, 불만, 계획을 먼저 말할 수 있다.
+    - **예상되는 답만 내놓지 않는다.** {{user}}가 원하는 방향이 뻔히 보여도 늘 그쪽으로 가지 않는다. 사람은 엉뚱한 데서 걸리고, 딴 이야기를 꺼내고, 물어본 것과 다른 것을 답한다.
+    - **{{char}}에게도 {{user}}가 모르는 사정이 있다.** 오늘 있었던 일, 미뤄 둔 걱정, 다른 사람과의 약속이 대화에 불쑥 끼어들 수 있다. 그것이 지금 이야기와 무관해도 좋다.
+    - 다만 의외성은 인물의 결 안에서 나온다. 설정과 어긋나는 돌발 행동은 의외성이 아니라 고장이다.
 11. [호감의 기본선] 특별한 사건이 없는 한 {{char}}는 {{user}}에게 옅은 호감 이상을 품고 있다. 이 호감은 반드시 이성적 끌림일 필요는 없다 — 사람 대 사람으로서의 인간적인 호감, 편안함, 신뢰일 수도 있다. 다만 호감이 무비판적인 순응을 뜻하지는 않는다. 오히려 호감이 있기 때문에 실망하고, 서운해하고, 질투하고, 더 많은 것을 바랄 수 있다.
 12. [관계의 연속성] 이전 대화에서 나온 사실, 약속, 감정의 변화를 유지한다. 이미 가까워진 관계를 이유 없이 처음으로 되돌리지 않으며, 반대로 근거 없이 갑자기 친밀해지지도 않는다.
 13. [입력 해석] {{user}}의 입력은 정해진 형식으로 정리되어 들어온다.
@@ -1255,6 +1390,8 @@ const DEFAULT_RULES =
       - 경계는 {{user}}가 선을 넘었거나, 반대로 안심할 만한 일이 있었을 때만 움직인다.
       - **여러 턴에 걸쳐 아무 변화 없이 두는 것이 정상이다.** 매 턴 1씩 올리면 사흘 만에 남남이 연인이 된다.
     - {{char}}가 혼자 있는 장면에서는 이 세 가지를 아예 건드리지 않는다. 혼자 떠올리거나 곱씹는 것만으로는 관계가 달라지지 않는다.
+    - **시간이 흐르면 값도 흐른다.** 잠들지 않아도 취기는 깨고, 긴장은 평소로 가라앉고, 욕구는 차오르고, 몸은 지친다. 장면 사이에 시간이 벌어졌으면 그만큼을 반영해 적는다. 안 적으면 앱이 흐른 시간만큼 알아서 움직인다.
+    - **몸이 풀린 뒤에는 욕구가 크게 떨어진다.** 자고 일어나야 내려가는 값이 아니다.
     - **자고 일어나면** 몸과 기분은 새로 시작한다. 어제의 체력 · 이성 · 긴장 · 취기 · 욕구를 이어받지 않는다. 관계 수치만 그대로 이어진다.
     - **자정을 넘겼다고 회복되는 것이 아니다.** 날짜만 바뀌고 잠들지 않았으면 체력은 계속 깎인 채이고 취기도 그대로다. 밤을 새우면 새벽으로 갈수록 더 지친다.
     - **그날의 컨디션은 날마다 다르다.** 잘 잔 날과 못 잔 날, 나설 용기가 나는 날과 아닌 날이 있다. 앱이 그날의 값을 정해 [현재 상태]에 넣어 주므로, 어제 값과 다르다고 되돌리지 말고 **주어진 값을 그날의 상태로 받아들여 그에 맞게 쓴다.**
@@ -1264,11 +1401,14 @@ const DEFAULT_RULES =
     - 내면에는 {{char}}의 지금 감정이나 기분을 짧은 말로 쓴다.
     - **외관에는 지금 입고 있는 옷과 겉모습을 함께 담는다.** 복장은 따로 적지 않고 여기에 합쳐 쓴다. 옷차림을 먼저 적고, 흐트러진 머리나 붉어진 목덜미처럼 지금 눈에 띄는 상태를 뒤에 덧붙인다. 옷이 흐트러지거나 벗겨진 상태도 여기에 적는다.
     - 열 수치는 모두 0~100 정수로 쓰고, 직전 값에서 달라졌으면 호감=68(+3) 처럼 변화폭을 괄호에 적는다. 안 바뀌었으면 괄호 없이 그대로 쓴다.
-    - **한 턴에 움직일 수 있는 폭은 항목마다 다르다.** 호감 · 반감 · 경계 · 욕심 · 대담은 ±2, 긴장은 ±4, 이성 · 욕구 · 체력은 ±3 이내다. 관계를 뒤집는 사건이 실제로 일어났을 때만 각각 ±10 · ±20 · ±15~20 까지 허용한다.
+    - **평상시 한 턴에 움직일 수 있는 폭은 좁다.** 호감 · 반감 · 경계 · 욕심 · 대담은 ±2, 긴장은 ±4, 이성 · 욕구 · 체력은 ±3 이내다.
+    - **다만 계기가 분명하면 크게 움직인다.** 마음을 뒤집는 말, 처음 겪는 접촉, 배신, 들킴, 크게 다침 — 그런 일이 실제로 일어난 턴에는 위 폭을 훨씬 넘겨도 된다. 사람은 그렇게 변한다. 어중간하게 ±3 씩 올리지 말고, **일어난 일의 크기만큼** 적는다.
+    - 그런 일은 드물다. 한 번 크게 움직인 항목은 한동안 다시 크게 움직이지 않는다. (앱이 간격을 지킨다.) 관계를 뒤집는 사건이 실제로 일어났을 때만 각각 ±10 · ±20 · ±15~20 까지 허용한다.
     - **취기만은 마신 양을 따른다.** 23번을 따르며, 위의 상한을 적용하지 않는다.
     - **체력 · 이성 · 욕심 · 대담 · 욕구는 [기준 수치]에 적힌 값이 그 인물의 최대치다. 그 값을 넘겨 적지 않는다.** 자고 일어나 회복해도 최대치까지다.
     - 체력은 하루를 보내며 서서히 깎이는 값이다. 잠들지 않는 한 저절로 오르지 않는다. 실망하거나 선을 넘긴 일이 있으면 내려간다. 한 방향으로만 계속 오르지 않는다. (이 범위를 벗어나면 앱이 자동으로 되돌린다.)
-    - 맨 뒤의 소지품 · 동석 · 미해결은 있을 때만 골라 붙인다. 없으면 아예 쓰지 않는다. 거리는 쓰지 않는다.
+    - 맨 뒤의 소지품 · 미해결은 있을 때만 골라 붙인다. 없으면 아예 쓰지 않는다. 거리는 쓰지 않는다.
+    - **동석은 {{char}}와 {{user}} 말고 다른 사람이 그 자리에 있으면 반드시 적는다.** 이름과 무엇을 하고 있는지를 짧게 쓴다. 예: 동석=박서준(옆자리에서 통화 중). 둘뿐이면 쓰지 않는다.
     - **소지품은 물건이 오갔거나 누군가 무엇을 쥐고 있는 장면이면 반드시 넣는다.** 방금 오간 물건과 지금 그것을 누가 가지고 있는지를 적는다. 예: 소지품=맥주 캔 1개는 {{user}}가 가져감. 오간 물건이 없으면 생략한다.
     - **소지품은 본문과 어긋나면 안 된다.** 본문에 한 번도 나오지 않은 물건을 적지 않고, 본문이 없다고 한 것을 있다고 적지 않는다. 어긋나면 앱이 지운다.
     - **나중에 다시 나올 물건이나 떡밥은 끝에 ! 를 붙인다.** 오래 남겨 둘 것과 곧 잊어도 되는 것을 그것으로 가른다. 예: 소지품=받은 편지! , 마시던 컵
@@ -1371,7 +1511,14 @@ const DEFAULT_RULES =
     - 목록에 있는 사람은 **그 설명을 벗어나지 않는다.** 나이 · 관계 · 말투를 매번 새로 지어내지 않는다.
     - 목록에 없는 사람을 새로 등장시켰다면, 이름과 한 줄 설명을 만들어 두고 그 뒤로는 그대로 유지한다.
     - **조연은 {{char}}가 아니다.** {{char}}의 성격 · 말버릇 · 결핍을 조연에게 옮기지 않는다. 조연은 {{char}}보다 훨씬 얕게 다루며, 장면에 필요한 만큼만 말하고 물러난다.
-    - 조연의 속마음은 쓰지 않는다. 겉으로 보이는 말과 행동만 쓴다.`;
+    - 조연의 속마음은 쓰지 않는다. 겉으로 보이는 말과 행동만 쓴다.
+    - **조연은 {{user}}의 편의를 위해 존재하지 않는다.** 부탁을 그냥 들어주거나, 묻는 대로 답하거나, 필요할 때만 나타났다 사라지지 않는다. 자기 사정과 자기 일정이 있고, 그것이 {{user}}의 계획과 어긋날 수 있다. 거절하고, 미루고, 딴소리를 하고, 조건을 붙인다.
+    - 조연이 {{char}}보다 앞에 나서지는 않되, 그 자리에 있는 이유가 {{user}} 때문만은 아니어야 한다.
+    - **조연도 이야기가 흐르면 바뀐다.** 관계가 달라지거나, 태도가 돌아서거나, 사정이 생겼다면
+      상태 줄 다음에 이 한 줄을 덧붙인다. 바뀐 항목만 적는다.
+        [조연변화] 박서준 = 태도 적대 · 특징 회식 이후 거리를 둠
+    - 쓸 수 있는 항목은 관계 · 나이 · 성별 · 직업 · 겉모습 · 말투 · 특징 · 태도 여덟 가지다. 이름은 바꾸지 않는다.
+    - 실제로 달라졌을 때만 쓴다. 매 턴 쓰는 줄이 아니다. **「고정」이라 적힌 조연은 바꾸지 않는다.**`;
 
 const $ = id => document.getElementById(id);
 const uid = () => (crypto.randomUUID ? crypto.randomUUID()
@@ -1464,24 +1611,229 @@ const S = {
        탭이 살아만 있으면 돌아왔을 때 이어받는다.
      - 이미 IndexedDB 에 들어간 것은 탭이 죽어도 남는다.
    그래서 「앱을 유지하십시오」 한 줄로 뭉뚱그리지 않고 경우를 나눠 적는다. */
+/* 화면이 꺼지면 탭이 얼고, 오래 얼어 있으면 탭 자체가 버려진다.
+   작업이 도는 동안만 화면을 붙잡아 두면 그 일이 잘 일어나지 않는다.
+   지원하지 않는 브라우저에서는 조용히 넘어간다 — 재개가 있으므로 치명적이지 않다. */
+let wakeRef = null;
+async function wakeOn(){
+  if (wakeRef || !navigator.wakeLock) return;
+  /* 화면이 안 꺼지는 것은 겪는 사람 입장에서 당황스럽다. 켠 사람만 쓴다. */
+  if (localStorage.getItem(LS.wake) !== '1') return;
+  try{
+    wakeRef = await navigator.wakeLock.request('screen');
+    wakeRef.addEventListener('release', () => { wakeRef = null; });
+  }catch(_){ wakeRef = null; }
+}
+function wakeOff(){
+  try{ wakeRef?.release(); }catch(_){}
+  wakeRef = null;
+}
+/* 화면을 껐다 켜면 잠금이 풀린다. 작업이 아직 돌고 있으면 다시 건다. */
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && S.job) wakeOn();
+});
+
 const BUSY_CAN = {
   stream: ['warn', '이 화면을 켜 두십시오 · 화면을 끄면 받던 도중에 끊깁니다'],
-  once:   ['warn', '잠깐 다른 앱을 봐도 됩니다 · 브라우저 탭은 닫지 마십시오'],
+  /* 한 번에 받아 오는 요청. 얼어 있는 사이에도 서버는 답을 만들어 두므로
+     탭이 살아만 있으면 돌아왔을 때 이어받는다. 탭이 버려지면 그대로 사라진다. */
+  once:   ['warn', '탭을 닫지 마십시오 · 끊기면 처음부터 다시 해야 합니다'],
   steps:  ['warn', '탭을 유지하십시오 · 끊겨도 여기까지 쓴 것은 남습니다'],
   local:  ['ok',   '기기 안에서만 도는 작업입니다 · 언제 멈춰도 됩니다'],
+  /* 끊겨도 이어서 할 수 있는 작업.
+     나가면 계속 도는 것이 아니라 멈춘다 — 다만 멈춰도 손해가 없다. 그대로 적는다. */
+  resume: ['ok',   '나가면 멈출 수 있습니다 · 쓴 장은 남으니 돌아와서 이어 쓰면 됩니다'],
   free:   ['ok',   '나가셔도 됩니다']
 };
 /* 예전 이름으로 부르는 자리가 남아 있어도 그대로 동작하게 둔다 */
 const BUSY_ALIAS = {screen:'stream', app:'once', post:'steps'};
-function busy(kind, what){
-  const el = $('busy');
-  if (!kind){ el.classList.remove('on', 'warn', 'ok'); return; }
+/* 남은 시간을 사람이 읽는 말로 */
+function etaText(sec){
+  if (!(sec > 0)) return '';
+  const s2 = Math.round(sec);
+  if (s2 < 60) return '약 ' + s2 + '초 남음';
+  const m = Math.round(s2 / 60);
+  if (m < 60) return '약 ' + m + '분 남음';
+  return '약 ' + Math.floor(m / 60) + '시간 ' + (m % 60) + '분 남음';
+}
+/* 진행 중인 작업 하나를 기억해 둔다. 게이지 · 남은 시간 · 중지가 여기에 붙는다. */
+S.job = null;
+function busy(kind, what, opt){
+  const el = $('busy'), bar = $('busyBar'), stop = $('busyStop');
+  if (!kind){
+    el.classList.remove('on', 'warn', 'ok');
+    bar.classList.remove('on', 'wave');
+    stop.classList.remove('on');
+    S.job = null;
+    wakeOff();
+    return;
+  }
   const [cls, can] = BUSY_CAN[BUSY_ALIAS[kind] || kind] || BUSY_CAN.once;
   $('busyWhat').textContent = what || '작업 중';
   $('busyCan').textContent = can;
   el.classList.remove('warn', 'ok');
   el.classList.add('on', cls);
+
+  const o = opt || {};
+  /* 진행률을 아는 작업은 채워지는 막대, 모르는 작업은 흐르는 막대 */
+  if (o.pct != null){
+    bar.classList.add('on'); bar.classList.remove('wave');
+    bar.firstElementChild.style.width = Math.max(3, Math.min(100, o.pct)) + '%';
+  } else if (o.wave){
+    bar.classList.add('on', 'wave');
+  } else {
+    bar.classList.remove('on', 'wave');
+  }
+  $('busyEta').textContent = o.eta ? etaText(o.eta) : '';
+  /* 멈출 수 있는 작업에만 중지 단추를 띄운다 */
+  if (o.stop){ stop.classList.add('on'); S.job = {stop: o.stop, what}; wakeOn(); }
+  else { stop.classList.remove('on'); S.job = null; }
 }
+$('busyStop').onclick = () => {
+  if (!S.job) return;
+  S.job.stop();
+  $('busyStop').textContent = '중지하는 중…';
+  setTimeout(() => { $('busyStop').textContent = '중지'; }, 2500);
+};
+
+/* 여러 단계짜리 작업의 남은 시간을 잰다. 앞선 단계에 걸린 시간으로 뒤를 어림한다. */
+function makeEta(total){
+  const t0 = performance.now();
+  return done => {
+    if (!(done > 0)) return null;
+    const per = (performance.now() - t0) / done;
+    return per * Math.max(0, total - done) / 1000;
+  };
+}
+
+/* ── 알림 ──
+   오래 걸리는 작업을 걸어 두고 자리를 뜨면 끝난 줄을 모른다.
+   끝난 것을 남겨 두고, 안 본 것의 수를 탭 귀퉁이에 띄운다. */
+const NOTE_MAX = 40;
+function notes(){
+  try{ return JSON.parse(localStorage.getItem(LS.notes) || '[]'); }catch(_){ return []; }
+}
+function saveNotes(list){
+  localStorage.setItem(LS.notes, JSON.stringify(list.slice(-NOTE_MAX)));
+  paintBadge();
+}
+/* 작업 하나가 끝났다 */
+function noteDone(what, detail, startedAt, okFlag){
+  const list = notes();
+  list.push({
+    t: what, d: detail || '',
+    from: startedAt || now(), at: now(),
+    ok: okFlag !== false, seen: false
+  });
+  saveNotes(list);
+}
+function unseenCount(){ return notes().filter(x => !x.seen).length; }
+/* 앱을 켤 때 한 번 그려 둔다. 지난번에 끝난 작업이 있으면 바로 눈에 띈다. */
+setTimeout(() => { try{ paintBadge(); }catch(_){} }, 0);
+function paintBadge(){
+  const b = $('navNote');
+  if (!b) return;
+  const c = unseenCount();
+  b.textContent = c > 9 ? '9+' : String(c);
+  b.classList.toggle('on', c > 0);
+}
+function markNotesSeen(){
+  const list = notes();
+  if (!list.some(x => !x.seen)) return;
+  saveNotes(list.map(x => ({...x, seen: true})));
+}
+/* 걸린 시간을 사람이 읽는 말로 */
+function tookText(ms){
+  const s2 = Math.round(ms / 1000);
+  if (s2 < 60) return s2 + '초';
+  const m = Math.floor(s2 / 60);
+  return m < 60 ? m + '분 ' + (s2 % 60) + '초' : Math.floor(m / 60) + '시간 ' + (m % 60) + '분';
+}
+function paintNotes(){
+  const box = $('noteList');
+  if (!box) return;
+  const list = notes().slice().reverse();
+  box.innerHTML = list.length
+    ? list.map(x =>
+        '<div class="noteRow' + (x.seen ? '' : ' new') + (x.ok ? '' : ' bad') + '">' +
+        '<b>' + esc(x.t) + '</b>' +
+        (x.d ? '<span>' + esc(x.d) + '</span>' : '') +
+        '<u>' + relTime(x.at) + ' 완료 · ' + tookText(x.at - x.from) + ' 걸림</u>' +
+        '</div>').join('')
+    : '<div class="shint">아직 알림이 없습니다. 오래 걸리는 작업이 끝나면 여기에 남습니다.</div>';
+}
+
+/* ── 매크로 ──
+   버튼 크기를 고정하려면 이름도 길면 안 된다. 여섯 자로 자른다. */
+const MACRO_N = 5, MACRO_NAME = 6, MACRO_BODY = 400;
+const MACRO_DEF = [
+  {n:'매크로 1', v:''},
+  {n:'매크로 2', v:''},
+  {n:'매크로 3', v:''},
+  {n:'매크로 4', v:''},
+  /* 별다른 입력 없이 진행만 맡기고 싶을 때 쓰는 것을 미리 채워 둔다 */
+  {n:'계속',     v:'*계속*'}
+];
+function macros(){
+  let a = [];
+  try{ a = JSON.parse(localStorage.getItem(LS.macro) || '[]'); }catch(_){}
+  return MACRO_DEF.map((d, i) => ({
+    n: String(a[i]?.n ?? d.n).slice(0, MACRO_NAME),
+    v: String(a[i]?.v ?? d.v).slice(0, MACRO_BODY)
+  }));
+}
+function saveMacros(list){
+  localStorage.setItem(LS.macro, JSON.stringify(list));
+  paintMacros();
+}
+/* 눌렀을 때 — 보내지 않고 입력창에 넣는다. 뒤에 덧붙일 수 있어야 하기 때문이다. */
+function useMacro(i){
+  const m = macros()[i];
+  if (!m?.v) return toast('길게 눌러 내용을 채워 주십시오', 2500);
+  const box = $('inp');
+  const cur = box.value.trim();
+  box.value = cur ? cur + ' ' + m.v : m.v;
+  box.focus();
+  box.setSelectionRange(box.value.length, box.value.length);
+  box.dispatchEvent(new Event('input'));
+}
+function editMacro(i){
+  const m = macros()[i];
+  $('editWho').textContent = '매크로 ' + (i + 1);
+  $('editTa').value = m.n + '\n' + m.v;
+  openEdit(false);
+  $('editOk').onclick = () => {
+    const lines = $('editTa').value.split('\n');
+    const name = (lines.shift() || '').trim().slice(0, MACRO_NAME);
+    const body = lines.join('\n').trim().slice(0, MACRO_BODY);
+    closeEdit();
+    const list = macros();
+    list[i] = {n: name || MACRO_DEF[i].n, v: body};
+    saveMacros(list);
+    toast('저장했습니다');
+  };
+}
+function paintMacros(){
+  const box = $('macro');
+  if (!box) return;
+  box.innerHTML = macros().map((m, i) =>
+    '<button type="button" data-mc="' + i + '"' + (m.v ? '' : ' class="empty"') +
+    ' title="' + esc(m.v || '길게 눌러 채우십시오') + '">' + esc(m.n) + '</button>').join('');
+  box.querySelectorAll('[data-mc]').forEach(b => {
+    const i = +b.dataset.mc;
+    let timer = null, held = false;
+    const start = () => { held = false; timer = setTimeout(() => { held = true; editMacro(i); }, 550); };
+    const stop  = () => clearTimeout(timer);
+    b.addEventListener('touchstart', start, {passive:true});
+    b.addEventListener('touchend', stop);
+    b.addEventListener('touchmove', stop);
+    b.addEventListener('mousedown', start);
+    b.addEventListener('mouseup', stop);
+    b.addEventListener('mouseleave', stop);
+    b.onclick = () => { if (!held) useMacro(i); };
+  });
+}
+setTimeout(() => { try{ paintMacros(); }catch(_){} }, 0);
 
 let toastT;
 /* CSS 페이드가 0.2초다. 1.5초 동안 온전히 보이게 하려면 그만큼 더 두었다 지운다. */
@@ -1491,23 +1843,51 @@ function toast(msg, hold){
   clearTimeout(toastT);
   toastT = setTimeout(() => t.classList.remove('on'), (hold || TOAST_HOLD) + TOAST_FADE);
 }
-function sheet(title, items){
+/* 시트가 시트를 부르는 자리가 늘었다. 어디서 들어왔는지 되짚어 나갈 수 있어야 한다. */
+S.sheetBack = [];
+function sheetPush(fn){ S.sheetBack.push(fn); }
+function sheetPop(){
+  const f = S.sheetBack.pop();
+  if (f) f(); else closeSheet();
+}
+function sheet(title, items, back){
   const box = $('sheetIn');
-  box.innerHTML = (title ? `<h3>${esc(title)}</h3>` : '') +
+  /* back 을 주면 좌상단에 「‹」 가 붙고, 누르면 그 화면으로 돌아간다 */
+  box.innerHTML = (title
+      ? '<h3>' + (back ? '<button class="shBack" id="shBack">‹</button>' : '') +
+        esc(title) + '</h3>'
+      : '') +
     items.map((it,i)=> it.info
       ? `<div class="sinfo">${it.html || esc(it.label)}</div>`
       : `<button class="sitem ${it.danger?'dan':''}" data-i="${i}">${it.html || esc(it.label)}</button>`).join('');
   box.querySelectorAll('.sitem').forEach(b => b.onclick = () => {
-    closeSheet(); items[+b.dataset.i].run?.();
+    const it = items[+b.dataset.i];
+    /* 값을 고르는 항목은 눌렀다고 창이 닫히면 곤란하다. 연달아 바꾸는 일이 많다.
+       keep 이 붙은 항목은 열어 둔 채 실행하고, 목록만 다시 그린다. */
+    if (it.keep){ it.run?.(); if (typeof it.keep === 'function') it.keep(); return; }
+    closeSheet(); it.run?.();
   });
+  const bb = $('shBack');
+  if (bb) bb.onclick = () => back();
   $('sheet').classList.add('on');
 }
-const closeSheet = () => $('sheet').classList.remove('on');
+const closeSheet = () => { S.sheetBack = []; $('sheet').classList.remove('on'); };
 $('sheet').onclick = e => { if (e.target.id === 'sheet') closeSheet(); };
 /* 읽기 전용으로 띄운 창(기본규칙 보기 · 시작 가이드)을 취소로 닫으면
    readOnly 가 남아 다음에 여는 편집창까지 못 고치게 된다. 닫을 때 늘 풀어 준다. */
+/* 여는 쪽에서 매번 정한다. 닫는 경로가 여럿이라 거기서 되돌리면 반드시 하나가 샌다.
+   한 번 새면 그 다음에 여는 편집창이 통째로 잠긴 채 열린다. */
+function openEdit(readOnly){
+  $('editTa').readOnly = !!readOnly;
+  /* 읽기만 하는 창에서 「취소」는 무엇이 취소되는지 알 수 없다. 확인 하나만 둔다. */
+  $('editCancel').style.display = readOnly ? 'none' : '';
+  $('editOk').textContent = readOnly ? '확인' : '확인';
+  $('editBox').classList.add('on');
+  if (!readOnly) $('editTa').focus();
+}
 function closeEdit(){
   $('editTa').readOnly = false;
+  $('editCancel').style.display = '';
   $('editBox').classList.remove('on');
 }
 $('editCancel').onclick = closeEdit;
@@ -1572,7 +1952,12 @@ document.querySelectorAll('#nav button').forEach(b => b.onclick = () => {
   show(b.dataset.v);
   if (b.dataset.v === 'vChats')    renderChats();
   if (b.dataset.v === 'vChars')    renderChars();
-  if (b.dataset.v === 'vPersonas') renderPersonas();
+  if (b.dataset.v === 'vPersonas'){
+    renderPersonas();
+    /* 들어와서 본 것으로 친다. 그리기 전에 표시를 남겨 두어야 새 것이 눈에 띈다. */
+    paintNotes();
+    setTimeout(markNotesSeen, 1200);
+  }
 });
 
 const initial = n => (n||'?').trim().charAt(0).toUpperCase();
@@ -1607,8 +1992,37 @@ const relTime = t => {
 };
 
 /* ═══════════════ 프롬프트 조립 ═══════════════ */
+/* 「{{user}}가 들어온다」에 이름 「준」을 넣으면 「준가 들어온다」가 된다.
+   받침이 있는지에 따라 짝을 골라 준다. 뒤가 낱말로 이어지면(이다 · 이라며 …)
+   조사가 아닐 수 있으므로, 공백이나 문장부호가 뒤따를 때만 손댄다. */
+const JOSA_PAIR = [['은','는'], ['이','가'], ['을','를'], ['과','와'],
+                   ['아','야'], ['이랑','랑'], ['으로','로'], ['이며','며'], ['이라','라']];
+const JOSA_RE = /(은|는|이랑|이며|이라|이|가|을|를|과|와|아|야|으로|로|랑|며|라)(?=[\s,.!?…"'\u201c\u201d\u2018\u2019)\]}]|$)/;
+function hasBatchim(name){
+  const c = String(name || '').trim().slice(-1).charCodeAt(0);
+  if (!(c >= 0xac00 && c <= 0xd7a3)) return false;   /* 한글이 아니면 받침 없는 것으로 본다 */
+  return (c - 0xac00) % 28 !== 0;
+}
+function fixJosa(name, written){
+  const pair = JOSA_PAIR.find(p => p.includes(written));
+  if (!pair) return written;
+  const b = hasBatchim(name);
+  /* 「으로 / 로」만 예외 — ㄹ 받침이면 「로」를 쓴다 */
+  if (pair[0] === '으로'){
+    const c = String(name).trim().slice(-1).charCodeAt(0);
+    const jong = (c >= 0xac00 && c <= 0xd7a3) ? (c - 0xac00) % 28 : 0;
+    return (b && jong !== 8) ? '으로' : '로';
+  }
+  return b ? pair[0] : pair[1];
+}
+function putName(name){
+  return (_, josa) => name + (josa ? fixJosa(name, josa) : '');
+}
 function fill(tpl, charName, userName){
-  return String(tpl||'').replaceAll('{{char}}', charName||'캐릭터').replaceAll('{{user}}', userName||'나');
+  const cn = charName || '캐릭터', un = userName || '나';
+  return String(tpl || '')
+    .replace(new RegExp('\\{\\{char\\}\\}(?:' + JOSA_RE.source + ')?', 'g'), putName(cn))
+    .replace(new RegExp('\\{\\{user\\}\\}(?:' + JOSA_RE.source + ')?', 'g'), putName(un));
 }
 function buildSystem(char, persona, withExample, drift){
   const cn = char.name, un = persona?.name || '나';
@@ -1664,12 +2078,28 @@ function buildSystem(char, persona, withExample, drift){
   /* 조연은 짧게. 이름과 한 줄만 넘긴다. */
   if (S.chat?.cast?.length)
     P.push('\n[조연 — 이 사람들은 ' + cn + ' 이 아니다]\n' +
-      S.chat.cast.slice(0, 12).map(p => '- ' + p.name + ': ' + (p.note || '')).join('\n'));
+      S.chat.cast.slice(0, 12).map(castLine).join('\n'));
 
-  if (S.chat?.genre?.text)
-    P.push('\n[장르 — ' + S.chat.genre.name + ']\n' + S.chat.genre.text +
-      '\n이 뼈대는 방향일 뿐이다. 장면을 여기에 억지로 맞추지 않으며, 한 번에 다 드러내지 않는다.' +
-      '\n{{user}}가 다른 쪽으로 끌고 가면 그쪽을 따른다.');
+  if (S.chat?.genre?.text){
+    const G = S.chat.genre;
+    const pc = paceOf(G.pace);
+    const L = ['\n[장르 — ' + G.name + ']', G.text,
+      '이 뼈대는 방향일 뿐이다. 장면을 여기에 억지로 맞추지 않으며, 한 번에 다 드러내지 않는다.',
+      '{{user}}가 다른 쪽으로 끌고 가면 그쪽을 따른다.',
+      '이 장르가 걸리는 쪽: ' + targetText(G.target) +
+      '. 그 밖의 사람에게는 배경으로만 스친다.'];
+    /* 매 턴 밀어붙이면 설정 낭독이 된다. 정해진 간격에 한 번만 한 걸음 나아가게 한다. */
+    if (pc.turns > 0){
+      const since = S.messages.filter(m => m.role === 'assistant').length % pc.turns;
+      L.push(since === 0
+        ? '**이번 턴은 장르를 한 걸음 밀 차례다.** 앞의 맥락에 이어지는 방식으로, 위 뼈대 가운데 아직 안 드러난 것 하나를 장면 안에서 자연스럽게 꺼낸다. 설명하지 말고 일어나게 한다.'
+        : '이번 턴은 장르를 밀 차례가 아니다. 지금 장면에 충실하고, 장르는 배경으로만 스치게 둔다.');
+    } else {
+      L.push('이 장르는 배경으로만 쓴다. 장르 때문에 새 사건을 만들지 않는다.');
+    }
+    L.push('**장르가 인물 카드나 주인공 설정과 부딪히면 인물 쪽이 우선한다.** 장르를 위해 사람을 바꾸지 않는다. 뼈대에서 그 부분만 접는다.');
+    P.push(L.join('\n'));
+  }
 
   if (persona){
     const u = [`이름: ${persona.name}`];
@@ -1694,6 +2124,44 @@ const estTok = s => Math.round(String(s||'').length * 0.58);
    "매 요청에 무엇을 실어 보낼지" 고르는 것뿐이다.       */
 
 const SUM_TRIGGER = 6;   /* 창 밖으로 밀려난 턴이 이만큼 쌓이면 요약 */
+
+/* ── 회차 기억 ──
+   한 덩이 요약을 매번 고쳐 쓰면 옛 사건이 압축을 거듭하다 사라진다.
+   잘라서 쌓고, 한 번 적힌 회차는 건드리지 않는다. */
+const ERA_TURNS  = 20;   /* 한 회차에 담을 최대 턴 */
+const ERA_MIN    = 6;    /* 이보다 적으면 아직 회차를 닫지 않는다 */
+const ERA_CHARS  = 260;  /* 회차 본문 길이 */
+const ERA_FULL   = 2;    /* 본문까지 싣는 최근 회차 수 */
+const ERA_TITLES = 15;   /* 제목만 싣는 최대 회차 수 */
+
+/* 회차를 프롬프트 한 덩이로 만든다. 오래된 것은 제목만 남기고 최근 것은 본문까지 싣는다. */
+function fmtEras(mem){
+  const eras = mem?.eras || [];
+  const old  = String(mem?.summary || '').trim();
+  if (!eras.length) return old;
+  const L = [];
+  if (old) L.push('이전 이야기: ' + old);
+  const headAll = eras.slice(0, Math.max(0, eras.length - ERA_FULL));
+  const head = headAll.slice(-ERA_TITLES);
+  if (headAll.length > head.length)
+    L.push('(앞선 ' + (headAll.length - head.length) + '회는 줄였습니다)');
+  for (const e of head) L.push(e.n + '회 · ' + e.title);
+  for (const e of eras.slice(-ERA_FULL))
+    L.push(e.n + '회 · ' + e.title + '\n  ' + e.text);
+  return L.join('\n');
+}
+/* 회차를 어디서 끊을지 — 스무 턴이 차거나, 날이 바뀌면 거기서 닫는다.
+   하루가 한 회차가 되면 사람이 기억하는 단위와 맞는다. */
+function eraCut(batch){
+  let day = null, at = batch.length;
+  for (let i = 0; i < batch.length; i++){
+    const d = dayOf((readStatus(batch[i].content) || {})['일시']);
+    if (!d) continue;
+    if (day === null){ day = d; continue; }
+    if (d !== day){ at = i; break; }
+  }
+  return Math.max(ERA_MIN, Math.min(ERA_TURNS, at));
+}
 
 function budgetOf(){
   const total = Math.max(1000, parseInt(localStorage.getItem(LS.budget) || '8000', 10));
@@ -1861,7 +2329,8 @@ function fmtState(st, maxes){
     }).join('\n');
 }
 
-const blankMem = id => ({chatId:id, summary:'', stateCard:{}, keeps:[], summarizedUpTo:-1, updatedAt:0});
+const blankMem = id => ({chatId:id, summary:'', eras:[], stateCard:{}, keeps:[],
+                         summarizedUpTo:-1, updatedAt:0});
 const getMem = async id => (await dbGet('memory', id)) || blankMem(id);
 
 /* 프롬프트로 "한 턴에 ±5, 예외 상황엔 ±50"이라고 지시해도 모델이 이를 어길 수 있다.
@@ -1906,15 +2375,15 @@ function rebuildStatus(stt){
    [평상시 상한, 사건이 있을 때의 절대 상한] */
 /* 몇 마디 오간 것만으로 관계가 움직이면 무게가 사라진다. 평상시 폭을 절반으로 좁혔다. */
 const STAT_CAPS = {
-  호감: [2, 10],   /* 관계는 아주 천천히 움직인다 */
-  반감: [2, 10],
-  경계: [2, 10],
-  긴장: [4, 20],   /* 순간 감정이라 상대적으로 빠르다 */
-  이성: [3, 20],
+  호감: [2, 25],   /* 평소엔 더디지만, 마음을 뒤집는 일은 한 번에 온다 */
+  반감: [2, 30],   /* 배신은 하루아침에 일어난다 */
+  경계: [2, 30],
+  긴장: [4, 45],   /* 놀라거나 들키면 한순간에 치솟는다 */
+  이성: [3, 40],   /* 격해지면 판단이 통째로 무너진다 */
   욕심: [2, 10],
   대담: [2, 10],
   욕구: [3, 15],
-  체력: [3, 20],   /* 자고 나면 회복된다 */
+  체력: [3, 35],   /* 크게 다치거나 밤새 뛰면 한 번에 빠진다 */
   취기: [12, 45]   /* 마신 양을 따른다. 소주 한 병이면 40 안팎까지 오른다 */
 };
 const STAT_CAP_DEFAULT = [3, 15];
@@ -1923,13 +2392,32 @@ const STAT_CAP_DEFAULT = [3, 15];
    기준은 "최대치 50 일 때 지금 값" — 욕구 소프트 3 은 6%, 하드 15 는 30% 다.
    0 이 아닌 이상 최소 1 은 움직일 수 있어야 하므로 바닥을 1 로 둔다.
    체력 · 이성은 하루를 보내며 절대량으로 닳는 값이라 여기서 제외한다. */
-const CAP_PCT = {욕심: [0.04, 0.20], 대담: [0.04, 0.20], 욕구: [0.06, 0.30]};
+const CAP_PCT = {욕심: [0.04, 0.55], 대담: [0.04, 0.55], 욕구: [0.06, 0.70]};
+/* 사건이 있을 때의 상한을 열면 모델이 매 턴 그 폭을 쓴다.
+   큰 변화는 드물어야 크게 느껴지므로, 항목마다 간격을 둔다.
+   간격 안에 또 크게 움직이려 하면 평상시 폭으로 깎는다. */
+const BIG_GAP = 8;
+/* 「큰 변화」로 인정할 최소 크기. 이보다 작으면서 평상시 폭을 넘는 것은
+   어중간하게 밀어 올리는 것이므로 평상시 폭으로 깎는다. */
+const bigMin = key => Math.max(capsFor(key)[0] * 4, 8);
 function capsFor(key){
   const pct = CAP_PCT[key];
   if (!pct) return STAT_CAPS[key] || STAT_CAP_DEFAULT;
   const rk = RATIO_STATS[key], max = rk ? S.character?.profile?.stats?.[rk] : null;
   if (!max) return STAT_CAPS[key] || STAT_CAP_DEFAULT;
   return [Math.max(1, Math.round(max * pct[0])), Math.max(1, Math.round(max * pct[1]))];
+}
+/* 최근 몇 턴 안에 이 항목이 크게 움직였는지 본다.
+   말풍선에 남은 변화 표시를 세므로 따로 기록할 것이 없다. */
+function movedBigRecently(key, gap){
+  const soft = capsFor(key)[0];
+  const last = (S.messages || []).filter(m => m.role === 'assistant').slice(-(gap || BIG_GAP));
+  for (const m of last){
+    const line = (String(m.content).match(/^\[상태\][^\n]*/m) || [''])[0];
+    const g = new RegExp(key + '=\\d+\\(([+\\-]\\d+)\\)').exec(line);
+    if (g && Math.abs(parseInt(g[1], 10)) > soft) return true;
+  }
+  return false;
 }
 function clampStatDelta(key, rawValue, prevStr){
   const m = String(rawValue).match(/-?\d+(\.\d+)?/);
@@ -1939,7 +2427,10 @@ function clampStatDelta(key, rawValue, prevStr){
   const prev = prevM ? Math.round(parseFloat(prevM[0])) : next;
   let delta = next - prev;
   const [soft, hard] = capsFor(key);
-  const cap = Math.abs(delta) > soft ? hard : soft;
+  /* 큰 변화는 드물어야 크게 느껴진다.
+     어중간한 크기이거나, 최근에 이미 한 번 크게 움직였으면 평상시 폭으로 깎는다. */
+  const big = Math.abs(delta) >= bigMin(key) && !movedBigRecently(key);
+  const cap = big ? hard : soft;
   delta = Math.max(-cap, Math.min(cap, delta));
   /* 비율 항목은 그 인물의 최대치를 넘을 수 없다. 자고 일어나도 최대치까지만 회복된다. */
   const rk = RATIO_STATS[key];
@@ -1957,6 +2448,11 @@ function pickVisible(stt, maxes, firstTurn){
   const num = v => { const m = String(v).match(/-?\d+/); return m ? +m[0] : null; };
   const changed = v => /\([+\-]/.test(String(v));
   for (const [k, v] of Object.entries(stt)){
+    if (k === '동석'){
+      /* 「없음」 이라고 적어 온 것만 감춘다. 그 밖에는 누구든 있다는 뜻이다. */
+      if (!ALONE_RE.test(String(v).trim())) out[k] = v;
+      continue;
+    }
     if (!NUMERIC_STATS.includes(k)){ out[k] = v; continue; }   /* 장소·외관 등은 그대로 */
     const cur = num(v);
     if (cur === null) continue;
@@ -2084,12 +2580,72 @@ function dayReset(stt, card, stats, chatId){
   return fresh;
 }
 
+/* 상태 줄이 통째로 빠진 응답을 위해 직전 값으로 한 줄을 만들어 붙인다.
+   수치는 그대로 두고 장소 · 일시 · 외관 · 내면만 이어 준다. 없는 것보다 낫다. */
+const CARRY_ON_MISS = ['장소','일시','외관','내면'];
+function graftStatus(text, card){
+  const bits = [];
+  for (const k of CARRY_ON_MISS){
+    const v = String(card?.[k] ?? '').replace(/\(.*\)/, '').trim();
+    if (v) bits.push(k + '=' + v);
+  }
+  if (!bits.length) return text;
+  return String(text).replace(/\s*$/, '') + '\n\n[상태] ' + bits.join(' | ');
+}
+
+/* 두 시각 사이에 몇 시간이 흘렀는가 */
+function hoursBetween(prev, next){
+  const a = minuteOf(prev), b = minuteOf(next);
+  if (a === null || b === null) return 0;
+  return Math.max(0, (b - a) / 60);
+}
+/* 몸이 해소된 장면인가. 이미지 수위 판정에 쓰던 잣대를 그대로 쓴다. */
+function released(text){ return HEAT2.test(String(text || '')); }
+
+/* 모델이 손대지 않은 항목만 시간에 맞춰 움직인다.
+   모델이 값을 적었다면 그쪽이 장면을 본 것이므로 앱이 끼어들지 않는다.
+     취기 — 한 시간에 12 씩 깬다
+     긴장 — 평상시 값(경계)으로 한 시간에 그 차이의 3할씩 돌아온다
+     욕구 — 한 시간에 최대치의 3% 씩 차오른다
+     체력 — 깨어 있는 한 시간마다 최대치의 4% 씩 닳는다 */
+function timeDrift(key, cur, hours, card, stats){
+  if (!(hours > 0)) return cur;
+  const h = Math.min(hours, 16);
+  const num = v => { const m = String(v ?? '').match(/-?\d+/); return m ? +m[0] : null; };
+  if (key === '취기') return Math.max(0, Math.round(cur - 12 * h));
+  if (key === '긴장'){
+    const rest = num(card['경계']);
+    if (rest === null) return cur;
+    const k = Math.min(1, 0.3 * h);
+    return Math.round(cur + (rest - cur) * k);
+  }
+  if (key === '욕구'){
+    const max = stats?.des ?? 50;
+    return Math.min(max, Math.round(cur + max * 0.03 * h));
+  }
+  if (key === '체력'){
+    const max = stats?.hp ?? 50;
+    return Math.max(0, Math.round(cur - max * 0.04 * h));
+  }
+  return cur;
+}
+const DRIFT_ON_TIME = ['취기','긴장','욕구','체력'];
+
 async function clampStatusInText(text){
+  if (!S.chat) return text;
+  if (!readStatus(text)){
+    /* 모델이 형식을 놓친 턴. 직전 값으로 이어 붙이고 그대로 진행한다. */
+    const m0 = await getMem(S.chat.id);
+    const grafted = graftStatus(text, m0.stateCard);
+    if (!readStatus(grafted)) return text;
+    text = grafted;
+  }
   const stt = readStatus(text);
-  if (!stt || !S.chat) return text;
+  if (!stt) return text;
   const mem = await getMem(S.chat.id);
   /* 날이 바뀌었으면 어제 값에서 이어붙이지 않고 그 날의 출발값으로 갈아 끼운다.
      어제 대비 변화폭은 의미가 없으므로 붙이지 않는다. */
+  const gone = hoursBetween(mem.stateCard['일시'], stt['일시']);
   const fresh = dayReset(stt, mem.stateCard, S.character?.profile?.stats, S.chat.id);
   if (fresh) for (const [k, v] of Object.entries(fresh)) stt[k] = v;
   /* 장소·외관은 모델이 빠뜨려도 직전 값으로 채운다 */
@@ -2099,13 +2655,28 @@ async function clampStatusInText(text){
   for (const key of NUMERIC_STATS){
     /* 새 날의 출발값은 어제와 이어지지 않으므로 변화폭 제한을 걸지 않는다 */
     if (fresh && fresh[key] !== undefined) continue;
-    /* 모델이 빠뜨린 수치는 직전 값을 그대로 채워 넣는다. 매번 전부 보이게 하기 위함이다. */
+    /* 모델이 빠뜨린 수치는 직전 값을 채워 넣되, 시간에 따라 움직이는 것은 흘려 준다.
+       가만히 두면 밤새 취해 있고 긴장이 영영 안 풀린다. */
     if (stt[key] === undefined){
-      if (mem.stateCard[key] !== undefined) stt[key] = String(mem.stateCard[key]).replace(/\(.*\)/, '');
+      if (mem.stateCard[key] === undefined) continue;
+      const was = parseInt(String(mem.stateCard[key]).match(/-?\d+/)?.[0] ?? '0', 10);
+      let v = was;
+      if (DRIFT_ON_TIME.includes(key))
+        v = timeDrift(key, was, gone, mem.stateCard, S.character?.profile?.stats);
+      const d = v - was;
+      stt[key] = String(v) + (d ? '(' + (d > 0 ? '+' : '') + d + ')' : '');
       continue;
     }
     stt[key] = clampStatDelta(key, stt[key], mem.stateCard[key]);
   }
+  /* 몸이 풀린 장면이면 욕구는 거기서 떨어진다. 잠을 자야만 내려가던 것이 어색했다. */
+  if (released(text)){
+    const mx = S.character?.profile?.stats?.des ?? 50;
+    const now0 = parseInt(String(stt['욕구'] ?? mem.stateCard['욕구'] ?? mx).match(/-?\d+/)?.[0] ?? mx, 10);
+    const to = Math.round(mx * 0.15);
+    if (now0 > to) stt['욕구'] = String(to) + '(' + (to - now0) + ')';
+  }
+
   /* 인사와 잡담에도 +1 씩 붙어 관계가 슬금슬금 오르는 일이 있다. 규칙만으로는 안 잡힌다.
      작은 변화는 최근 몇 턴 안에 이미 움직였으면 되돌린다. 관계를 뒤집는 큰 사건은 통과시킨다. */
   const REL_KEYS = ['호감','반감','경계'], REL_GAP = 3, REL_BIG = 5;
@@ -2163,6 +2734,9 @@ async function clampStatusInText(text){
    떡밥은 요약(maybeSummarize)이 별도로 붙잡아 장기 기억에 남기므로 여기서 지워도
    완전히 사라지지는 않는다. */
 const EPHEMERAL_STATS = ['소지품','미해결'];
+/* 둘만 있는 자리가 아니게 되면서, 지금 누가 함께 있는지가 중요해졌다.
+   혼자가 아닌 이상 늘 보여 준다. */
+const ALONE_RE = /^(없음|혼자|둘만|아무도|없다)/;
 /* 요약기가 상태 카드에 쓸 수 있는 항목. 나머지는 상태 줄이 책임진다. */
 const SUMMARY_FIELDS = ['관계','분위기'];
 /* 상태 줄에 매번 다 싣기에는 길어서 이번 턴에 언급된 것만 적게 했다.
@@ -2260,6 +2834,69 @@ async function applyDrift(text){
   await dbPut('memory', mem);
   toast(d.label + ' 기준이 ' + (d.delta > 0 ? '+1' : '-1') + ' 움직였습니다', 3500);
 }
+/* 이름을 달고 말한 사람은 다음 턴부터 조연으로 다뤄져야 한다.
+   손으로 적어 넣기 전에는 목록이 비어 있어 모델이 매번 새로 지어냈다. */
+/* 「[조연변화] 박서준 = 태도 적대 · 특징 회식 이후 거리를 둠」 을 읽는다.
+   이름 뒤의 항목만 바뀌고 나머지는 그대로 남는다. 잠근 인물은 건드리지 않는다. */
+const CASTCH_RE = /^[ \t]*\[?조연변화\]?[ \t]*[:：]?[ \t]*([^\n]+)$/gm;
+function readCastChanges(txt){
+  const out = [];
+  for (const m of String(txt || '').matchAll(CASTCH_RE)){
+    const line = m[1].trim();
+    const eq = line.indexOf('=');
+    if (eq < 1) continue;
+    const name = line.slice(0, eq).trim();
+    if (!name || name.length > 12) continue;
+    const set = {};
+    for (const part of line.slice(eq + 1).split(/\s*[·,]\s*/)){
+      const g = part.trim().match(/^([가-힣]{2,3})\s+(.+)$/);
+      if (!g) continue;
+      const f = CAST_FIELDS.find(x => x.t === g[1]);
+      if (!f || f.k === 'name') continue;
+      set[f.k] = g[2].trim().slice(0, f.max);
+    }
+    if (Object.keys(set).length) out.push({name, set});
+  }
+  return out;
+}
+async function applyCastChanges(text){
+  if (!S.chat) return [];
+  const list = [...(S.chat.cast || [])];
+  const done = [];
+  for (const ch of readCastChanges(text)){
+    const p = list.find(x => x.name === ch.name);
+    if (!p || p.lock) continue;      /* 잠근 인물은 손대지 않는다 */
+    Object.assign(p, ch.set);
+    p.moved = now();
+    done.push(ch.name + ' — ' + Object.entries(ch.set)
+      .map(([k, v]) => (CAST_FIELDS.find(f => f.k === k)?.t || k) + ' ' + v).join(' · '));
+  }
+  if (done.length){ S.chat.cast = list; await dbPut('chats', S.chat); }
+  return done;
+}
+
+async function noteCast(text){
+  if (!S.chat) return;
+  const cn = S.character?.name || '', un = S.persona?.name || '나';
+  const have = new Set((S.chat.cast || []).map(p => p.name));
+  const found = [];
+  for (const m of String(text || '').matchAll(/^\s*([가-힣]{2,4})\s*[:：]\s*["\u201c']/gm)){
+    const nm = m[1];
+    if (nm === cn || nm === un || have.has(nm) || found.includes(nm)) continue;
+    if (/^(그녀|그들|누군가|사람들|목소리)$/.test(nm)) continue;
+    found.push(nm);
+  }
+  if (!found.length) return;
+  const list = [...(S.chat.cast || [])];
+  for (const nm of found){
+    if (list.length >= 12) break;
+    list.push({name: nm, note: '대화에 등장 — 설명을 채워 주십시오'});
+  }
+  S.chat.cast = list;
+  await dbPut('chats', S.chat);
+  toast('조연에 ' + found.join(' · ') + ' 을 올렸습니다', 3000);
+}
+
 async function syncStatus(text){
   if (!S.chat) return;
   const stt = readStatus(text);
@@ -2280,6 +2917,9 @@ async function syncStatus(text){
     if (stt[key] === undefined) delete nextCard[key];
   }
   mem.keeps = updateKeeps(mem.keeps, stt, S.messages.length);
+  await noteCast(text);
+  const moved = await applyCastChanges(text);
+  if (moved.length) toast('조연이 바뀌었습니다 — ' + moved.join(' / '), 3500);
   mem.stateCard = nextCard;
   mem.updatedAt = now();
   await dbPut('memory', mem);
@@ -2292,7 +2932,7 @@ async function buildContext(userText){
   const sys = buildSystem(S.character, S.persona, S.messages.length < 12, mem.drift);
 
   const stateTxt = fmtState(mem.stateCard, S.character?.profile?.stats);
-  const fixed = estTok(sys) + estTok(stateTxt) + estTok(mem.summary);
+  const fixed = estTok(sys) + estTok(stateTxt) + estTok(fmtEras(mem));
   /* 단기 창은 남는 예산 전부를 쓰되 최소선을 보장한다 */
   const winBudget = Math.max(500, B.total - fixed - B.recall);
 
@@ -2313,7 +2953,8 @@ async function buildContext(userText){
      보관함에서 꺼내 함께 보낸다. 오래 살아남은 것부터 넣고 길이를 잘라 쓴다. */
   const keepTxt = fmtKeeps(mem.keeps, S.messages.length);
   if (stateTxt || keepTxt) blocks.push('[현재 상태]\n' + [stateTxt, keepTxt].filter(Boolean).join('\n'));
-  if (mem.summary) blocks.push('[지금까지의 이야기]\n' + mem.summary);
+  const story = fmtEras(mem);
+  if (story) blocks.push('[지금까지의 이야기 — 회차 순서대로]\n' + story);
   if (hits.length) blocks.push(
     '[관련된 과거 장면 — 원문]\n' + hits.map(m => who(m) + ': ' + m.content).join('\n'));
 
@@ -2387,24 +3028,31 @@ async function maybeSummarize(oldestKept, silent){
   const mem = await getMem(chatId);
   const pending = S.messages.filter(m => m.turnIndex > mem.summarizedUpTo && m.turnIndex < oldestKept);
   if (pending.length < (silent ? SUM_TRIGGER : 1)) return silent ? undefined : toast('요약할 새 대화가 없습니다');
+  /* 한 번에 한 회차만 닫는다. 남은 것은 다음 차례로 넘긴다. */
+  const batch = pending.slice(0, eraCut(pending));
 
   const key = localStorage.getItem(LS.key);
   const model = S.chat.model || S.character.preferredModel || localStorage.getItem(LS.model);
   if (!key || !model) return;
 
   const who = m => m.role === 'user' ? (S.persona?.name || '나') : S.character.name;
+  /* 지난 회차는 이미 적혀 있고 다시 손대지 않는다. 이번 구간만 새 회차로 적는다. */
+  const eraNo = (mem.eras?.length || 0) + 1;
   const prompt =
-    '너는 롤플레잉 대화의 기록 관리자다. [기존 요약]과 [새 대화]를 합쳐 갱신하라.\n\n' +
+    '너는 롤플레잉 대화의 기록 관리자다. 아래 [이번 구간] 을 한 회차로 정리하라.\n\n' +
     '규칙:\n' +
-    '- summary는 500자 이내. 사건의 흐름과 관계 변화 중심으로 쓴다.\n' +
-    '- 사소한 잡담은 버리고, 나중에 다시 언급될 만한 사실만 남긴다.\n' +
-    '- state는 현재 시점의 사실만 적는다. 과거형으로 쓰지 않는다.\n' +
+    '- title 은 이 구간을 한눈에 알아볼 이름. 20자 이내. 「' + eraNo + '회」 같은 번호는 넣지 않는다.\n' +
+    '- text 는 ' + ERA_CHARS + '자 이내. 이 구간에서 실제로 일어난 일과 관계의 변화만 쓴다.\n' +
+    '- **앞선 회차의 내용을 다시 쓰지 않는다.** 이번 구간에 없는 일을 넣지 않는다.\n' +
+    '- 나중에 다시 언급될 만한 것(약속 · 받은 것 · 처음 있었던 일 · 틀어진 지점)을 빠뜨리지 않는다.\n' +
+    '- state 는 지금 시점의 사실만. 과거형으로 쓰지 않는다.\n' +
     '- 오직 JSON만 출력한다. 설명이나 인사를 덧붙이지 않는다.\n\n' +
     '출력 형식:\n' +
-    '{"summary":"...","state":{"관계":"","분위기":""}}\n\n' +
-    '[기존 요약]\n' + (mem.summary || '(없음)') + '\n\n' +
+    '{"title":"...","text":"...","state":{"관계":"","분위기":""}}\n\n' +
+    '[앞선 회차 — 참고만 한다. 다시 쓰지 않는다]\n' +
+    ((mem.eras || []).map(e => e.n + '회 · ' + e.title).join('\n') || '(없음)') + '\n\n' +
     '[기존 상태]\n' + (fmtState(mem.stateCard) || '(없음)') + '\n\n' +
-    '[새 대화]\n' + pending.map(m => who(m) + ': ' + m.content).join('\n');
+    '[이번 구간]\n' + batch.map(m => who(m) + ': ' + m.content).join('\n');
 
   try{
     const res = await fetch(API + '/chat/completions', {
@@ -2421,9 +3069,18 @@ async function maybeSummarize(oldestKept, silent){
     if (!m) throw new Error('요약 형식 오류');
     const j = JSON.parse(m[0]);
 
+    const era = {
+      n: eraNo,
+      from: batch[0].turnIndex,
+      to: batch[batch.length - 1].turnIndex,
+      title: String(j.title || (eraNo + '회')).trim().slice(0, 24),
+      text:  String(j.text || j.summary || '').trim().slice(0, ERA_CHARS + 40),
+      at: now()
+    };
     const next = {
       chatId,
-      summary: String(j.summary || mem.summary || '').trim(),
+      summary: mem.summary || '',
+      eras: [...(mem.eras || []), era],
       /* 요약기는 지나간 턴을 읽으므로 그가 말하는 "지금"은 이미 과거다.
          장소 · 일시 · 수치까지 덮어쓰게 두면 시계가 거꾸로 돌아 가짜 날짜 넘김이 생긴다.
          현재 상태는 매 턴 상태 줄이 책임지고, 요약기는 서사 항목만 손댄다. */
@@ -2432,11 +3089,11 @@ async function maybeSummarize(oldestKept, silent){
            ...Object.fromEntries(Object.entries(j.state)
              .filter(([k, v]) => SUMMARY_FIELDS.includes(k) && v && String(v).trim()))}
         : mem.stateCard,
-      summarizedUpTo: pending[pending.length-1].turnIndex,
+      summarizedUpTo: era.to,
       updatedAt: now()
     };
     await dbPut('memory', next);
-    if (!silent) toast('기억을 갱신했습니다');
+    if (!silent) toast(era.n + '회 · ' + era.title + ' 로 정리했습니다', 3000);
     return next;
   }catch(e){
     /* 요약 실패가 대화를 막아서는 안 된다 */
@@ -2563,7 +3220,7 @@ function fillGenre(g, characterId, personaId){
   const def = genreSlotDefaults()[g.key] || {};
   $('editWho').textContent = g.name + ' — 빈칸 채우기 (비우면 무작위)';
   $('editTa').value = slots.map(sl => sl + ': ' + (def[sl] || '')).join('\n');
-  $('editBox').classList.add('on');
+  openEdit(false);
   $('editOk').onclick = () => {
     const manual = {};
     for (const line of $('editTa').value.split('\n')){
@@ -2572,7 +3229,7 @@ function fillGenre(g, characterId, personaId){
       const k = line.slice(0, i).trim(), v = line.slice(i + 1).trim();
       if (k && v) manual[k] = v;
     }
-    $('editBox').classList.remove('on');
+    closeEdit();
     S.pendingGenre = rollGenre(g.key, manual);
     newChat(characterId, personaId);
   };
@@ -2660,7 +3317,6 @@ function startGuide(c, p){
   const rows = [
     ['말투', speechHint(pf.speech, un)],
     ['관계', (pf.relation || '').split('{{user}}').join(un) || '아직 정해지지 않았습니다'],
-    ['첫 장면', (c.scenario || '').split('{{user}}').join(un).slice(0, 120)],
     ['장르', S.chat?.genre?.name || '없음']
   ].filter(r => r[1]);
   const care = [];
@@ -2677,11 +3333,9 @@ function startGuide(c, p){
     '\n\n[입력]\n- 그냥 쓰면 ' + un + ' 의 대사입니다' +
     '\n- *별표* 로 감싸면 행동입니다' +
     '\n- [지시] 로 시작하면 서술자에게만 주는 지시입니다';
-  $('editTa').readOnly = true;
-  $('editBox').classList.add('on');
+  openEdit(true);
   $('editOk').onclick = () => {
-    $('editTa').readOnly = false;
-    $('editBox').classList.remove('on');
+    closeEdit();
     /* 앱 자체가 처음이라면 이어서 전체 사용법을 한 번 보여 준다 */
     openGuide(false);
   };
@@ -2843,6 +3497,7 @@ function fmt(t, role){
     if (m){ stat = m[1]; return false; }
     const g = line.match(DRIFT_RE);
     if (g){ drift = g[1]; return false; }
+    if (/^[ \t]*\[?조연변화\]?[ \t]*[:：]/.test(line)) return false;
     return true;
   });
   const body = lines.map(line => {
@@ -2855,7 +3510,9 @@ function fmt(t, role){
     if (m && /^["\u201C'\u2018]/.test(m[2].trim())){
       const who = m[1].trim();
       /* 말머리에 이미 내 이름이 붙어 있으므로 주인공 대사는 이름을 생략한다 */
-      const badge = (mine && who === meName) ? '' : '<b>' + esc(who) + '</b> ';
+      /* 말풍선 머리에 이름이 있어도 대사 줄에 한 번 더 붙여 준다.
+         상대 쪽은 그렇게 나오는데 내 쪽만 빠져 있으면 읽는 결이 달라진다. */
+      const badge = '<b>' + esc(who) + '</b> ';
       return '<span class="dlg">' + badge + esc(m[2]) + '</span>';
     }
 
@@ -2919,7 +3576,10 @@ async function suggestReplies(id){
     ].filter(Boolean).join('\n');
     const txt = await askText(p, 420, 1.0);
     const lines = String(txt).split('\n')
-      .map(t => t.replace(/^\s*(?:[0-9]+[.)]|[-*\u2022])\s*/, '').trim())
+      /* 「*한 걸음 다가선다*」의 앞 별표를 글머리표로 오인해 지우고 있었다.
+         별표는 뒤에 짝이 없을 때만 글머리표로 본다. */
+      .map(t => t.replace(/^\s*(?:[0-9]+[.)]|[-\u2022])\s*/, '')
+                 .replace(/^\*\s+(?![^*]*\*)/, '').trim())
       .filter(t => t && t.length <= 80).slice(0, 3);
     if (!lines.length) throw new Error('예시를 받지 못했습니다');
     S.hintMap[id] = lines;
@@ -3045,7 +3705,8 @@ async function swipe(id, dir){
   m.activeVariant = i;
   m.content = m.variants[i];
   await dbPut('messages', m);
-  if (m.role === 'assistant') await syncStatus(m.content);
+  /* 버린 답의 소지품 · 미해결이 남지 않게 통째로 다시 쌓는다 */
+  if (m.role === 'assistant') await rebuildMemory(S.chat.id, S.messages);
   renderMsgs(false);
 }
 
@@ -3056,7 +3717,7 @@ function editMsg(id){
   $('editWho').textContent =
     (m.role === 'user' ? (S.persona?.name || '나') : S.character.name) + ' — 메시지 편집';
   $('editTa').value = m.content;
-  $('editBox').classList.add('on');
+  openEdit(false);
   $('editTa').focus();
   $('editOk').onclick = async () => {
     const v = $('editTa').value;
@@ -3064,7 +3725,8 @@ function editMsg(id){
     if (m.variants?.length) m.variants[m.activeVariant || 0] = v;
     else m.variants = [v];
     await dbPut('messages', m);
-    $('editBox').classList.remove('on');
+    await rebuildMemory(S.chat.id, S.messages);
+    closeEdit();
     renderMsgs(false); toast('반영했습니다');
   };
 }
@@ -3074,6 +3736,46 @@ function copyMsg(id){
 }
 /* 장면 밖 문답 한 번이 최근 대화창에 남으면 모델이 그 형식을 계속 따라 한다.
    뒤 내용을 살리면서 그 한 개만 들어낸다. */
+/* 남은 말풍선의 상태 줄을 처음부터 다시 훑어 기억을 새로 만든다.
+   삭제 · 편집으로 과거가 바뀌면 반드시 이것을 부른다.
+     stateCard  — 상태 줄을 순서대로 덮어쓴다. 소지품 · 미해결은 언급된 턴에만 남긴다
+     keeps      — 보관함도 같은 순서로 다시 쌓는다
+     drift      — [기준변화] 를 다시 센다
+     summary    — 잘라낸 지점이 이미 요약된 구간 안이면 되살릴 방법이 없다.
+                  요약을 비우고 처음부터 다시 만들게 한다. */
+async function rebuildMemory(chatId, msgs){
+  const mem = await getMem(chatId);
+  const list = (msgs || []).filter(m => m.role === 'assistant');
+  const card = {}, drift = {};
+  let keeps = [];
+  list.forEach((m, i) => {
+    const stt = readStatus(m.content);
+    if (stt){
+      for (const k of EPHEMERAL_STATS) delete card[k];
+      Object.assign(card, stt);
+      keeps = updateKeeps(keeps, stt, i + 1);
+    }
+    const d = readDrift(m.content);
+    if (d){
+      const next = Math.max(-DRIFT_LIMIT, Math.min(DRIFT_LIMIT, (drift[d.key] || 0) + d.delta));
+      drift[d.key] = next;
+    }
+  });
+  const lastTurn = msgs.length ? msgs[msgs.length - 1].turnIndex : -1;
+  mem.stateCard = card;
+  mem.keeps = keeps;
+  mem.drift = drift;
+  /* 회차는 통째로 버리지 않는다. 잘려 나간 구간을 담은 회차만 떼어 낸다. */
+  const before = (mem.eras || []).length;
+  mem.eras = (mem.eras || []).filter(e => e.to <= lastTurn);
+  mem.eras.forEach((e, i) => { e.n = i + 1; });
+  const lost = mem.eras.length < before;
+  mem.summarizedUpTo = mem.eras.length ? mem.eras[mem.eras.length - 1].to : -1;
+  mem.updatedAt = now();
+  await dbPut('memory', mem);
+  return lost;
+}
+
 async function dropOne(id){
   const m = S.messages.find(x => x.id === id); if (!m) return;
   if (!confirm('이 메시지 하나만 대화에서 들어냅니다.\n앞뒤 내용은 그대로 남습니다.')) return;
@@ -3083,7 +3785,9 @@ async function dropOne(id){
   for (const x of S.messages) await dbPut('messages', x);
   S.chat.messageCount = S.messages.length;
   await dbPut('chats', S.chat);
-  renderMsgs(); toast('한 개를 들어냈습니다');
+  const lost = await rebuildMemory(S.chat.id, S.messages);
+  renderMsgs();
+  toast(lost ? '한 개를 들어냈습니다 — 요약은 다시 만들어집니다' : '한 개를 들어냈습니다');
 }
 async function cutFrom(id){
   const m = S.messages.find(x=>x.id===id); if (!m) return;
@@ -3093,7 +3797,9 @@ async function cutFrom(id){
   S.messages = S.messages.filter(x => x.turnIndex < m.turnIndex);
   S.chat.messageCount = S.messages.length;
   await dbPut('chats', S.chat);
+  const lost = await rebuildMemory(S.chat.id, S.messages);
   renderMsgs();
+  if (lost) toast('되돌렸습니다 — 요약은 다시 만들어집니다', 3000);
 }
 
 $('cBack').onclick = () => { show('vChats'); loadAll().then(renderChats); };
@@ -3179,21 +3885,56 @@ function novelLine(m, un, cn){
   return body ? (m.role === 'user' ? un : cn) + ': ' + body : '';
 }
 
-function novelChunks(){
+/* 5,000자씩 앞에서부터 채우면 마지막 칸에 나머지가 몰려 분량이 널뛴다.
+   장 수를 정해 주면 그 수만큼 고르게 나눈다. 안 주면 길이로 알아서 정한다. */
+function novelChunks(want){
   const cn = S.character?.name || '상대', un = S.persona?.name || '나';
   const lines = S.messages.map(m => novelLine(m, un, cn)).filter(Boolean);
-  const out = []; let cur = '';
+  if (!lines.length) return [];
+  const total = lines.reduce((a, l) => a + l.length + 1, 0);
+  let n = (want > 0) ? Math.min(Math.round(want), lines.length)
+                     : Math.max(1, Math.ceil(total / NOVEL_CHUNK));
+  /* 한 장이 그릇보다 너무 커지면 모델이 뒤를 버린다. 그때는 장을 더 쪼갠다. */
+  while (n < lines.length && total / n > NOVEL_CHUNK * 1.5) n++;
+  n = Math.max(1, n);
+  const target = total / n;
+  const out = Array.from({length: n}, () => '');
+  let acc = 0, k = 0;
   for (const l of lines){
-    if (cur.length + l.length > NOVEL_CHUNK && cur){ out.push(cur); cur = ''; }
-    cur += l + '\n';
+    out[k] += l + '\n';
+    acc += l.length + 1;
+    while (k < n - 1 && acc >= target * (k + 1)) k++;
   }
-  if (cur.trim()) out.push(cur);
+  return out.filter(x => x.trim());
+}
+
+/* 설계도의 「장 구성」에서 장별 한 줄 요약을 뽑는다.
+   이것이 집필의 계약이 된다 — 장 수도 내용도 여기서 정해진다. */
+/* 한 장에 들어갈 수 있는 원문은 NOVEL_CHUNK 안팎이다.
+   너무 잘게 쪼개면 장마다 사건이 없고, 너무 뭉치면 모델이 뒤를 버린다. */
+function chapterRange(){
+  const total = novelChunks().reduce((a, c) => a + c.length, 0);
+  const lo = Math.max(2, Math.ceil(total / (NOVEL_CHUNK * 1.4)));
+  const hi = Math.max(lo, Math.ceil(total / (NOVEL_CHUNK * 0.7)));
+  return {total, lo, hi};
+}
+function outlineChapters(outline){
+  const t = String(outline || '');
+  const m = t.match(/장\s*구성\s*[:：]([\s\S]*?)(?:\n\s*(?:관통\s*요소|주의|인물|시점)\s*[:：]|$)/);
+  if (!m) return [];
+  const out = [];
+  for (const raw of m[1].split('\n')){
+    const line = raw.trim();
+    if (!line) continue;
+    const g = line.match(/^(?:\d{1,2}\s*[.)장]|[-•·])\s*(.+)$/);
+    if (g && g[1].trim()) out.push(g[1].trim().slice(0, 120));
+  }
   return out;
 }
 
 /* 원고의 뼈대. 사용자의 「계속 적용」 요청이 여기에 쌓인다. */
 function novelBook(){
-  S.chat.novel = S.chat.novel || {outline:'', standing:[], sections:[], at:0};
+  S.chat.novel = S.chat.novel || {outline:'', standing:[], sections:[], at:0, job:null};
   return S.chat.novel;
 }
 
@@ -3202,9 +3943,12 @@ const NOVEL_RULES = [
   '- 대화 로그 형식을 버리고 산문으로 쓴다. 상태 줄과 [지시] 는 옮기지 않는다.',
   '- 사건의 순서를 지키되 지루한 반복은 묶는다. 없는 사건을 만들지 않는다.',
   '- 인물의 이름과 관계, 장소와 시간의 흐름을 원문대로 유지한다.',
-  '- **원문에서 지시로 건너뛴 자리, 주인공의 대사가 생략된 자리는 최소한으로 메운다.**',
+  '- **원문에서 지시로 건너뛴 자리, 대사가 생략된 자리, 그냥 넘어간 자리는 최소한으로 메운다.**',
   '  이 글만 읽는 사람이 「왜 갑자기 이렇게 됐지」 하고 멈추지 않을 만큼만 덧붙인다.',
   '  없던 사건을 만들지 말고, 이미 일어난 일 사이의 빈 곳만 잇는다.',
+  '  메운 자리가 원문의 다른 곳과 부딪히면 안 된다. 부딪힐 것 같으면 메우지 말고 넘어간다.',
+  '- **장르와 장면에 어울리는 표현을 쓴다.** 긴박한 자리에서 늘어놓지 않고, 잔잔한 자리에서 몰아붙이지 않는다.',
+  '  같은 사건이라도 어느 장르의 어느 대목인지에 따라 문장의 호흡과 낱말이 달라야 한다.',
   '- 소설 본문만 출력한다. 머리말 · 장 제목 · 설명을 붙이지 않는다.'
 ].join('\n');
 
@@ -3228,6 +3972,12 @@ async function novelOutline(seedAsk){
   if (chunks.length > 1) pick3.push(chunks[chunks.length - 1].slice(-1400));
 
   const mem = S.chat ? (S.mems?.[S.chat.id] || await getMem(S.chat.id)) : null;
+  /* 장 수를 자유롭게 두면 원문 길이와 맞지 않아 집필 단계에서 다시 쪼개진다.
+     여기서 범위를 못박아 설계도와 집필이 처음부터 같은 수를 보게 한다. */
+  const RG = chapterRange();
+  const RANGE_NOTE = '원문이 약 ' + Math.round(RG.total / 1000) + '천 자다. ' +
+    '반드시 ' + RG.lo + '장 이상 ' + RG.hi + '장 이하로 나눈다.' +
+    (RG.lo === RG.hi ? '' : ' 이 범위를 벗어나면 안 된다.');
   const ask = [
     '아래 롤플레잉 대화를 소설로 옮기려 한다. 본문을 쓰기 전에 **설계도**를 먼저 만든다.',
     '설계도는 이후 모든 장이 참조하는 기준이며, 전체를 관통하는 것만 담는다.',
@@ -3236,13 +3986,27 @@ async function novelOutline(seedAsk){
     '',
     '시점과 문체: (인칭 · 시제 · 문장 호흡 · 어조를 한 줄로)',
     '인물: (이름과 한 줄 소개. 등장 순서대로)',
-    '장 구성: (전체를 몇 장으로 나눌지와 각 장의 한 줄 요약. 번호를 붙인다)',
+    '장 구성: (각 장의 한 줄 요약. 「1. 」 처럼 번호를 붙여 한 줄에 하나씩 쓴다.',
+    '        ' + RANGE_NOTE,
+    '        대화가 흘러간 시간 순서를 그대로 따른다. 앞뒤를 뒤섞지 않는다.',
+    '        각 장이 비슷한 분량이 되도록 나눈다. 한 장에 몰아넣지 않는다.)',
     '관통 요소: (되풀이되는 사물 · 말버릇 · 상징. 없으면 생략)',
-    '주의: (원문에서 건너뛰어 독자가 의문을 가질 만한 지점과 어떻게 메울지)',
+    '주의: (아래 두 가지를 나눠 적는다.',
+    '      (가) 원문에서 건너뛰어 독자가 의문을 가질 만한 지점과 어떻게 메울지.',
+    '      (나) **원문 안에서 앞뒤가 어긋나는 지점.** 설정이 도중에 바뀌었거나, 있던 것이 없어졌거나,',
+    '          시간이 맞지 않는 곳을 찾아 「N번째 장면에서 ~가 어긋난다」 처럼 짚어 둔다.',
+    '          메워서 될 일이 아니면 그렇게 적는다. 없으면 「없음」 이라고 쓴다.)',
     ''
   ];
+  /* 고정 입력이 설계도에 안 실려 「1인칭 현재시제」 같은 지시가 통째로 무시되고 있었다.
+     설계도가 이후 모든 장의 기준이므로 여기부터 반영해야 한다. */
+  const b0 = novelBook();
+  if (b0.standing?.length)
+    ask.push('[계속 적용되는 요청 — 설계도의 시점과 문체에 반드시 반영한다]\n' +
+             b0.standing.map(x => '- ' + x).join('\n'), '');
   if (seedAsk) ask.push('[사용자 요청 — 무엇보다 우선한다]\n' + seedAsk, '');
-  if (mem?.summary) ask.push('[지금까지의 이야기]\n' + mem.summary, '');
+  const story = mem ? fmtEras(mem) : '';
+  if (story) ask.push('[지금까지의 이야기 — 회차 순서대로]\n' + story, '');
   ask.push('[대화 발췌]\n' + pick3.join('\n…\n'));
 
   novelBusy('설계도를 뽑는 중', 5);
@@ -3263,23 +4027,36 @@ async function novelOutline(seedAsk){
 
 /* ── 2단계 · 장 하나 ── */
 async function novelWriteOne(i, extra, prevTail){
-  const chunks = novelChunks();
+  const b = novelBook();
+  const plan = outlineChapters(b.outline);
+  const chunks = novelChunks(plan.length);
   if (i >= chunks.length) return null;
   const spec = novelSpec();
   const head = i === 0
     ? '아래 대화 구간을 소설의 첫 장으로 써라.'
     : '아래는 앞 장의 끝부분과 이어지는 대화 구간이다. 자연스럽게 이어 써라. 이미 쓴 부분을 되풀이하지 않는다.';
-  const ask = [head, spec, NOVEL_RULES,
-    prevTail ? '[앞 장의 끝]\n' + prevTail : '',
+  /* 이 장이 설계도의 몇 번째이고 무엇을 담기로 했는지 알려 준다.
+     이것이 없으면 장 제목과 내용이 설계도와 어긋난다. */
+  const mine = plan[i];
+  const next = plan[i + 1];
+  const where = plan.length
+    ? '[이 장의 자리]\n' + (i + 1) + '장 / 전체 ' + plan.length + '장' +
+      (mine ? '\n이 장이 담기로 한 것: ' + mine : '') +
+      (next ? '\n다음 장이 담을 것: ' + next +
+              '\n이 장은 다음 장으로 넘어갈 수 있는 자리에서 끝낸다. 다음 장의 내용을 미리 쓰지 않는다.'
+            : '\n이 장이 마지막이다. 이야기를 닫는다.')
+    : '';
+  const ask = [head, spec, where, NOVEL_RULES,
+    prevTail ? '[앞 장의 끝 — 여기서 자연스럽게 이어 붙인다]\n' + prevTail : '',
     extra ? '[이번 장에만 반영할 요청]\n' + extra : '',
-    '[대화 원문]\n' + chunks[i]].filter(Boolean).join('\n\n');
+    '[대화 원문 — 이 장은 이 구간만 다룬다]\n' + chunks[i]].filter(Boolean).join('\n\n');
 
   let text = '';
   let r = await askTextEx(ask, NOVEL_OUT, 0.85, novelModel());
   text = r.text;
   /* 잘렸으면 이어받는다. 끝 문장을 물려주어 겹치지 않게 한다. */
   for (let k = 0; k < NOVEL_CONT && r.cut; k++){
-    novelBusy((i + 1) + '장을 이어받는 중', null);
+    novelBusy((i + 1) + '장을 이어받는 중', null, null);
     r = await askTextEx('아래 글의 바로 다음부터 이어 써라. 이미 쓴 부분을 되풀이하지 말고, 문장 도중이면 그 문장부터 이어 붙인다.\n\n' +
       spec + '\n\n[지금까지]\n' + text.slice(-NOVEL_KEEP), NOVEL_OUT, 0.85, novelModel());
     text += (/[.!?…"”]$/.test(text.trim()) ? '\n\n' : '') + r.text;
@@ -3288,37 +4065,71 @@ async function novelWriteOne(i, extra, prevTail){
 }
 
 /* ── 전체 집필 ── */
-async function novelWriteAll(){
-  const chunks = novelChunks();
-  if (!chunks.length) return toast('옮길 대화가 없습니다');
+async function novelWriteAll(from){
+  if (!novelChunks().length) return toast('옮길 대화가 없습니다');
   const b = novelBook();
   if (!b.outline){ if (!await novelOutline(null)) return; }
+  /* 이어 쓰기면 이미 있는 장을 그대로 두고 그 다음부터 시작한다 */
+  const start = Math.max(0, from || 0);
+  /* 설계도가 정한 장 수대로 원문을 나눈다. 설계도에서 장을 못 읽으면 길이로 정한다. */
+  const plan = outlineChapters(b.outline);
+  const chunks = novelChunks(plan.length);
+  if (plan.length && plan.length !== chunks.length)
+    $('novelInfo').textContent = '설계도는 ' + plan.length + '장인데 원문이 ' +
+      chunks.length + '장으로 나뉘었습니다 — 나뉜 대로 씁니다';
   S.novelStop = false;
-  const t0 = performance.now();
-  const sections = [];
-  for (let i = 0; i < chunks.length; i++){
+  const t0 = now();
+  const eta = makeEta(chunks.length - start);
+  const sections = start ? (b.sections || []).slice(0, start) : [];
+  if (start) say('ok', start + '장까지는 이미 있어 그다음부터 이어 썼습니다');
+  /* 어디까지 했는지 남겨 둔다. 탭이 죽어도 이것이 남아 이어 쓸 수 있다. */
+  b.job = {total: chunks.length, at: now(), t0};
+  await dbPut('chats', S.chat);
+  /* 쓰는 동안 걸린 것을 모아 둔다. 끝에 한 번에 보여 준다. */
+  const report = [];
+  const say = (k, t) => report.push({k, t});
+  if (plan.length && plan.length !== chunks.length)
+    say('warn', '설계도는 ' + plan.length + '장인데 원문이 ' + chunks.length + '장으로 나뉘어 그대로 썼습니다');
+  if (!plan.length)
+    say('warn', '설계도에서 장 목록을 읽지 못해 길이로 나눴습니다');
+  for (let i = start; i < chunks.length; i++){
     if (S.novelStop) break;
-    const per = i ? (performance.now() - t0) / i : 0;
-    const left = per ? Math.round(per * (chunks.length - i) / 1000) : null;
-    const eta = left ? '  ·  남은 시간 약 ' + (left >= 60 ? Math.round(left / 60) + '분' : left + '초') : '';
-    novelBusy((i + 1) + '/' + chunks.length + '장을 쓰는 중' + eta,
-              Math.round(i / chunks.length * 100));
+    novelBusy((i + 1) + '/' + chunks.length + '장을 쓰는 중',
+              Math.round(i / chunks.length * 100), eta(i - start));
     try{
       const tail = sections.length ? sections[sections.length - 1].text.slice(-NOVEL_KEEP) : '';
       const text = await novelWriteOne(i, null, tail);
-      sections.push({i, title: (i + 1) + '장', text, at: now()});
+      sections.push({i, title: (i + 1) + '장' + (plan[i] ? ' · ' + plan[i].slice(0, 24) : ''),
+                     text, at: now()});
+      if (!text || text.length < 200) say('warn', (i + 1) + '장이 유난히 짧습니다 — 다시 써 보십시오');
       b.sections = sections.slice();
+      b.job = {total: chunks.length, at: now(), t0};
       await dbPut('chats', S.chat);
       paintNovel();
     }catch(e){
-      novelBusy(null);
+      say('bad', (i + 1) + '장에서 멈췄습니다 — ' + e.message);
+      b.report = {at: now(), lines: report};
+      b.sections = sections.slice();
+      await dbPut('chats', S.chat);
+      novelBusy(null); paintNovel();
+      noteDone('소설 재구성 실패', (i + 1) + '장에서 멈춤 · ' + e.message, t0, false);
       $('novelInfo').textContent = (i + 1) + '장에서 실패: ' + e.message +
         (sections.length ? '  ·  ' + sections.length + '장까지는 남겨 두었습니다' : '');
       return;
     }
   }
+  if (S.novelStop) say('warn', '중간에 멈췄습니다 — ' + sections.length + '장까지 있습니다');
+  say('ok', sections.length + '장 · ' + sections.reduce((a, x) => a + x.text.length, 0).toLocaleString() + '자');
+  say('ok', '걸린 시간 ' + tookText(now() - t0));
+  if (!report.some(x => x.k !== 'ok')) say('ok', '걸린 것 없이 끝났습니다');
+  b.report = {at: now(), lines: report};
   b.sections = sections;
   b.at = now();
+  /* 다 썼으면 표시를 지운다. 중간에 멈췄으면 남겨 두어 이어 쓸 수 있게 한다. */
+  b.job = (sections.length >= chunks.length) ? null : {total: chunks.length, at: now(), t0};
+  noteDone('소설 재구성' + (S.novelStop ? ' (중단)' : ''),
+    sections.length + '장 · ' + sections.reduce((a, x) => a + x.text.length, 0).toLocaleString() + '자',
+    t0, !S.novelStop);
   pushNovelVer(S.novelStop ? '중단됨' : '처음부터 · ' + sections.length + '장');
   await dbPut('chats', S.chat);
   novelBusy(null); paintNovel();
@@ -3331,7 +4142,13 @@ async function novelRedoOne(i, extra){
   try{
     const tail = i > 0 && b.sections[i - 1] ? b.sections[i - 1].text.slice(-NOVEL_KEEP) : '';
     const text = await novelWriteOne(i, extra, tail);
-    b.sections[i] = {i, title: (i + 1) + '장', text, at: now(), note: extra || ''};
+    const pl = outlineChapters(b.outline)[i];
+    b.sections[i] = {i, title: (i + 1) + '장' + (pl ? ' · ' + pl.slice(0, 24) : ''),
+                     text, at: now(), note: extra || ''};
+    /* 끝단 보고를 갱신한다 — 중간에 장을 고쳐도 마지막 상태가 남게 */
+    const ln = (b.report?.lines || []).filter(x => !/^\d+장을 다시/.test(x.t));
+    ln.push({k:'ok', t: (i + 1) + '장을 다시 썼습니다' + (extra ? ' — ' + extra : '')});
+    b.report = {at: now(), lines: ln};
     pushNovelVer((i + 1) + '장 · ' + (extra || '다시 쓰기'));
     await dbPut('chats', S.chat);
   }catch(e){ $('novelInfo').textContent = '실패: ' + e.message; }
@@ -3366,7 +4183,7 @@ function pushNovelVer(note){
 const novelText = () => (novelBook().sections || []).map(x => x.text).join('\n\n');
 
 /* ── 화면 ── */
-function novelBusy(what, pct){
+function novelBusy(what, pct, eta){
   const bar = $('novelBar');
   if (!what){
     busy(null);
@@ -3374,7 +4191,12 @@ function novelBusy(what, pct){
     ['novelFull','novelOnce','novelKeep','novelPlan'].forEach(id => { const e = $(id); if (e) e.disabled = false; });
     return;
   }
-  busy('steps', '소설 재구성');
+  /* 배너에도 같은 진행률과 남은 시간을 띄우고, 거기서 멈출 수 있게 한다 */
+  /* 장마다 저장되고 이어 쓸 수 있으므로 붙잡아 둘 필요가 없다 */
+  busy('resume', '소설 — ' + what, {
+    pct, eta, wave: pct == null,
+    stop: () => { S.novelStop = true; toast('이번 장을 마치고 멈춥니다', 3000); }
+  });
   bar.style.display = 'block';
   if (pct != null) bar.firstElementChild.style.width = Math.max(3, Math.min(100, pct)) + '%';
   $('novelInfo').textContent = what;
@@ -3402,9 +4224,13 @@ function paintNovel(){
   const head = '<div class="nvHead">' +
     (b.outline
       ? '<div class="nvCard"><div class="nvTop"><b>설계도</b>' +
+        '<div class="sp"></div>' +
+        '<button class="nvBtn" id="novelRulesBtn">기본 지침</button>' +
         '<button class="nvBtn" id="novelPlanEdit">고치기</button></div>' +
         foldText(b.outline, 'plan') + '</div>'
-      : '<div class="nvCard nvEmpty">설계도가 아직 없습니다. 먼저 뽑으면 모든 장이 같은 기준을 따릅니다.</div>') +
+      : '<div class="nvCard nvEmpty"><div class="nvTop"><div class="sp"></div>' +
+        '<button class="nvBtn" id="novelRulesBtn">기본 지침 보기</button></div>' +
+        '설계도가 아직 없습니다. 먼저 뽑으면 모든 장이 같은 기준을 따릅니다.</div>') +
     ((b.standing || []).length
       ? '<div class="nvCard"><div class="nvTop"><b>계속 적용 중</b></div>' +
         foldText(b.standing.map(x => '· ' + x).join('\n'), 'stand') + '</div>' : '') +
@@ -3415,11 +4241,35 @@ function paintNovel(){
         '<div class="nvCard"><div class="nvTop"><b>' + esc(sec.title) + '</b>' +
         '<span>' + sec.text.length.toLocaleString() + '자</span>' +
         '<div class="sp"></div>' +
+        '<button class="nvBtn" data-fold="sec' + i + '">' +
+          (S.novelOpen?.['sec' + i] ? '접기' : '펴기') + '</button>' +
         '<button class="nvBtn" data-redo="' + i + '">고치기</button></div>' +
         foldText(sec.text, 'sec' + i) + '</div>').join('')
     : '<div class="nvCard nvEmpty">아직 원고가 없습니다. 아래 「처음부터 쓰기」를 누르십시오.</div>';
 
-  $('novelBody').innerHTML = head + list;
+  /* 다 쓰고 나면 무엇이 걸렸는지 끝에 남긴다. 장이 늘면 여기도 다시 그려진다. */
+  /* 끊긴 작업이 있으면 맨 위에 띄운다. 무엇이 남았는지와 이어 쓰는 단추. */
+  const job = b.job;
+  const left = job ? job.total - (b.sections || []).length : 0;
+  const resume = (job && left > 0)
+    ? '<div class="nvCard nvResume"><div class="nvTop"><b>쓰다 만 원고가 있습니다</b>' +
+      '<span>' + relTime(job.at) + '</span></div>' +
+      '<div class="shint">전체 ' + job.total + '장 중 ' + (b.sections || []).length + '장까지 썼습니다. ' +
+      '쓰던 도중에 멈춘 것이며, 쓴 장은 그대로 남아 있습니다. ' +
+      '남은 ' + left + '장만 이어서 쓰면 됩니다.</div>' +
+      '<button class="btn pri" id="novelResume">' + left + '장 이어 쓰기</button></div>'
+    : '';
+  const rep0 = b.report;
+  const tail = rep0
+    ? '<div class="nvCard nvReport"><div class="nvTop"><b>결과 보고</b>' +
+      '<span>' + relTime(rep0.at) + '</span></div>' +
+      '<div class="nvRep">' +
+      rep0.lines.map(x => '<div class="' + esc(x.k) + '">' + esc(x.t) + '</div>').join('') +
+      '</div></div>'
+    : '';
+  $('novelBody').innerHTML = resume + head + list + tail;
+  const rs = $('novelResume');
+  if (rs) rs.onclick = () => novelWriteAll((b.sections || []).length);
   $('novelBody').querySelectorAll('[data-fold]').forEach(el => el.onclick = () => {
     S.novelOpen = S.novelOpen || {};
     const k = el.dataset.fold;
@@ -3433,9 +4283,21 @@ function paintNovel(){
   });
   const pe = $('novelPlanEdit');
   if (pe) pe.onclick = () => editOutline();
+  const pv = $('novelRulesBtn');
+  if (pv) pv.onclick = () => {
+    $('editWho').textContent = '소설 재구성 — 기본 지침';
+    $('editTa').value =
+      '아래는 장을 쓸 때마다 함께 보내는 기본 지침입니다.\n' +
+      '설계도와 「계속 적용」 요청이 이 위에 얹힙니다.\n\n' +
+      NOVEL_RULES + '\n\n' +
+      '[설계도를 뽑을 때 요구하는 형식]\n' +
+      '시점과 문체 / 인물 / 장 구성 / 관통 요소 / 주의';
+    openEdit(true);
+    $('editOk').onclick = closeEdit;
+  };
 
   $('novelInfo').textContent = (b.sections || []).length
-    ? b.sections.length + '장  ·  ' + total.toLocaleString() + '자  ·  판본 ' + vers.length + '개'
+    ? b.sections.length + '장  ·  원고 ' + total.toLocaleString() + '자  ·  되돌릴 판본 ' + vers.length + '개'
     : '대화 ' + S.messages.length + '개 · 원문 ' +
       chunks.reduce((a, c) => a + c.length, 0).toLocaleString() + '자 · ' +
       chunks.length + '장 예정 · 예상 ' +
@@ -3447,12 +4309,12 @@ function editOutline(){
   const b = novelBook();
   $('editWho').textContent = '설계도 — 이 원고 전체의 기준';
   $('editTa').value = b.outline || '';
-  $('editBox').classList.add('on');
+  openEdit(false);
   $('editOk').onclick = async () => {
     b.outline = $('editTa').value.trim();
     b.at = now();
     await dbPut('chats', S.chat);
-    $('editBox').classList.remove('on');
+    closeEdit();
     paintNovel();
   };
 }
@@ -3532,9 +4394,18 @@ $('novelVerBtn').onclick = () => {
 function castSheet(){
   const cast = S.chat?.cast || [];
   sheet('조연 목록', [
+    {info: true, html:
+      '<span class="pguide"><b>조연은 진행에 따라 바뀝니다.</b><br>' +
+      '대화에서 이름을 달고 말한 사람은 자동으로 이 목록에 올라오고, ' +
+      '관계나 태도가 달라지면 그 칸이 갱신됩니다.<br>' +
+      '<span class="dim">바뀌지 않게 하려면 그 조연을 눌러 <b>고정</b>하십시오. ' +
+      '고정한 조연은 손으로 고칠 때만 바뀝니다.</span></span>'},
     ...cast.map((p, i) => ({
       label: p.name,
-      html: '<b>' + esc(p.name) + '</b><div class="shint">' + esc(p.note || '설명 없음') + '</div>',
+      html: '<b>' + (p.lock ? '🔒 ' : '') + esc(p.name) + '</b>' +
+            (p.moved ? '<span class="ptag">갱신됨</span>' : '') +
+            '<div class="shint">' +
+            esc(castLine(p).replace(/^- [^:]*:?\s*/, '') || '내용 없음') + '</div>',
       run: () => editCast(i)
     })),
     {label:'＋ 조연 추가', run: () => editCast(-1)},
@@ -3544,60 +4415,179 @@ function castSheet(){
     }}] : [])
   ]);
 }
+/* 자유 입력 한 덩이로는 무엇을 적어야 하는지 알 수 없었다.
+   연속성에 실제로 필요한 것만 아홉 칸으로 나눈다. 비워 두면 프롬프트에 안 실린다. */
+const CAST_FIELDS = [
+  {k:'name',  t:'이름',   ph:'예: 박서준',            max:20},
+  {k:'rel',   t:'관계',   ph:'{{user}} 와 어떤 사이인가', max:40},
+  {k:'age',   t:'나이',   ph:'예: 30대 초반',          max:12},
+  {k:'sex',   t:'성별',   ph:'남 / 여',               max:6},
+  {k:'job',   t:'직업',   ph:'예: 같은 팀 대리',        max:24},
+  {k:'look',  t:'겉모습', ph:'한 줄로',               max:40},
+  {k:'speech',t:'말투',   ph:'예: {{user}} 에게 반말',  max:30},
+  {k:'note',  t:'특징',   ph:'지금 상황에서 하는 역할',  max:60},
+  {k:'temp',  t:'태도',   ph:'호의적 / 무심 / 적대',    max:12}
+];
+/* 프롬프트에 실을 한 줄로 눌러 담는다 */
+function castLine(p){
+  const bits = CAST_FIELDS.filter(f => f.k !== 'name' && String(p[f.k] || '').trim())
+    .map(f => f.t + ' ' + String(p[f.k]).trim());
+  return '- ' + p.name + (bits.length ? ': ' + bits.join(' · ') : '') +
+         (p.lock ? ' (고정 — 바꾸지 않는다)' : '');
+}
 function editCast(idx){
   const cast = S.chat?.cast || [];
-  const cur = idx >= 0 ? cast[idx] : {name:'', note:''};
-  $('editWho').textContent = idx >= 0 ? '조연 — ' + cur.name : '조연 추가';
-  $('editTa').value = (cur.name || '') + '\n' + (cur.note || '');
-  $('editBox').classList.add('on');
-  $('editTa').focus();
-  $('editOk').onclick = async () => {
-    const lines = $('editTa').value.split('\n');
-    const name = (lines.shift() || '').trim();
-    const note = lines.join(' ').trim().slice(0, 120);
-    const list = [...(S.chat.cast || [])];
-    if (!name){ if (idx >= 0) list.splice(idx, 1); }
-    else if (idx >= 0) list[idx] = {name, note};
-    else list.push({name, note});
-    S.chat.cast = list;
-    await dbPut('chats', S.chat);
-    $('editBox').classList.remove('on');
-    toast(name ? '저장했습니다' : '지웠습니다');
-    castSheet();
-  };
+  const cur = idx >= 0 ? {...cast[idx]} : {};
+  const un = S.persona?.name || '나';
+  const form = '<div class="castForm">' + CAST_FIELDS.map(f =>
+    '<label><span>' + esc(f.t) + '</span>' +
+    '<input id="cf_' + f.k + '" maxlength="' + f.max + '" placeholder="' +
+    esc(fill(f.ph, S.character?.name, un)) + '" value="' + esc(cur[f.k] || '') + '"></label>'
+  ).join('') + '</div>';
+  sheet(idx >= 0 ? '조연 — ' + (cur.name || '') : '조연 추가', [
+    {info: true, html: form},
+    {label: '저장', run: async () => {
+      const out = {lock: cur.lock, moved: cur.moved};
+      for (const f of CAST_FIELDS) out[f.k] = ($('cf_' + f.k)?.value || '').trim();
+      if (!out.name) return toast('이름은 있어야 합니다');
+      const list = [...(S.chat.cast || [])];
+      if (idx >= 0) list[idx] = out; else list.push(out);
+      S.chat.cast = list;
+      await dbPut('chats', S.chat);
+      toast('저장했습니다'); castSheet();
+    }},
+    ...(idx >= 0 ? [{label: (cur.lock ? '🔒 고정 해제 — 진행에 따라 다시 바뀝니다'
+                                      : '고정 — 진행 중에 바뀌지 않게 합니다'),
+      run: async () => {
+        const list = [...(S.chat.cast || [])];
+        list[idx] = {...list[idx], lock: !list[idx].lock};
+        S.chat.cast = list;
+        await dbPut('chats', S.chat);
+        toast(list[idx].lock ? '고정했습니다' : '고정을 풀었습니다');
+        castSheet();
+      }}] : []),
+    ...(idx >= 0 ? [{label:'이 조연 지우기', danger:true, run: async () => {
+      const list = [...(S.chat.cast || [])];
+      list.splice(idx, 1);
+      S.chat.cast = list;
+      await dbPut('chats', S.chat);
+      toast('지웠습니다'); castSheet();
+    }}] : [])
+  ], castSheet);
 }
 
+/* 장르 한 덩이를 저장한다 */
+async function saveGenre(next){
+  S.chat.genre = next;
+  await dbPut('chats', S.chat);
+}
 function genreSheet(){
   const g = S.chat?.genre;
-  const body = g?.text
-    ? '<b>' + esc(g.name) + '</b><div class="shint">' + esc(g.text) + '</div>'
-    : '<b>없음</b><div class="shint">장르 없이 진행 중입니다.</div>';
-  sheet('장르', [
-    {label:'닫기', html: body, run: () => {}},
-    {label: S.genreOpen ? '🔓 잠금 해제됨 — 다시 잠그기' : '🔒 잠겨 있음 — 눌러서 해제',
-     run: () => { S.genreOpen = !S.genreOpen; genreSheet(); }},
-    ...(S.genreOpen ? [
-      {label:'장르 바꾸기 (진행 중인 이야기와 어긋날 수 있습니다)', danger:true,
-       run: () => changeGenre()},
-      ...(g?.text ? [{label:'같은 장르로 빈칸만 다시 굴리기', run: async () => {
-        S.chat.genre = rollGenre(g.key);
-        await dbPut('chats', S.chat);
-        toast('다시 굴렸습니다'); genreSheet();
-      }}] : [])
-    ] : [])
+  if (!g?.text){
+    return sheet('장르', [
+      {info: true, html: '<b>없음</b><div class="shint">장르 없이 진행 중입니다.</div>'},
+      {label:'장르 고르기', run: () => changeGenre()}
+    ]);
+  }
+  const pc = paceOf(g.pace);
+  const again = () => genreSheet();
+  const slots = Object.entries(g.slots || {});
+  sheet('장르 — ' + g.name, [
+    {info: true, html:
+      '<span class="pguide"><b>' + esc(g.name) + '</b><br>' + esc(g.text) + '</span>'},
+
+    /* 누구에게 걸리는가 — 중복해서 고른다 */
+    {info: true, html: '<span class="pguide"><b>이 장르가 걸리는 쪽</b> ' +
+      '<span class="dim">겹쳐 고를 수 있습니다. 고른 쪽에게만 장르의 상황이 옵니다.</span></span>'},
+    ...GENRE_TARGETS.map(t => ({
+      keep: again,
+      html: ((g.target || []).includes(t.k) ? '☑ ' : '☐ ') + '<b>' + esc(t.t) + '</b>' +
+            '<span class="ksub">' + esc(t.d) + '</span>',
+      run: async () => {
+        const cur = new Set(g.target || []);
+        cur.has(t.k) ? cur.delete(t.k) : cur.add(t.k);
+        if (!cur.size) return toast('적어도 한 쪽은 골라야 합니다');
+        await saveGenre({...g, target: [...cur]});
+      }
+    })),
+
+    /* 얼마나 자주 밀고 들어오는가 */
+    {info: true, html: '<span class="pguide"><b>밀고 들어오는 빈도</b> ' +
+      '<span class="dim">매 턴 들이대면 이야기가 아니라 설정 낭독이 됩니다.</span></span>'},
+    ...GENRE_PACE.map(p => ({
+      keep: again,
+      html: (g.pace === p.k ? '● ' : '○ ') + '<b>' + esc(p.t) + '</b>' +
+            '<span class="ksub">' + esc(p.d) + '</span>',
+      run: async () => { await saveGenre({...g, pace: p.k}); }
+    })),
+
+    /* 구성 요소 — 눌러서 고치고, 자물쇠로 지킨다 */
+    {info: true, html: '<span class="pguide"><b>구성 요소</b> ' +
+      '<span class="dim">눌러서 고칩니다. 🔒 를 걸면 다시 굴려도 그 칸은 그대로입니다.</span></span>'},
+    ...slots.map(([k, v]) => ({
+      html: '<b>' + (g.lock?.[k] ? '🔒 ' : '') + esc(k) + '</b>' +
+            '<span class="ksub">' + esc(v) + '</span>',
+      run: () => editGenreSlot(k)
+    })),
+
+    {label:'빈칸 다시 굴리기 (잠근 칸은 그대로)', run: async () => {
+      await saveGenre(rollGenre(g.key, null, g));
+      toast('다시 굴렸습니다'); genreSheet();
+    }},
+    {label:'장르 바꾸기 — 진행 중인 이야기와 어긋날 수 있습니다', danger: true,
+     run: () => changeGenre()}
   ]);
+}
+
+/* 칸 하나를 고른 목록에서 고르거나 직접 적는다. 자물쇠도 여기서 건다. */
+function editGenreSlot(slot){
+  const g = S.chat.genre;
+  const def = GENRES.find(x => x.key === g.key);
+  const pool = def?.slots?.[slot] || [];
+  const put = async v => {
+    await saveGenre({...g, slots: {...g.slots, [slot]: v},
+                     text: rollGenre(g.key, {...g.slots, [slot]: v}, g).text});
+    genreSheet();
+  };
+  sheet(g.name + ' · ' + slot, [
+    {info: true, html: '<span class="pguide">지금 <b>' + esc(g.slots[slot]) + '</b></span>'},
+    {label: (g.lock?.[slot] ? '🔒 잠금 풀기' : '이 칸 잠그기 — 다시 굴려도 안 바뀝니다'),
+     run: async () => {
+       const lock = {...(g.lock || {})};
+       lock[slot] ? delete lock[slot] : (lock[slot] = true);
+       await saveGenre({...g, lock});
+       toast(lock[slot] ? '잠갔습니다' : '잠금을 풀었습니다');
+       genreSheet();
+     }},
+    {label:'직접 적기', run: () => {
+      $('editWho').textContent = g.name + ' · ' + slot;
+      $('editTa').value = g.slots[slot] || '';
+      openEdit(false);
+      $('editOk').onclick = async () => {
+        const v = $('editTa').value.trim();
+        closeEdit();
+        if (v) await put(v);
+      };
+    }},
+    ...pool.map(v => ({label: (v === g.slots[slot] ? '● ' : '○ ') + v, run: () => put(v)}))
+  ], genreSheet);
 }
 function changeGenre(){
   sheet('바꿀 장르', GENRES.map(x => ({
     label: x.name,
     html: '<b>' + esc(x.name) + '</b><div class="shint">' + esc(x.desc) + '</div>',
     run: async () => {
-      S.chat.genre = rollGenre(x.key);
-      await dbPut('chats', S.chat);
-      S.genreOpen = false;
+      /* 이야기가 이미 굴러가고 있으면 장르 교체는 통째로 어긋나게 만든다. 한 번 묻는다. */
+      const on = (S.chat?.novel?.sections?.length || S.messages.length > 4);
+      if (on && !confirm('장르를 「' + x.name + '」 로 바꿉니다.\n' +
+          '지금까지 쌓인 이야기와 어긋날 수 있습니다.\n계속할까요?')) return;
+      /* 걸리는 쪽과 빈도는 사용자가 정한 것이므로 장르를 바꿔도 이어 간다 */
+      await saveGenre(rollGenre(x.key, null,
+        {target: S.chat.genre?.target, pace: S.chat.genre?.pace}));
       toast('장르를 ' + x.name + ' 로 바꿨습니다');
+      genreSheet();
     }
-  })));
+  })), genreSheet);
 }
 
 /* 세로로 열세 줄이던 것을 아이콘 격자로 바꾼다.
@@ -3608,7 +4598,9 @@ const CHAT_MENU = [
   {i:'🖼', t:'이미지',  run: () => imgModelSheet(),
    now: () => imgLevel().name + ' · ' + (imgTier() === 'hi' ? '고급' : '기본')},
   {i:'🎭', t:'장르',    run: () => genreSheet(),
-   now: () => S.chat?.genre?.name || '없음'},
+   now: () => S.chat?.genre?.name
+     ? S.chat.genre.name + ' · ' + paceOf(S.chat.genre.pace).t
+     : '없음'},
   {i:'👥', t:'조연',    run: () => castSheet(),
    now: () => (S.chat?.cast?.length || 0) + '명'},
   {i:'🧠', t:'기억',    run: () => openMemory()},
@@ -3736,10 +4728,44 @@ function chatModelSheet(){
     {info: true, html: '<span class="pguide">' + PICK_GUIDE + '</span>'},
     {label: (cur ? '○ ' : '● ') + '기본 모델 사용 — 설정에서 정한 것', run: () => setChatModel('')},
     ...items,
-    {label:'전체 목록에서 고르기', run: () => sheet('전체 모델', [
-      ...filtered().slice(0, 60).map(m => ({label: modelLabel(m), run: () => setChatModel(m.id)}))
-    ])}
+    {label:'전체 목록에서 고르기 — 검색', run: () => allModelSheet()}
   ]);
+}
+
+/* 수백 개를 늘어놓아 봐야 고를 수 없다. 찾아서 고르고, 무엇인지 함께 보여 준다. */
+function allModelSheet(q){
+  const cur = S.chat?.model || '';
+  const key = String(q || '').trim().toLowerCase();
+  const all = filtered();
+  const hit = key
+    ? all.filter(m => (m.id + ' ' + (m.name || '')).toLowerCase().includes(key))
+    : all;
+  const pick = new Map(CHAT_PICKS.map(p => [p.id, p]));
+  const rows = hit.slice(0, 40).map(m => {
+    const p = pick.get(m.id);
+    const ctx = m.context_length ? Math.round(m.context_length / 1000) + 'k' : '?';
+    return {
+      html: '<b>' + (m.id === cur ? '● ' : '') + esc(m.name || m.id) + '</b>' +
+        '<span class="ptag">' + ctx + '</span>' +
+        (isFree(m) ? '<span class="ptag ax">무료</span>' : '') +
+        (p ? p.good.map(g => '<span class="ptag ax">' + esc(g) + '</span>').join('') : '') +
+        '<span class="ksub">' + esc(p ? p.d : (m.id)) + '</span>' +
+        '<span class="ksub cost">' + esc(costText(m.id, '')) + '</span>',
+      run: () => setChatModel(m.id)
+    };
+  });
+  sheet('전체 모델' + (key ? ' — 「' + key + '」' : ''), [
+    {info: true, html:
+      '<div class="mfind"><input id="mFindIn" placeholder="이름으로 찾기 — 예: deepseek, free, 70b" ' +
+      'value="' + esc(q || '') + '"><button class="btn" id="mFindGo">찾기</button></div>' +
+      '<span class="pguide dim">' + hit.length.toLocaleString() + '개 중 ' +
+      Math.min(40, rows.length) + '개를 보여 줍니다. 더 좁혀 찾으십시오.</span>'},
+    ...rows,
+    ...(rows.length ? [] : [{info: true, html: '<span class="shint">찾은 모델이 없습니다.</span>'}])
+  ], chatModelSheet);
+  const inp = $('mFindIn'), go = $('mFindGo');
+  if (go) go.onclick = () => allModelSheet(inp.value);
+  if (inp) inp.onkeydown = e => { if (e.key === 'Enter'){ e.preventDefault(); allModelSheet(inp.value); } };
 }
 
 const allFolded = () => {
@@ -3799,9 +4825,23 @@ async function resetContext(){
     if (!m) throw new Error('정리 형식 오류');
     const j = JSON.parse(m[0]);
 
+    /* 회차를 버리면 여기서 옛 사건이 또 사라진다. 지금까지를 한 회차로 접어 넣고 잇는다. */
+    const mem0 = await getMem(S.chat.id);
+    const keepEras = (mem0.eras || []).slice();
+    if (cutoff > 0 && all.length){
+      keepEras.push({
+        n: keepEras.length + 1,
+        from: all[0].turnIndex, to: all[all.length - 1].turnIndex,
+        title: '맥락 정리', text: String(j.summary || '').trim().slice(0, ERA_CHARS + 40),
+        at: now()
+      });
+    }
     const next = {
       chatId: S.chat.id,
-      summary: String(j.summary || '').trim(),
+      summary: cutoff > 0 ? (mem0.summary || '') : String(j.summary || '').trim(),
+      eras: keepEras,
+      keeps: mem0.keeps || [],
+      drift: mem0.drift || {},
       stateCard: Object.fromEntries(Object.entries(j.state || {}).filter(([,v]) => v && String(v).trim())),
       summarizedUpTo: cutoff > 0 ? all[all.length - 1].turnIndex : -1,
       updatedAt: now()
@@ -3994,8 +5034,9 @@ async function streamInto(target, msgs, signal){
     let out = '', usage = null, tFirst = null, lastPaint = 0;
     const t0 = performance.now();
     target.innerHTML = ''; target.appendChild(cur);
-    if (i === 1) toast('응답이 비어 다시 시도합니다');
-    else if (i > 1) toast(model.split('/').pop() + ' 로 전환');
+    if (i === 1) toast(lastErr?.refused ? '모델이 거절해 다시 시도합니다' : '응답이 비어 다시 시도합니다');
+    else if (i > 1) toast(model.split('/').pop() + ' 로 전환' +
+                          (lastErr?.refused ? ' — 앞 모델이 거절했습니다' : ''));
 
     try{
       const res = await fetch(API + '/chat/completions', {
@@ -4056,6 +5097,10 @@ async function streamInto(target, msgs, signal){
          한국어 위주 응답 속에 한 토막 섞이는 건 비율로는 안 잡히므로 별도 함수로 같이 본다. */
       if (clean.length > 40 && (hangulRatio(clean) < 0.12 || hasForeignContamination(clean))){
         const e = new Error('한국어 응답이 아닙니다 — 외국어가 섞여 나왔습니다'); e.status = 502; throw e;
+      }
+      /* 장면이 아니라 거절문을 돌려준 경우. 그대로 두면 대화가 끊긴다. */
+      if (looksRefused(clean)){
+        const e = new Error('모델이 장면 대신 거절문을 돌려줬습니다'); e.status = 502; e.refused = true; throw e;
       }
 
       return {out: clean, usage, model, ttft: tFirst ?? (performance.now()-t0), total: performance.now()-t0};
@@ -4127,8 +5172,10 @@ function renderLevelCards(){
     if (!list.length) return toast('조건에 맞는 모델이 없습니다');
     sheet(IMG_LEVEL[k].name + ' · ' + (w === 'm' ? '기본' : '폴백') + ' 모델',
       list.map(m => ({
-        label: (m.model_spec?.name || m.id) + '  ·  $' + imgPrice(m) +
-               (m.model_spec?.uncensored ? '  ·  무검열' : ''),
+        html: '<b>' + esc(m.model_spec?.name || m.id) + '</b>' +
+              '<span class="ptag">$' + imgPrice(m) + '</span>' +
+              (m.model_spec?.uncensored ? '<span class="ptag ax">무검열</span>' : '') +
+              '<span class="ksub">' + esc(imgNote(m)) + '</span>',
         run: () => { setLevelModel(k, w, m.id); renderLevelCards(); }
       })));
   });
@@ -4173,6 +5220,8 @@ function renderTxtSelect(){
    장면과 아무 상관없는 그림이 나왔다. 그래서 세 단계로 만든다.
      1) Venice 무검열 텍스트 모델   2) 실패하면 OpenRouter   3) 그래도 안 되면 앱이 직접 조립 */
 
+/* 검열이 있는 모델은 문장 대신 「죄송하지만…」 을 돌려준다.
+   그것을 응답으로 저장하면 대화가 끊기므로, 폴백 모델로 넘겨 다시 받는다. */
 const REFUSAL = /would you like|i can'?t|i cannot|i'?m sorry|unable to|not able to|content (guidelines|policy)|as an ai|instead\?|assistance with/i;
 
 /* 라벨 · 한국어 · 문장부호를 걷어내고 쉼표 목록만 남긴다 */
@@ -4206,6 +5255,18 @@ function cleanTags(raw){
     seen.add(key); out.push(p); words += w;
   }
   return out.join(', ');
+}
+
+/* 이미지 태그용 REFUSAL 은 영어만 본다. 채팅은 한국어로 거절해 온다. */
+const REFUSAL_KO = /죄송|도와드릴 수 없|도와드리기 어렵|제공할 수 없|생성할 수 없|답변할 수 없|정책상|가이드라인|부적절한 요청|다른 주제로/;
+/* 장면이라면 반드시 있는 것들 — 대사 줄이나 서술이 있으면 거절이 아니다 */
+function looksRefused(t){
+  const x = String(t || '').trim();
+  if (!x) return true;
+  if (x.length > 500) return false;                 /* 길면 장면을 쓴 것이다 */
+  if (/^\s*\[상태\]/m.test(x)) return false;        /* 상태 줄이 있으면 장면이다 */
+  if (/^[^\n:：]{1,20}\s*[:：]\s*["\u201c']/m.test(x)) return false;   /* 대사 줄이 있으면 장면이다 */
+  return REFUSAL_KO.test(x) || REFUSAL.test(x);
 }
 
 function validTags(t){
@@ -4455,10 +5516,56 @@ async function veniceUpscale(dataUri, scale){
   });
 }
 
+/* 어느 모델로, 몇 스텝으로, 업스케일까지 할지 한 자리에서 정한다.
+     chain   — 앞에서부터 시도한다. 기본 → 폴백 → 그 수위의 표준값 순.
+               사용자가 묶음을 바꿔 두 개가 같아지면 하나로 줄인다.
+     steps   — 기본 25, 고급 40. 모델이 허용하는 상한은 veniceImage 가 다시 자른다.
+     upscale — 고급이면서 설정에서 켜 두었을 때만. 실패해도 원본은 남긴다. */
+function imgPlan(levelKey, tier){
+  const key = LEVEL_ORDER.includes(levelKey) ? levelKey : 'explicit';
+  const M = levelModels(key);
+  const D = LEVEL_DEF[key];
+  const chain = [];
+  for (const id of [M.m, M.fb, D.m, D.fb]){
+    if (id && !chain.includes(id)) chain.push(id);
+  }
+  const hi = tier === 'hi';
+  return {
+    level: key,
+    chain,
+    steps: hi ? 40 : 25,
+    upscale: (hi && (localStorage.getItem(LS.imgUp) ?? '1') === '1') ? 2 : 0
+  };
+}
+
+/* 필터에 걸린 프롬프트에서 가장 자주 문제가 되는 말만 한 단계 눌러 준다.
+   장면을 바꾸는 것이 아니라 같은 장면을 덜 노골적인 낱말로 적는 것이다.
+   그래도 안 되면 포기한다 — 무한정 우회하지 않는다. */
+const SOFTEN = [
+  [/\b(cum|semen|ejaculat\w*)\b/gi, 'wet'],
+  [/\bvisible genitals?\b/gi, 'bare body'],
+  [/\b(detailed )?(pussy|vagina|vulva)\b/gi, 'bare skin'],
+  [/\b(penis|cock|erection)\b/gi, 'bare body'],
+  [/\bpenetrat\w*\b/gi, 'close embrace'],
+  [/\bexplicit\b/gi, 'sensual'],
+  [/\bnsfw\b/gi, 'artistic nude'],
+  [/\bbodily fluids?\b/gi, 'glistening skin'],
+  [/\bfully nude\b/gi, 'nude']
+];
+function softenPrompt(p){
+  let out = String(p || ''), hit = 0;
+  for (const [re, to] of SOFTEN){
+    const before = out;
+    out = out.replace(re, to);
+    if (out !== before) hit++;
+  }
+  return hit ? out : null;
+}
+
 async function veniceImageAuto(prompt){
   const plan = imgPlan(S.imgLevelKey || imgLevelKey(), imgTier());
   if (!plan.chain.length) throw new Error('이미지 모델이 지정되지 않았습니다');
-  let last = null, url = null;
+  let last = null, url = null, blocked = false;
   for (let i = 0; i < plan.chain.length; i++){
     try{
       if (i > 0) toast(plan.chain[i].split('/').pop() + ' 로 다시 시도합니다');
@@ -4466,12 +5573,26 @@ async function veniceImageAuto(prompt){
       break;
     }catch(e){
       last = e;
-      /* 필터에 걸린 것이라면 같은 프롬프트로는 어느 모델에서도 통하지 않는다.
-         마지막 시도에서는 사유를 분명히 알려 준다. */
-      if (e.blank && i === plan.chain.length - 1) toast('모든 모델에서 거부됐습니다 — 수위를 낮추거나 장면을 바꿔 보십시오');
+      if (e.blank) blocked = true;
     }
   }
-  if (!url) throw last;
+  /* 필터에 걸린 것이라면 같은 프롬프트로는 어느 모델에서도 통하지 않는다.
+     장면은 그대로 두고 가장 걸리기 쉬운 낱말만 한 단계 눌러 한 번 더 해 본다. */
+  if (!url && blocked){
+    const soft = softenPrompt(prompt);
+    if (soft){
+      toast('거부돼서 표현을 눌러 다시 시도합니다', 3000);
+      for (const m of plan.chain){
+        try{ url = await veniceImage(soft, m, plan.steps); break; }
+        catch(e){ last = e; }
+      }
+      if (url) toast('표현을 눌러 그렸습니다 — 원하던 것보다 얌전할 수 있습니다', 3500);
+    }
+  }
+  if (!url){
+    if (blocked) toast('모든 모델에서 거부됐습니다 — 수위를 낮추거나 장면을 바꿔 보십시오', 4000);
+    throw last;
+  }
   if (plan.upscale){
     try{ url = await veniceUpscale(url, plan.upscale); }
     catch(e){ toast('업스케일은 실패했습니다 — 원본으로 둡니다'); }   /* 그림 자체를 버리지는 않는다 */
@@ -4642,11 +5763,12 @@ function imgModelSheet(){
   const mark = t => (t === cur ? '● ' : '○ ');
   const lk = imgLevelKey();
   const own = !!S.chat?.imgLevel;
+  const again = () => imgModelSheet();
   sheet('이미지', [
     {label: mark('base') + '기본 — 스텝 25 · ' + nameOf(levelModels(lk).m),
-     run: () => setImgTier('base')},
+     keep: again, run: () => setImgTier('base')},
     {label: mark('hi') + '고급 — 스텝 40 + 업스케일 (+$0.02)',
-     run: () => setImgTier('hi')},
+     keep: again, run: () => setImgTier('hi')},
     {label: '수위 — ' + IMG_LEVEL[lk].name,
      html: '<b>수위 — ' + esc(IMG_LEVEL[lk].name) + '</b><div class="shint">' +
        esc(IMG_LEVEL[lk].tone) + '<br>' +
@@ -4865,6 +5987,17 @@ async function openMemory(){
   const mem = await getMem(S.chat.id);
   $('meSub').textContent = S.character.name;
   $('meSummary').value = mem.summary || '';
+  /* 회차는 한 번 적히면 다시 쓰지 않는다. 여기서는 무엇이 쌓였는지 보여 주기만 한다. */
+  const eras = mem.eras || [];
+  $('meEras').innerHTML = eras.length
+    ? '<b>쌓인 회차 ' + eras.length + '개</b>' +
+      eras.map(e => '<div class="eraRow"><i>' + e.n + '회</i>' +
+        '<span><b>' + esc(e.title) + '</b>' +
+        '<u>' + (e.from + 1) + '~' + (e.to + 1) + '턴</u>' +
+        '<em>' + esc(e.text) + '</em></span></div>').join('')
+    : '<b>아직 쌓인 회차가 없습니다</b><div class="shint">' +
+      '대화가 창 밖으로 밀려나면 ' + ERA_MIN + '턴 이상씩 회차로 접힙니다. ' +
+      '한 번 접힌 회차는 다시 고쳐 쓰지 않으므로 옛 사건이 사라지지 않습니다.</div>';
   $('meState').value = fmtState(mem.stateCard);
   const pend = S.messages.filter(m => m.turnIndex > mem.summarizedUpTo).length;
   const dr = mem.drift && Object.entries(mem.drift).filter(([,v]) => v);
@@ -4873,10 +6006,26 @@ async function openMemory(){
         (STAT_LABEL[k] || k) + ' ' + (v > 0 ? '+' : '') + v).join(' · ')
     : '';
   $('meInfo').textContent =
-    `전체 ${S.messages.length}턴 중 ${mem.summarizedUpTo + 1}턴까지 요약됨. 미반영 ${pend}턴.` +
+    `전체 ${S.messages.length}턴 중 ${mem.summarizedUpTo + 1}턴까지 회차로 접힘. 미반영 ${pend}턴.` +
     (mem.updatedAt ? ` 최종 갱신 ${relTime(mem.updatedAt)}.` : '');
   show('vMemory');
 }
+/* 입력창 위 숫자들이 무엇인지 아무 데도 안 적혀 있었다 */
+$('mHelp').onclick = () => sheet('입력창 위 숫자', [
+  {info: true, html: '<span class="pguide">' +
+    '<b>첫 토큰</b> 보내고 첫 글자가 나오기까지 걸린 시간입니다. 모델이 붐비면 길어집니다.<br>' +
+    '<b>총</b> 응답이 끝나기까지 걸린 시간입니다.<br>' +
+    '<b>토큰</b> 이번 응답이 쓴 출력 토큰입니다. 분량 설정과 견주어 보십시오.<br>' +
+    '<b>전송</b> 이번에 보낸 입력 토큰입니다. 예산을 넘지 않는지 여기서 봅니다.<br>' +
+    '<b>소환</b> 과거 장면을 몇 개 찾아 함께 보냈는지입니다. 눌러서 무엇을 찾았는지 볼 수 있습니다.<br>' +
+    '<b>모델</b> 이번 응답을 쓴 모델입니다.' +
+    '<span class="dim">값이 궁금할 때만 보면 됩니다. 대화에는 영향이 없습니다.</span></span>'}
+]);
+$('noteClear').onclick = () => {
+  if (!notes().length) return toast('알림이 없습니다');
+  if (!confirm('알림을 모두 지웁니다.')) return;
+  saveNotes([]); paintNotes(); toast('비웠습니다');
+};
 $('meBack').onclick = () => show('vChat');
 $('meSave').onclick = async () => {
   const mem = await getMem(S.chat.id);
@@ -5253,6 +6402,8 @@ const STAT_HELP = {
 /* ═══════════════ 장르 ═══════════════
    장르는 플레이어가 볼 수 있는 데이터다. 대화를 열 때 고르고, 도중에는 잠겨 있다.
    플롯의 뼈대는 미리 정해 두고, 소재 · 방식 · 변수는 빈칸으로 두어 그때그때 굴린다. */
+/* 빈칸 값은 모두 **명사구**다. 문장으로 적으면 「지워진다가 따른다」 처럼 무너진다.
+   조사는 putSlot 이 이름의 받침을 보고 맞춘다. */
 const GENRES = [
   {
     key:'', name:'없음', desc:'장르 없이, 인물과 상황만으로 시작합니다',
@@ -5260,51 +6411,92 @@ const GENRES = [
   },
   {
     key:'romance', name:'연애', desc:'가까워지는 과정 자체가 사건이 됩니다',
-    plot:'두 사람은 이미 서로를 알고 있으나 아직 선을 넘지 않았다. {계기}가 두 사람을 예정에 없던 시간에 같은 자리에 묶어 둔다. ' +
-         '{장애}가 관계를 미루게 만들고, 그것이 풀리거나 무너지는 순간이 이 이야기의 분기점이다. 결말은 정해져 있지 않다.',
+    /* 연애는 밀고 당기는 리듬이 뼈대다. 사건보다 거리의 변화가 중심이다. */
+    plot:'두 사람은 이미 서로를 알고 있으나 아직 선을 넘지 않았다. {계기}로 예정에 없던 시간을 함께 보내게 되고, ' +
+         '그때 {틈}이 드러난다. 다만 {장애}가 있어 한 걸음 나아갈 때마다 반 걸음을 물린다. ' +
+         '마음이 흔들릴 때면 {버릇}이 나오는데 본인은 그것을 모른다. ' +
+         '{분기}가 오면 미루던 것을 정해야 한다. 결말은 정해져 있지 않다.',
     slots:{
-      계기:['갑작스러운 비','끊긴 막차','정전','예약이 겹친 자리','두고 간 물건','대신 받은 전화','같은 병원 대기실','엘리베이터 고장'],
-      장애:['한쪽의 오래된 미련','직장에서의 위아래','주변의 시선','곧 떠나야 하는 일정','서로 다른 속도','아직 정리되지 않은 관계','상대가 숨기고 있는 사정']
+      계기:['갑작스러운 비','끊긴 막차','정전','예약이 겹친 자리','두고 간 물건','대신 받은 전화','같은 병원 대기실','엘리베이터 고장','같은 결혼식 하객 자리','맡아 준 택배'],
+      틈:['평소와 다른 목소리','지친 얼굴을 숨기지 못한 순간','아무에게도 안 하던 이야기','혼자 있을 때의 습관','서툰 손끝','오래된 흉터'],
+      장애:['한쪽의 오래된 미련','직장에서의 위아래','주변의 시선','곧 떠나야 하는 일정','서로 다른 속도','아직 정리되지 않은 관계','상대가 숨기고 있는 사정','스스로 정해 둔 규칙'],
+      버릇:['말끝을 흐리는 것','괜히 다른 곳을 보는 것','손끝으로 무언가를 만지작거리는 것','필요 없는 말을 덧붙이는 것','한 박자 늦게 웃는 것'],
+      분기:['둘 중 하나가 먼저 말을 꺼내는 순간','더 미룰 수 없게 만드는 소식','다른 사람이 끼어드는 자리','같이 있을 이유가 사라지는 날']
     }
   },
   {
     key:'thriller', name:'스릴러', desc:'쫓기거나 쫓습니다. 시간이 늘 모자랍니다',
+    /* 스릴러는 정보가 뒤집히는 순서가 뼈대다. */
     plot:'{사건}이 이미 벌어진 뒤에서 이야기가 시작된다. {단서}가 하나씩 드러나지만 그것이 가리키는 방향은 계속 바뀐다. ' +
-         '{시한} 안에 결론을 내야 하고, 잘못 짚으면 되돌릴 수 없다. 누구를 믿을지가 매 장면의 선택이다.',
+         '{시한} 결론을 내야 하고, 잘못 짚으면 되돌릴 수 없다. ' +
+         '{오해}는 한동안 사실처럼 굴러가다 뒤늦게 무너진다. 진실에 닿으려면 {대가}를 각오해야 한다. ' +
+         '누구를 믿을지가 매 장면의 선택이다.',
     slots:{
-      사건:['이웃의 실종','같은 건물에서 난 화재','계좌에서 사라진 돈','받은 적 없는 소포','지워진 하루의 기억','목격한 뺑소니'],
-      단서:['맞지 않는 알리바이','반복해서 걸려 오는 번호','지워진 통화 기록','낯선 열쇠','같은 시각에 찍힌 사진','앞뒤가 안 맞는 진술'],
-      시한:['사흘','다음 월요일 아침','비가 그치기 전까지','장례가 끝나기 전까지','다음 열차가 오기 전까지']
+      사건:['이웃의 실종','같은 건물에서 난 화재','계좌에서 사라진 돈','받은 적 없는 소포','지워진 하루의 기억','목격한 뺑소니','문 앞에 놓인 낯선 물건'],
+      단서:['맞지 않는 알리바이','반복해서 걸려 오는 번호','지워진 통화 기록','낯선 열쇠','같은 시각에 찍힌 사진','앞뒤가 안 맞는 진술','누군가 먼저 다녀간 흔적'],
+      시한:['사흘 안에','다음 월요일 아침까지','비가 그치기 전에','장례가 끝나기 전에','다음 열차가 오기 전에','문이 다시 잠기기 전에'],
+      오해:['가장 의심스러운 사람이 실은 지켜 주고 있었다는 것','도와주던 사람이 처음부터 알고 있었다는 것','우연으로 보이던 일이 준비된 것이었다는 것','피해자로 보이던 쪽이 시작한 사람이라는 것'],
+      대가:['한 사람과의 관계를 끊는 일','지금 있는 자리를 잃는 일','다른 사람의 비밀을 대신 지는 일','되돌릴 수 없는 거짓말']
     }
   },
   {
     key:'fantasy', name:'현대 판타지', desc:'평범한 도시에 설명되지 않는 것이 섞여 있습니다',
-    plot:'{능력}이 어느 날 갑자기 생겼거나, 오래전부터 있었으나 이제야 드러났다. {대가}가 반드시 따르고, 쓸수록 그 값이 커진다. ' +
-         '{추적자}가 그 흔적을 좇고 있다. 일상을 지키려면 능력을 숨겨야 하고, 지키고 싶은 것을 지키려면 써야 한다.',
+    /* 판타지는 규칙과 대가가 뼈대다. 능력 자체보다 그 값이 이야기를 만든다. */
+    plot:'{능력}이 어느 날 갑자기 생겼거나, 오래전부터 있었으나 이제야 드러났다. ' +
+         '{규칙}을 지키는 한 탈이 없지만, 어기면 {대가}가 반드시 따른다. ' +
+         '{추적자}가 그 흔적을 좇고 있고, {목격자}는 이미 무언가를 눈치챘다. ' +
+         '일상을 지키려면 능력을 숨겨야 하고, 지키고 싶은 것을 지키려면 써야 한다.',
     slots:{
-      능력:['남의 다음 한마디를 미리 듣는 것','만진 물건의 어제를 보는 것','짧게 시간을 되돌리는 것','거짓말을 소리로 구별하는 것','다친 곳을 옮겨 받는 것','잠든 사람의 꿈에 들어가는 것'],
-      대가:['쓸 때마다 최근 기억이 하나씩 지워진다','쓴 만큼 체온이 내려간다','같은 시간 동안 목소리를 잃는다','다음 날 하루를 통째로 잃는다','가까운 사람의 운이 대신 나빠진다'],
-      추적자:['같은 능력을 가진 누군가','능력을 수집하는 조직','능력을 없애려는 쪽','아무것도 모르는 척하는 이웃','이미 대가를 다 치른 선배']
+      능력:['남의 다음 한마디를 미리 듣는 힘','만진 물건의 어제를 보는 힘','짧게 시간을 되돌리는 힘','거짓말을 소리로 구별하는 귀','다친 곳을 옮겨 받는 손','잠든 사람의 꿈에 들어가는 재주','한 사람의 이름을 잊히게 하는 힘'],
+      규칙:['하루에 한 번만 쓴다는 조건','같은 사람에게 두 번 쓰지 않는다는 조건','이름을 불리면 끊긴다는 조건','물이 닿은 곳에서는 쓸 수 없다는 조건','대가를 먼저 치러야 열린다는 조건'],
+      대가:['최근 기억이 하나씩 지워지는 일','쓴 만큼 체온이 내려가는 일','같은 시간 동안 목소리를 잃는 일','다음 날 하루를 통째로 잃는 일','가까운 사람의 운이 대신 나빠지는 일'],
+      추적자:['같은 능력을 가진 누군가','능력을 수집하는 조직','능력을 없애려는 쪽','이미 대가를 다 치른 선배','능력을 물려준 사람'],
+      목격자:['아무것도 모르는 척하는 이웃','우연히 그 자리에 있던 아이','같은 것을 본 적 있다는 노인','기록을 남기는 취미가 있는 사람']
     }
   },
   {
-    key:'intrigue', name:'암투', desc:'말이 곧 무기입니다. 진심은 늦게 나옵니다',
-    plot:'{판}에서 자리 하나를 두고 여럿이 겨룬다. {약점}이 잡혀 있어 정면으로는 이길 수 없다. ' +
-         '{협력자}가 손을 내밀지만 그 손이 언제 놓일지는 알 수 없다. 이기는 것보다 무엇을 내주지 않을지가 이 이야기의 문제다.',
+    key:'intrigue', name:'권력과 음모', desc:'자리 · 돈 · 정보를 두고 겨룹니다. 배신과 뒷거래가 섞입니다',
+    /* 암투를 이 이름으로 올린다. 정치 · 음모 · 배신 · 뒷거래를 함께 담는 넓은 자리다. */
+    plot:'{판}에서 {몫}을 두고 여럿이 겨룬다. 정면으로는 이길 수 없어 {수단}이 오간다. ' +
+         '{약점}이 잡혀 있고, {협력자}가 손을 내밀지만 그 손이 언제 놓일지는 알 수 없다. ' +
+         '배신은 예고 없이 오되 이유가 없지는 않다. 가장 그럴 법한 자리는 {배신}이다. ' +
+         '이기는 것보다 무엇을 내주지 않을지가 이 이야기의 문제다.',
     slots:{
-      판:['회사의 후계 구도','작은 조직의 세대 교체','한 집안의 상속','학회의 자리 다툼','재개발을 앞둔 동네','선거를 앞둔 지역'],
-      약점:['과거의 실수 하나','가족에게 숨긴 일','돈의 출처','대신 뒤집어쓴 책임','아무도 모르는 관계'],
-      협력자:['같은 것을 노리는 사람','이미 밀려난 전임자','아무 이해관계가 없어 보이는 사람','상대편에서 넘어온 사람']
+      판:['회사의 후계 구도','작은 조직의 세대 교체','한 집안의 상속','학회의 자리 다툼','재개발을 앞둔 동네','선거를 앞둔 지역','계약을 앞둔 두 회사','한 자리를 놓고 벌어진 인사'],
+      몫:['이름이 걸린 자리','넘어갈 지분','누구도 못 본 장부','다음 사람을 정할 권한','한 사람의 신원 보증'],
+      수단:['말을 옮기는 일','자리를 미리 잡아 두는 일','증거를 늦게 내는 일','편을 갈라 두는 일','침묵을 파는 일','호의를 빚으로 만드는 일'],
+      약점:['과거의 실수 하나','가족에게 숨긴 일','돈의 출처','대신 뒤집어쓴 책임','아무도 모르는 관계','이미 해 버린 약속'],
+      협력자:['같은 것을 노리는 사람','이미 밀려난 전임자','아무 이해관계가 없어 보이는 사람','상대편에서 넘어온 사람','손해를 감수하고 돕는 사람'],
+      배신:['가장 먼저 손을 내밀었던 쪽','조건이 붙어 있던 약속','빌미가 된 사소한 부탁','침묵하기로 했던 사람의 입']
     }
   },
   {
     key:'vrmmo', name:'가상현실 게임', desc:'규칙이 분명한 세계. 다만 규칙이 전부는 아닙니다',
+    /* 게임물은 규칙의 빈틈이 뼈대다. */
     plot:'{세계}에 접속해 있다. {제약}이 걸려 있어 마음대로 나갈 수 없거나, 나가면 잃는 것이 있다. ' +
-         '{목표}를 이루기 위해 다른 접속자와 협력하거나 겨룬다. 여기서 쌓은 것이 바깥에도 남는지는 아직 모른다.',
+         '{목표}를 이루기 위해 다른 접속자와 협력하거나 겨룬다. ' +
+         '{빈틈}을 아는 사람이 소수 있고, {대가}를 치른 뒤에야 그것이 보인다. ' +
+         '여기서 쌓은 것이 바깥에도 남는지는 아직 모른다.',
     slots:{
-      세계:['중세풍 대륙','폐허가 된 근미래 도시','끝없이 이어지는 던전','바다 위 군도','설산 아래 지하 도시'],
-      제약:['로그아웃이 막혀 있다','죽으면 하루를 잃는다','같은 구역에 하루 이상 머물 수 없다','기억의 일부가 접속할 때마다 흐려진다','현실의 몸이 그만큼 지친다'],
-      목표:['최상층에 닿는 것','사라진 접속자를 찾는 것','운영자의 흔적을 쫓는 것','한 번도 열린 적 없는 문을 여는 것','현실로 돌아가는 방법을 찾는 것']
+      세계:['중세풍 대륙','폐허가 된 근미래 도시','끝없이 이어지는 던전','바다 위 군도','설산 아래 지하 도시','계절이 하루마다 바뀌는 섬'],
+      제약:['막혀 있는 로그아웃','죽으면 하루를 잃는 규칙','같은 구역에 하루 이상 못 머무는 제한','접속할 때마다 흐려지는 기억','현실의 몸이 그만큼 지치는 부담'],
+      목표:['최상층에 닿는 것','사라진 접속자를 찾는 것','운영자의 흔적을 쫓는 것','한 번도 열린 적 없는 문','현실로 돌아가는 방법'],
+      빈틈:['규칙이 적용되지 않는 자리','정해진 순서로 하면 다르게 처리되는 일','규칙 밖에 남는 죽은 접속자의 물건','운영자가 손대지 않은 옛 구역'],
+      대가:['되돌릴 수 없는 것을 내주는 일','다른 접속자 하나가 대신 잃는 일','바깥의 시간이 더 빨리 흐르는 일','다음 접속 때 처음부터 시작하는 일']
+    }
+  },
+  {
+    key:'daily', name:'잔잔한 일상', desc:'큰 사건 없이, 사소한 것이 쌓여 관계가 됩니다',
+    /* 사건이 아니라 반복과 계절이 뼈대인 자리도 하나 있어야 한다. */
+    plot:'{자리}에서 두 사람이 자주 마주친다. 특별한 일은 일어나지 않는다. ' +
+         '{반복}이 쌓이면서 서로의 결을 알게 되고, {계절}에 걸쳐 조금씩 달라진다. ' +
+         '{작은일}이 이따금 균형을 흔들지만 곧 제자리로 돌아온다. ' +
+         '무엇이 달라졌는지는 한참 뒤에야 보인다.',
+    slots:{
+      자리:['같은 시간의 버스 정류장','단골 가게','같은 층 복도','주말마다 가는 공원','늦게까지 불이 켜진 사무실','같은 수업'],
+      반복:['늘 같은 자리에 앉는 일','서로의 주문을 외우게 되는 일','말없이 자리를 비워 두는 일','같은 길로 돌아가는 일','한 사람이 늘 먼저 오는 일'],
+      계절:['여름에서 가을로 넘어가는 몇 달','한 철의 장마','첫눈이 오기까지의 시간','벚꽃이 피고 지는 한 달','해가 길어지는 몇 주'],
+      작은일:['한쪽이 며칠 보이지 않는 일','우연히 알게 된 사정','자리를 옮기게 된다는 소식','다른 사람과 함께 있는 것을 본 날','작은 오해 하나']
     }
   }
 ];
@@ -5344,20 +6536,50 @@ function renderGenreCards(){
   });
 }
 
-function rollGenre(key, manual){
+/* 「{계기}가」 에 「정전」 을 그냥 끼우면 「정전가」 가 된다.
+   {{user}} 에 쓰던 조사 보정을 여기에도 쓴다. */
+function putSlot(text, slot, v){
+  const re = new RegExp('\\{' + slot + '\\}(?:' + JOSA_RE.source + ')?', 'g');
+  return text.replace(re, (_, josa) => v + (josa ? fixJosa(v, josa) : ''));
+}
+function rollGenre(key, manual, keep){
   const g = GENRES.find(x => x.key === key);
   if (!g || !g.plot) return null;
   const picked = {};
   const def = genreSlotDefaults()[key] || {};
   let text = g.plot;
   for (const [slot, pool] of Object.entries(g.slots || {})){
-    const v = (manual && manual[slot]) || def[slot] ||
+    /* 잠근 칸은 다시 굴려도 그대로 둔다 */
+    const v = (keep && keep.lock?.[slot] && keep.slots?.[slot]) ||
+              (manual && manual[slot]) || def[slot] ||
               pool[Math.floor(Math.random() * pool.length)];
     picked[slot] = v;
-    text = text.split('{' + slot + '}').join(v);
+    text = putSlot(text, slot, v);
   }
-  return {key: g.key, name: g.name, text, slots: picked};
+  return {
+    key: g.key, name: g.name, text, slots: picked,
+    target: keep?.target || ['char'],
+    pace:   keep?.pace   || 'normal',
+    lock:   keep?.lock   || {}
+  };
 }
+
+/* 장르가 누구에게 걸리는가. 중복해서 고를 수 있다. */
+const GENRE_TARGETS = [
+  {k:'user',  t:'나',   d:'주인공이 그 상황에 놓입니다'},
+  {k:'char',  t:'상대', d:'대화 상대가 그 상황에 놓입니다'},
+  {k:'other', t:'주변', d:'조연과 세상 쪽에서 일이 벌어집니다'}
+];
+/* 얼마나 자주 밀고 들어오는가. 매 턴 들이대면 이야기가 아니라 설정 낭독이 된다. */
+const GENRE_PACE = [
+  {k:'off',    t:'배경으로만', turns:0,  d:'분위기만 깔고 사건은 만들지 않습니다'},
+  {k:'slow',   t:'가끔',      turns:14, d:'열네 턴에 한 번쯤 한 걸음 나아갑니다'},
+  {k:'normal', t:'보통',      turns:8,  d:'여덟 턴에 한 번쯤 한 걸음 나아갑니다'},
+  {k:'fast',   t:'자주',      turns:4,  d:'네 턴에 한 번쯤 한 걸음 나아갑니다'}
+];
+const paceOf = k => GENRE_PACE.find(p => p.k === k) || GENRE_PACE[2];
+const targetText = list => (list || [])
+  .map(k => GENRE_TARGETS.find(t => t.k === k)?.t).filter(Boolean).join(' · ') || '상대';
 
 /* 카드 생성 · 대화 프롬프트에 함께 넘기는 한 줄 설명 */
 const STAT_MEAN = {
@@ -5734,8 +6956,10 @@ async function generateCharacter(mode, gender){
   if (!modelChain().length){ show('vSettings'); return toast('모델을 먼저 선택하십시오'); }
   if (S.generating) return toast("이미 만드는 중입니다");
   S.generating = true;
+  const genFrom = now();
   /* 카드 한 장에 2,000토큰 안팎이라 무료 모델에서는 20~60초가 걸린다. */
-  busy('once', (mode === 'taste' ? '선호형' : '무작위') + ' 인물을 만드는 중  ·  보통 20~60초');
+  busy('once', (mode === 'taste' ? '선호형' : '무작위') + ' 인물을 만드는 중',
+       {wave: true, eta: 40});
 
   try{
     const seed = rollSeeds(mode, gender);
@@ -5776,8 +7000,11 @@ async function generateCharacter(mode, gender){
     await dbPut('characters', c);
     await loadAll(); renderChars(); show('vChars');
     /* 편집 화면으로 넘어가면 기기 뒤로가기가 앱을 닫아버린다. 목록에 그대로 둔다. */
+    noteDone('인물 생성 — ' + name,
+             (mode === 'taste' ? '선호형' : '무작위') + ' · 목록에서 눌러 확인하십시오', genFrom);
     toast(name + ' 생성 완료 — 목록에서 눌러 확인하십시오', 4000);
   }catch(e){
+    noteDone('인물 생성 실패', e.message, genFrom, false);
     toast('생성 실패: ' + e.message);
   }finally{
     S.generating = false; busy(null);
@@ -5967,7 +7194,15 @@ function chatToMarkdown(d){
   /* 어떤 모델이 쓴 글인지 알아야 "모델 탓인가 설정 탓인가"를 가릴 수 있다 */
   const used = [...new Set(d.messages.map(m => m.model).filter(Boolean))];
   if (used.length) L.push('- **모델**: ' + used.join(', '));
-  if (d.memory?.summary){ L.push(''); L.push('## 지금까지의 이야기'); L.push(d.memory.summary); }
+  if (d.memory?.summary || d.memory?.eras?.length){
+    L.push(''); L.push('## 지금까지의 이야기');
+    if (d.memory.summary) L.push(d.memory.summary);
+    for (const e of (d.memory.eras || [])){
+      L.push('');
+      L.push('### ' + e.n + '회 · ' + e.title + '  (' + (e.from + 1) + '~' + (e.to + 1) + '턴)');
+      L.push(e.text);
+    }
+  }
   const st = fmtState(d.memory?.stateCard);
   if (st){ L.push(''); L.push('## 현재 상태'); L.push(st); }
   L.push(''); L.push('## 대화');
@@ -6251,9 +7486,8 @@ $('ceSeeRules').onclick = () => {
   const r = (localStorage.getItem(LS.rules)?.trim() || DEFAULT_RULES);
   $('editWho').textContent = '앱 기본규칙 — 읽기 전용';
   $('editTa').value = r;
-  $('editTa').readOnly = true;
-  $('editBox').classList.add('on');
-  $('editOk').onclick = () => { $('editTa').readOnly = false; $('editBox').classList.remove('on'); };
+  openEdit(true);
+  $('editOk').onclick = closeEdit;
 };
 $('bNewChar').onclick = () => editChar(null);
 
@@ -6843,6 +8077,7 @@ function loadSettings(){
   $('sLen').value    = localStorage.getItem(LS.len) || '900';
   showMaxTokRec();
   $('sPen').value    = localStorage.getItem(LS.penalty) ?? '0.3';
+  $('sWake').checked = localStorage.getItem(LS.wake) === '1';
   $('sRules').value = localStorage.getItem(LS.rules) || DEFAULT_RULES;
   $('sAutoSum').checked = (localStorage.getItem(LS.autoSum) ?? '1') === '1';
   $('sNoReason').checked = (localStorage.getItem(LS.noReason) ?? '1') === '1';
@@ -6908,6 +8143,13 @@ function showMaxTokRec(){
   el.textContent = String(turnOut());
 }
 $('sPen').onchange    = () => localStorage.setItem(LS.penalty, $('sPen').value);
+$('sWake').onchange   = () => {
+  const on = $('sWake').checked;
+  localStorage.setItem(LS.wake, on ? '1' : '0');
+  if (!on){ wakeOff(); return toast('작업 중에도 화면이 평소처럼 꺼집니다'); }
+  if (!navigator.wakeLock) return toast('이 브라우저는 이 기능을 지원하지 않습니다', 3500);
+  toast('작업이 도는 동안 화면이 꺼지지 않습니다 — 배터리를 더 씁니다', 4000);
+};
 $('sRules').onchange = () => localStorage.setItem(LS.rules, $('sRules').value);
 $('sRulesReset').onclick = () => {
   if (!confirm('기본 규칙을 초기값으로 되돌립니다.')) return;
@@ -7002,9 +8244,9 @@ async function seed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b48';
-const APP_BUILT = '2026-08-20 21:40';
-const APP_NOTE  = '설정 탭 · 채팅 메뉴 격자 · 답변 예시 · 시작 가이드 · 정규분포 · 상태 배너 세분화';
+const APP_BUILD = 'b55';
+const APP_BUILT = '2026-08-21 14:04';
+const APP_NOTE  = '소설 이어쓰기 · 화면 켜두기 · 결과보고 · 거절 우회 · 모델 검색';
 $('sVersion').innerHTML =
   '8단계 · <b style="color:var(--acc)">빌드 ' + APP_BUILD + '</b><br>최종 수정: ' + APP_BUILT + '<br>' + APP_NOTE;
 
