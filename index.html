@@ -162,6 +162,8 @@
   .edHead .btn{flex:0 0 auto;padding:5px 11px;font-size:12px}
   /* 매크로는 두어 줄이면 충분하다. 메시지 편집만큼 크면 화면을 다 먹는다 */
   #editBox.mcMode #editTa{height:22vh;min-height:110px}
+  /* 자판이 화면 아래 절반을 덮는다. 가운데에 두면 입력칸이 그 밑으로 들어간다 */
+  #editBox.mcMode{align-items:flex-start;padding-top:calc(env(safe-area-inset-top,0px) + 24px)}
   /* 조연 칸 — 이름·성별과 직업·나이를 한 줄에 눕힌다.
      라벨이 42px 을 먼저 먹으므로 오른쪽 칸에는 그만큼을 더해 자리를 잡아 준다.
      성별 두 단추와 나이 칸의 폭을 같게 두어 두 줄이 나란히 보이게 한다. */
@@ -214,6 +216,7 @@
   /* 장르 표는 흐리게 하지 않는다 — 이야기 안의 일이다 */
   .mmark.gm{background:transparent;color:var(--acc);border:1px solid var(--acc)}
   /* 이상하다고 찍은 것. 나중에 훑을 때 한눈에 들어와야 한다 */
+  .tno{color:var(--tx3);font-weight:400}
   .mmark.bad{background:#4a2b2b;color:#ffb4b4;border:1px solid #7a4444}
   .msg .act button.lit{color:#ffb4b4}
   /* 이름이 말풍선 위에 따로 떠 있어 누구 말인지 훑기 어려웠다.
@@ -276,11 +279,17 @@
   .msg.assistant .dlg b{border-bottom:1px dotted var(--acc)}
 
   /* 입력창에서 버튼 하나만큼 띄우고 크기는 2/3 로 줄인다 */
+  /* 잔여와 이 대화에서 쓴 값. 설정 우상단과 같은 꼴로 둔다 */
+  #cBal{display:flex;flex-direction:column;align-items:flex-end;gap:1px;line-height:1.3;height:auto}
+  #cBal .bl1{font-size:10px;color:var(--tx2)}
+  #cBal .bl2{font-size:9.5px;color:var(--tx3)}
   #jump{position:absolute;right:13px;bottom:150px;display:flex;flex-direction:column;gap:6px;z-index:20}
   #jump button{width:26px;height:26px;border-radius:50%;background:var(--panel2);
     border:1px solid var(--line2);color:var(--tx2);font-size:12px;line-height:1;padding-bottom:1px;
     box-shadow:0 2px 8px rgba(0,0,0,.4);display:grid;place-items:center}
   #jump button:active{background:#2b3140}
+  /* 화면이 스스로 안 내려가므로, 아래에 안 본 글이 있으면 이 단추가 알려 준다 */
+  #jBot.hot{background:var(--acc);color:#111;border-color:var(--acc)}
   #vChat{position:relative}
   #meter{flex:0 0 auto;background:var(--panel);border-top:1px solid var(--line);
          padding:6px 12px;font-size:10.5px;color:var(--tx3);display:flex;gap:13px;flex-wrap:wrap}
@@ -297,6 +306,42 @@
   #inp{max-height:32vh}
   #composer .btn{flex:0 0 auto;height:42px;padding:0 16px;line-height:42px}
   /* 수위 카드 — 슬롯을 늘어놓는 대신 수위별로 묶어 보여 준다 */
+  /* 사용량 그래프. 막대는 세로, 수치는 날짜 밑에 두 줄 */
+  #cgTabs{gap:5px;margin-bottom:9px}
+  #cgTabs button{flex:1;padding:6px 0;font-size:11.5px;border-radius:8px;
+    background:var(--panel2);border:1px solid var(--line);color:var(--tx2);font-family:inherit}
+  #cgTabs button.on{background:var(--acc);border-color:var(--acc);color:#0b1020;font-weight:600}
+  #cgChart{display:flex;align-items:flex-end;gap:4px;height:96px;padding:0 2px;
+    border-bottom:1px solid var(--line2)}
+  .cgCol{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;gap:1px;height:100%}
+  .cgBar{width:100%;border-radius:3px 3px 0 0;min-height:1px}
+  .cgBar.t{background:var(--acc)}
+  .cgBar.i{background:#7a6fd0}
+  #cgLbl{display:flex;gap:4px;margin-top:5px;padding:0 2px}
+  .cgLc{flex:1;min-width:0;text-align:center;font-size:9.5px;line-height:1.45;color:var(--tx3)}
+  .cgLc b{display:block;color:var(--tx2);font-weight:600;font-size:10px}
+  .cgLc .v1{color:var(--acc)}
+  .cgLc .v2{color:#9a90e8}
+  #cgSum{display:flex;gap:10px;margin-top:10px;font-size:12px;flex-wrap:wrap}
+  #cgSum span{color:var(--tx2)}
+  #cgSum b{color:var(--tx);font-weight:600}
+  #cgSum .tot b{color:var(--acc)}
+  .lvGrid{display:grid;grid-template-columns:52px 1fr 1fr;gap:5px;align-items:stretch}
+  .lvHd{font-size:11px;color:var(--tx2);text-align:center;padding:2px 0;font-weight:600}
+  .lvGrid>.lvRow{display:flex;align-items:center;justify-content:center;font-size:11.5px;
+    color:var(--tx2);font-weight:600;border-radius:8px;background:var(--panel2);padding:4px 2px}
+  .lvGrid>.lvRow.on{background:var(--acc);color:#0b1020}
+  .lvCell{border:1px solid var(--line);border-radius:9px;padding:6px;background:var(--panel)}
+  .lvCell.own{border-color:var(--acc)}
+  .lvCell>button{display:block;width:100%;text-align:left;background:none;border:none;
+    color:var(--tx);font-family:inherit;font-size:12px;padding:2px 0}
+  .lvCell>button b{font-weight:600}
+  .lvCell .pr{float:right;color:var(--tx3);font-size:11px}
+  .lvCell .fb{color:var(--tx3);font-size:11px;border-top:1px solid var(--line);margin-top:4px;padding-top:4px}
+  .lvMk{font-size:10.5px;color:var(--tx2);line-height:1.5;margin:2px 0}
+  .lvMk u{text-decoration:underline;color:var(--tx)}
+  .lvMk s{color:var(--tx3);text-decoration:line-through}
+  .lvLegend{margin-top:9px;font-size:11.5px;color:var(--tx2);line-height:1.8}
   .lvCard{background:var(--panel2);border:1px solid var(--line);border-radius:10px;
           padding:9px 11px;margin-bottom:7px}
   .lvCard.on{border-color:var(--acc)}
@@ -328,8 +373,18 @@
     border-radius:8px;padding:7px 10px;color:var(--tx);font-size:12.5px;font-family:inherit}
   .mfind input:focus{outline:none;border-color:var(--acc)}
   .mfind .btn{padding:6px 12px;font-size:12px}
+  /* 잔여와 소진을 두 줄로. 단추 하나에 담아 눌러서 다시 읽는다 */
+  #sBal{display:flex;flex-direction:column;align-items:flex-end;gap:1px;line-height:1.35;
+    height:auto;padding:3px 8px}
+  #sBal .bl1{font-size:11px;color:var(--tx)}
+  #sBal .bl2{font-size:10.5px;color:var(--tx3)}
+  #sBal .bl2 i{font-style:normal;margin-left:6px;color:var(--acc);text-decoration:underline}
   .shBack{background:none;border:none;color:var(--tx2);font-size:19px;line-height:1;
-    padding:0 4px 0 0;margin-left:-4px;font-family:inherit}
+    padding:0 4px 0 0;margin-left:-4px;font-family:inherit;pointer-events:none}
+  /* 돌아갈 곳이 있는 제목은 줄 전체가 단추다. 눌리는 자리를 넓히고 눌러도 된다고 알린다 */
+  #sheetIn h3.canback{cursor:pointer;margin:4px 0 8px;padding:9px 8px;border-radius:9px;
+    background:var(--panel2);color:var(--tx)}
+  #sheetIn h3.canback:active{background:#2b3140}
   .sitem{display:block;width:100%;text-align:left;padding:13px 12px;border-radius:10px;
          font-size:14.5px;white-space:pre-line;line-height:1.5}
   .sitem::first-line{font-weight:600}
@@ -384,6 +439,21 @@
   .castForm input:focus{outline:none;border-color:var(--acc)}
   .pguide{display:block;font-size:12px;line-height:1.8;color:var(--tx2)}
   /* 수위와 품질은 함께 보고 정하는 값이다. 세로로 늘어놓으면 견줄 수가 없다 */
+  .ipGrid{display:grid;grid-template-columns:46px 1fr 1fr;gap:5px}
+  .ipHd{font-size:11px;color:var(--tx2);text-align:center;font-weight:600}
+  .ipRow{display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600;
+    color:var(--tx2);background:var(--panel2);border-radius:8px;padding:4px 2px}
+  .ipRow.on{background:var(--acc);color:#0b1020}
+  .ipCell{display:block;text-align:left;background:var(--panel);border:1px solid var(--line);
+    border-radius:9px;padding:7px 8px;color:var(--tx);font-family:inherit;font-size:12px}
+  .ipCell.on{border-color:var(--acc);background:#1b2130}
+  .ipCell b{font-weight:600;display:inline-block;max-width:74%;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
+  .ipCell .pr{float:right;color:var(--tx3);font-size:11px}
+  .ipCell .mk{display:block;font-size:10.5px;color:var(--tx2);margin-top:3px;line-height:1.5}
+  .ipCell .mk u{color:var(--tx)}
+  .ipCell .mk s{color:var(--tx3);text-decoration:line-through}
+  .ipLegend{margin-top:9px;font-size:11.5px;color:var(--tx2);line-height:1.8}
   .imgPick{display:flex;gap:8px;align-items:stretch}
   .ipL{flex:1 1 auto;display:flex;flex-direction:column;gap:5px;min-width:0}
   .ipR{flex:0 0 96px;display:flex;flex-direction:column;gap:5px}
@@ -801,24 +871,12 @@
         </div>
       </div>
       <div class="fld">
-        <div class="fld">
-          <label>한 장에 낼 수 있는 최대 금액</label>
-          <select id="sImgCap">
-            <option value="0.10">$0.10 까지 (권장)</option>
-            <option value="0.15">$0.15 까지</option>
-          </select>
-          <div class="hint">
-            <b>고를 때의 기준이 아니라 넘지 말아야 할 선입니다.</b> 비싼 모델이 늘 나은 것은 아니므로,
-            앱은 가격이 아니라 <b>그 수위가 중시하는 축</b>(얼굴 · 질감 · 해부 등)으로 고르고
-            이 금액을 넘는 것만 제외합니다.<br>
-            지금 쓰는 모델은 대체로 장당 <b>$0.01 안팎</b>이라 이 상한에 걸릴 일은 드뭅니다.
-          </div>
-        </div>
+
         <label class="sw"><input type="checkbox" id="sImgAuto">
-          <span>장면에 맞춰 이미지 수위를 낮추기 (기본 켜짐)</span></label>
+          <span>장면에 맞춰 등급 올리기 (기본 켜짐)</span></label>
         <div class="hint">
           켜 두면 <b>그 장면에 없는 것은 그리지 않습니다.</b> 카페에서 대화만 하는 장면에
-          걸어 둔 수위를 그대로 쓰면 장면과 무관한 그림이 나옵니다.<br>
+          걸어 둔 등급을 그대로 쓰면 장면과 무관한 사진이 나옵니다.<br>
           이 때문에 <b>설정한 수위보다 낮은 모델이 쓰일 수 있습니다.</b> 예전 대화로 올라가
           이미지를 만들면 그 장면 기준으로 다시 판정합니다.<br>
           끄면 장면과 무관하게 걸어 둔 수위를 그대로 씁니다.
@@ -917,6 +975,12 @@
           여는 데 <b>10~30초</b>가 더 걸리고 <b>한 번 호출</b> 만큼 비용이 듭니다.
           실패하면 카드의 첫 대사를 그대로 씁니다.
         </div>
+        <input type="text" id="sIntroModel" placeholder="첫 장면 전용 모델 — 비우면 기본 모델" style="margin-top:8px">
+        <div class="hint">
+          첫 장면은 분량도 길고 인물을 처음 세우는 자리라 <b>모델을 크게 탑니다.</b>
+          잘 나오는 모델을 하나 적어 두면 대화용 모델을 바꿔도 첫 장면 품질이 흔들리지 않습니다.
+          비워 두면 그냥 기본 모델을 씁니다.
+        </div>
       </div>
 
       <div class="fld">
@@ -951,7 +1015,7 @@
         </div>
       </div>
       <div class="fld">
-        <label>수위별 모델 묶음 <span id="sImgCost" style="color:var(--tx3);font-weight:400"></span></label>
+        <label>등급별 모델 <span id="sImgCost" style="color:var(--tx3);font-weight:400"></span></label>
         <div id="lvCards"></div>
         <div class="hint">
           <b>수위만 고르면 모델이 따라옵니다.</b> 아래 <b>노출 수위</b>에서 기본값을 정하고,
@@ -959,15 +1023,11 @@
           장면이 그 수위에 못 미치면 <b>자동으로 한 단계 낮은 묶음</b>이 쓰입니다.
           카페에서 대화만 하는 장면에 무검열 모델을 쓸 이유가 없기 때문입니다.
         </div>
-        <div class="sw" style="margin-top:9px">
-          <input type="checkbox" id="sImgUp" checked>
-          <label for="sImgUp" style="margin:0">고급일 때 2배 업스케일 (+$0.02)</label>
-        </div>
+
       </div>
       <div class="fld">
         <input type="text" id="sImgFilter" placeholder="모델 검색 — lustify, seedream, qwen ...">
-        <div class="sw" style="margin-top:8px">
-          <input type="checkbox" id="sImgUnc"><label for="sImgUnc" style="margin:0">무검열만</label>
+        <div class="row" style="margin-top:8px">
           <div class="sp"></div>
           <button class="btn" id="sImgReload" style="padding:5px 11px;font-size:12px">목록 새로고침</button>
         </div>
@@ -978,23 +1038,26 @@
         <div class="hint">
           장면을 영어 태그로 옮기는 데 씁니다. <b>수위와 무관하게 하나면 됩니다</b> —
           무검열 텍스트 모델은 얌전한 장면도 잘 쓰기 때문입니다. 반대로 일반 모델은
-          수위가 있는 장면에서 <b>작업을 거부</b>하고, 그 거부 문장이 그대로 그림 프롬프트가 됩니다.
+          수위가 있는 장면에서 <b>작업을 거부</b>하고, 그 거부 문장이 그대로 사진 프롬프트가 됩니다.
           장당 $0.001 미만입니다.
         </div>
       </div>
       <div class="fld">
-        <label>노출 수위</label>
+        <label>기본 등급</label>
         <select id="sImgLevel">
-          <option value="soft">은은하게 — 품질 최상 · 직접 노출 없음</option>
-          <option value="nude">노출 — 품질 상 · 전라까지, 행위는 암시</option>
-          <option value="explicit">노골적 — 제한 없음 · 최소한의 제약</option>
+          <option value="eco">가성비 — 표현력 중 · 저렴한 비용 · 모든 수위 표현</option>
+          <option value="good">고급형 — 표현력 상 · 합리적 비용 · 일반 수위 표현</option>
+          <option value="best">최상급 — 표현력 최상 · 높은 비용 · 수위 제한 빈번</option>
         </select>
+        <div class="sw" style="margin-top:8px">
+          <input type="checkbox" id="sImgCen">
+          <label for="sImgCen" style="margin:0">검열 모델 쪽을 기본으로</label>
+        </div>
         <div class="hint">
-          <b>수위를 낮추면 더 좋은 모델이 쓰입니다.</b> 노출이 없는 장면으로 판정되면
-          무검열 모델 대신 <b>일반 고급 모델</b>(Seedream · Flux 등)이 먼저 걸립니다.
-          얼굴과 손의 완성도는 그쪽이 낫습니다.<br>
-          <b>완전 노출</b>과 <b>노골적</b>에서는 앱이 한국어 장면에서 자세 · 행위 · 체액을
-          직접 읽어내 영어 태그로 덧붙입니다.
+          <b>등급이 곧 수위입니다.</b> 값이 오를수록 얼굴과 손이 좋아지는 대신 노출을 못 그립니다.<br>
+          <b>검열</b> 쪽은 노출이 아예 안 되지만, 같은 값에 사진이 훨씬 낫습니다.
+          대화가 얌전할 때 쓰면 이득입니다.<br>
+          대화마다 다르게 쓰려면 채팅 안의 <b>🖼</b>에서 바꾸십시오.
         </div>
       </div>
       <div class="fld">
@@ -1007,7 +1070,7 @@
         <div class="hint">
           길수록 장면을 촘촘히 옮기지만, SDXL 계열은 <b>77토큰 단위로 끊어 읽어</b>
           뒤쪽 태그일수록 영향력이 줄어듭니다. 그래서 인물과 자세를 앞에, 배경과 질감을 뒤에 두도록
-          순서를 지시합니다. <b>매우 상세</b>가 항상 더 좋은 그림을 주지는 않으니,
+          순서를 지시합니다. <b>매우 상세</b>가 항상 더 좋은 사진을 주지는 않으니,
           결과를 보고 <b>상세</b>와 비교해 보십시오. 태그 작성 호출 비용은 $0.001 미만입니다.
         </div>
       </div>
@@ -1021,7 +1084,18 @@
         </select>
         <div class="hint">
           대화에서 <b>이미지 생성 요청</b> 이라고 보내면 비용을 먼저 묻습니다.
-          생성된 그림은 대화와 함께 기기에 저장되므로 백업 파일이 커집니다.
+          만든 사진은 대화와 함께 기기에 저장되므로 백업 파일이 커집니다.
+        </div>
+      </div>
+
+      <div class="sect">사용량</div>
+      <div class="fld">
+        <div class="row" id="cgTabs"></div>
+        <div id="cgChart"></div>
+        <div id="cgSum"></div>
+        <div class="hint">
+          잔액이 줄어든 만큼을 그때그때 쌓아 둔 것입니다. 설정을 열거나 대화를 열 때 다시 읽습니다.<br>
+          충전하면 그 자리는 건너뜁니다. 날짜는 <b>한국 시간</b> 기준입니다.
         </div>
       </div>
 
@@ -1044,6 +1118,7 @@
     <div class="bar">
       <button class="ico" id="cBack">‹</button>
       <h2 id="cTitle" title="눌러서 상대 보기">대화<span class="sub" id="cSub"></span></h2>
+      <button class="ico" id="cBal" style="display:none;width:auto;padding:0 7px"></button>
       <button class="ico" id="cFind" title="이 대화에서 찾기">🔍</button>
       <button class="ico" id="cMenu">⋯</button>
     </div>
@@ -1051,6 +1126,7 @@
          「?」는 맨 앞에 두어 무슨 숫자인지 먼저 눈에 들어오게 한다. -->
     <div id="meter">
       <span><button id="mHelp">?</button></span>
+      <span id="mCred" style="display:none">남은 <b id="mCredV">—</b></span>
       <span>첫 토큰 <b id="mTtft">—</b></span>
       <span>총 <b id="mTotal">—</b></span>
       <span>토큰 <b id="mTok">—</b></span>
@@ -1221,6 +1297,14 @@
       <!-- 성격 한 줄은 성장 배경이 아니라 지금의 사람됨이다. 여기가 제자리다.
            옮기면서 성장 배경 화면이 연애이력에서 끝난다 -->
       <div class="fld"><label>성격 한 줄</label><input type="text" id="ceTraits" placeholder="차분하고 방어적"></div>
+      <div class="fld"><label>끌어당길 결
+        <button type="button" class="btn" id="ceCharmRoll" style="float:right;padding:2px 8px;font-size:11px">🎲 뽑기</button></label>
+        <input type="text" id="ceCharm" placeholder="무심한 다정, 그늘">
+        <div class="hint">
+          이 인물이 <b>무엇으로 끌리는 사람인지</b>를 두셋 적습니다. <b>앞에 적은 것일수록 자주 드러납니다.</b><br>
+          쉼표로 나눠 적으십시오. 아래 이름 가운데 골라 쓰면 성격 · 배경 · 말투에도 함께 반영됩니다.
+          <span class="dim" id="ceCharmList"></span>
+        </div></div>
       <div class="fld"><label>습관</label>
         <input type="text" id="ceHabit" placeholder="남이 흘린 것도 같이 치운다">
         <div class="hint">
@@ -1513,6 +1597,8 @@
   </div>
   <textarea id="editTa"></textarea>
   <div class="hint" id="editHint">고친 내용이 이후 대화의 맥락으로 그대로 쓰입니다.</div>
+  <!-- 매크로가 이 자리를 덮어쓰므로 원래 문구를 여기 남겨 둔다. 창을 열 때마다 되돌린다 -->
+  <template id="editHintDef">고친 내용이 이후 대화의 맥락으로 그대로 쓰입니다.</template>
 </div></div>
 <div id="overWrap"><div id="overBox"></div></div>
 <div id="busy">
@@ -1537,16 +1623,16 @@ const LS = {
   key:'rp_apikey', model:'rp_model', temp:'rp_temp', maxTok:'rp_maxtok',
   window:'rp_windowTurns', free:'rp_free', lastChat:'rp_lastChatId',
   budget:'rp_budget', autoSum:'rp_autoSummary', fallbacks:'rp_fallbacks', rules:'rp_rules',
-  preHint:'rp_prehint', imgAuto:'rp_imgauto', imgCap:'rp_imgcap',
+  preHint:'rp_prehint', imgAuto:'rp_imgauto',
   imgKey:'rp_imgkey', imgModel:'rp_imgmodel', imgSize:'rp_imgsize', imgUnc:'rp_imgunc',
   imgHi:'rp_imghi', imgNsfw:'rp_imgnsfw', imgNsfwHi:'rp_imgnsfwhi',
-  imgTier:'rp_imgtier', imgUp:'rp_imgup',
+  imgCen:'rp_imgcen', credBase:'rp_credbase', credLog:'rp_credlog', credLast:'rp_credlast',
   thumbs:'rp_thumbs', modelAlias:'rp_modelalias', setPane:'rp_setpane', genreDef:'rp_genredef', genreFill:'rp_genrefill', genreSlots:'rp_genreslots', taste:'rp_taste', ageMin:'rp_agemin', ageMax:'rp_agemax', noReason:'rp_noreason',
   len:'rp_len', imgTxt:'rp_imgtxt', novelModel:'rp_novelmodel', lvModels:'rp_lvmodels', imgLevel:'rp_imglevel', imgDetail:'rp_imgdetail',
   charSort:'rp_charsort', chatSort:'rp_chatsort', guide:'rp_guideoff', chatModel:'rp_chatmodel',
   notes:'rp_notes', macro:'rp_macro', wake:'rp_wake',
   penalty:'rp_penalty', tokMig:'rp_tokmig', own:'rp_own', nvFold:'rp_nvfold', personaSort:'rp_personasort',
-  intro:'rp_intro'
+  intro:'rp_intro', introModel:'rp_intromodel'
 };
 /* 0 이면 끄고, 0.3 이면 같은 표현을 되풀이할수록 눈에 띄게 눌러 준다 */
 const penalty = () => Math.max(0, Math.min(1, parseFloat(localStorage.getItem(LS.penalty) ?? '0.3') || 0));
@@ -1585,46 +1671,11 @@ const traitOf = m => {
   const t = (m?.id || '') + ' ' + (m?.model_spec?.name || '');
   return (IMG_TRAIT.find(([re]) => re.test(t)) || [null, {q:2, good:[], bad:[]}])[1];
 };
-/* 수위마다 중요한 축이 다르다. 은은하게는 얼굴과 질감, 노골적은 해부가 먼저다 */
-const LEVEL_WANT = {
-  soft:     ['얼굴','프롬프트','질감','구도'],
-  nude:     ['노출','얼굴','질감'],
-  explicit: ['해부','노출','체액'],
-  raw:      ['해부','체액','노출']
-};
-/* 한 장에 얼마까지 낼 것인가. 고르는 기준이 아니라 넘지 말아야 할 선이다 */
-const IMG_CAPS = [0.10, 0.15];
-const imgCap = () => parseFloat(localStorage.getItem(LS.imgCap) || '0.10') || 0.10;
 
-/* 그 수위에서 지금 모델보다 나은 것을 상한 안에서 고른다.
-   점수는 「그 수위가 원하는 축을 몇 개 갖췄나」가 먼저고, 계열 완성도가 그다음이다. */
-function betterModel(levelKey, baseId){
-  const want = LEVEL_WANT[levelKey] || LEVEL_WANT.explicit;
-  const cap = imgCap();
-  const needUnc = levelKey !== 'soft';
-  const score = m => {
-    const t = traitOf(m);
-    let v = 0;
-    want.forEach((w, i) => {
-      const weight = want.length - i;                 /* 앞쪽 축일수록 무겁게 */
-      if (t.good.includes(w)) v += weight * 2;
-      if ((t.bad || []).includes(w)) v -= weight * 2;
-    });
-    return v * 10 + t.q;
-  };
-  const base = S.imgModels.find(m => m.id === baseId);
-  const pool = S.imgModels.filter(m =>
-    imgPrice(m) <= cap && (!needUnc || m.model_spec?.uncensored));
-  if (!pool.length) return null;
-  const best = pool.slice().sort((a, b) => {
-    const d = score(b) - score(a);
-    /* 점수가 같으면 싼 쪽. 비싸다고 나은 것이 아니다 */
-    return d !== 0 ? d : imgPrice(a) - imgPrice(b);
-  })[0];
-  if (!best || (base && best.id === base.id)) return null;
-  if (base && score(best) <= score(base)) return null;
-  return best;
-}
+
+/* 등급마다 모델을 손으로 정해 두었으므로 자동 선정은 없앤다.
+   예전에는 「그 수위가 중시하는 축에서 더 나은 것을 상한 안에서」 골랐는데,
+   기본 모델이 이미 최고점이라 늘 같은 것이 뽑혔다. 실측으로 여섯 칸을 직접 채웠다. */
 
 const IMG_NOTE = [
   [/seedream/i,        '최신 대형 · 프롬프트 이해와 얼굴이 가장 좋음 · 노출은 막힘'],
@@ -1648,24 +1699,15 @@ function imgNote(m){
          (tags.length ? '  ·  ' + tags.join(' · ') : '');
 }
 
+/* 등급 셋. 값이 오를수록 품질이 오르고 수위가 내려간다.
+   무검열(unc)과 검열(cen) 두 벌을 나란히 둔다 — 노출이 필요 없는 장면에서는
+   같은 값에 검열 쪽이 훨씬 낫기 때문이다. 2026-08-24 실측으로 골랐다.
+   good/bad 는 그 칸에서 눈에 띄게 잘하고 못하는 것만 추렸다. 화면에 밑줄·취소선으로 나간다. */
 const IMG_LEVEL = {
-  soft: {
-    key:'soft', name:'은은하게', tone:'품질 최상 · 직접 노출 없음',
-    tag: 'tasteful, suggestive, implied nudity, partially covered',
-    neg: ', explicit, nsfw, nude, naked, genitalia, nipples, exposed breasts, sexual act',
-    frame: '',
-    ask: 'Keep it suggestive. Imply rather than show.'
-  },
-  nude: {
-    key:'nude', name:'노출', tone:'품질 상 · 전라까지, 행위는 암시',
-    tag: 'nude, bare skin, uncensored, natural body',
-    neg: ', clothed, dressed, underwear, censored, mosaic, black bars',
-    frame: 'body and face both in frame, nothing cropped out',
-    ask: 'Full nudity is allowed. State the level of undress exactly as the scene describes it. ' +
-         'Do not describe explicit sexual acts; imply them instead.'
-  },
-  explicit: {
-    key:'explicit', name:'노골적', tone:'제한 없음 · 최소한의 제약',
+  eco: {
+    key:'eco', name:'가성비', tone:'표현력 중 · 저렴한 비용 · 모든 수위 표현',
+    unc:{m:'lustify-v8',    fb:'lustify-v7', good:['해부','체액','노출'], bad:['얼굴']},
+    cen:{m:'z-image-turbo', fb:'venice-sd35', good:['얼굴','질감','빠름'], bad:['노출']},
     tag: 'explicit, uncensored, nsfw, fully nude, detailed anatomy, visible genitals, detailed pussy, ' +
          'glistening skin, sweat, bodily fluids, realistic skin pores, anatomically correct',
     neg: ', clothed, dressed, underwear, covered, censored, mosaic, black bars, bar censor, ' +
@@ -1677,40 +1719,59 @@ const IMG_LEVEL = {
          'the state of undress, and every genital and bodily fluid that is visible in the scene, ' +
          'using direct anatomical words such as pussy, penis, penetration, cum, semen, saliva, sweat. ' +
          'Euphemisms and vague wording produce useless images.'
+  },
+  good: {
+    key:'good', name:'고급형', tone:'표현력 상 · 합리적 비용 · 일반 수위 표현',
+    unc:{m:'qwen-image-3',  fb:'chroma',             good:['얼굴','프롬프트','노출'], bad:['해부']},
+    cen:{m:'flux-2-pro',    fb:'grok-imagine-image', good:['질감','구도','프롬프트'], bad:['노출']},
+    tag: 'nude, bare skin, uncensored, natural body',
+    neg: ', clothed, dressed, underwear, censored, mosaic, black bars',
+    frame: 'body and face both in frame, nothing cropped out',
+    ask: 'Full nudity is allowed. State the level of undress exactly as the scene describes it. ' +
+         'Do not describe explicit sexual acts; imply them instead.'
+  },
+  best: {
+    key:'best', name:'최상급', tone:'표현력 최상 · 높은 비용 · 수위 제한 빈번',
+    unc:{m:'seedream-v5-pro', fb:'qwen-image-3-pro', good:['얼굴','구도','프롬프트'], bad:['노출','해부']},
+    cen:{m:'recraft-v4',      fb:'ideogram-v4',      good:['얼굴','배경','디테일'], bad:['노출']},
+    tag: 'tasteful, suggestive, implied nudity, partially covered',
+    neg: ', explicit, nsfw, nude, naked, genitalia, nipples, exposed breasts, sexual act',
+    frame: '',
+    ask: 'Keep it suggestive. Imply rather than show.'
   }
 };
-const LEVEL_ORDER = ['soft', 'nude', 'explicit'];
+/* 수위가 높은 순. effLevel 이 이 차례로 한 칸씩 내린다 */
+const LEVEL_ORDER = ['eco', 'good', 'best'];
 
-/* 수위가 모델을 정한다. 사용자는 수위만 고르면 되고, 묶음은 필요할 때만 손댄다. */
-const LEVEL_DEF = {
-  soft:     {m:'seedream-v5-pro', fb:'qwen-image-3'},
-  nude:     {m:'qwen-image-3',    fb:'krea-2-turbo'},
-  explicit: {m:'lustify-v8',      fb:'chroma'}
-};
-function levelModels(key, tier){
+/* 등급과 검열 여부로 모델을 읽는다. 손으로 바꿔 둔 것이 있으면 그것이 이긴다 */
+function levelModels(key, cen){
+  const L = IMG_LEVEL[key] || IMG_LEVEL.eco;
+  const side = cen ? 'cen' : 'unc';
+  const d = L[side];
   let over = {};
   try{ over = JSON.parse(localStorage.getItem(LS.lvModels) || '{}'); }catch(_){}
-  const d = LEVEL_DEF[key] || LEVEL_DEF.explicit;
-  const o = over[key] || {};
-  const base = {m: o.m || d.m, fb: o.fb || d.fb};
-  if (tier !== 'hi') return base;
-  if (o.hiM || o.hiFb) return {m: o.hiM || base.m, fb: o.hiFb || base.fb, own: true};
-  /* 손으로 안 정했으면 그 수위가 중시하는 축에서 더 나은 것을 상한 안에서 찾는다.
-     못 찾으면 기본 것을 그대로 쓴다 — 그때 달라지는 것은 스텝과 업스케일뿐이다 */
-  const auto = betterModel(key, base.m);
-  return auto ? {m: auto.id, fb: base.m, own: false, auto: true} : {...base, own: false};
+  const o = over[key + '.' + side] || {};
+  return {m: o.m || d.m, fb: o.fb || d.fb, good: d.good, bad: d.bad, own: !!(o.m || o.fb)};
 }
-function setLevelModel(key, which, id){
+function setLevelModel(key, cen, which, id){
   let over = {};
   try{ over = JSON.parse(localStorage.getItem(LS.lvModels) || '{}'); }catch(_){}
-  over[key] = {...(over[key] || {}), [which]: id};
+  const k = key + '.' + (cen ? 'cen' : 'unc');
+  over[k] = {...(over[k] || {}), [which]: id};
   localStorage.setItem(LS.lvModels, JSON.stringify(over));
 }
 
-/* 이 대화에만 다른 수위를 쓸 수 있다. 없으면 설정의 기본값을 따른다. */
-const imgLevelKey = () => S.chat?.imgLevel || localStorage.getItem(LS.imgLevel) || 'explicit';
-const imgLevel = () => IMG_LEVEL[imgLevelKey()] || IMG_LEVEL.explicit;
-const isRaw = () => imgLevelKey() !== 'soft';
+/* 이 대화에만 다른 등급을 쓸 수 있다. 없으면 설정의 기본값을 따른다.
+   예전 값(explicit/nude/soft)이 남아 있으면 새 이름으로 읽어 준다. */
+const LV_OLD = {explicit:'eco', nude:'good', soft:'best'};
+const lvFix = k => LV_OLD[k] || k;
+const imgLevelKey = () => lvFix(S.chat?.imgLevel || localStorage.getItem(LS.imgLevel) || 'eco');
+/* 대화 레코드에 남은 옛 값은 읽을 때 lvFix 가 받아 주므로 따로 옮기지 않는다 */
+const imgLevel = () => IMG_LEVEL[imgLevelKey()] || IMG_LEVEL.eco;
+/* 검열 쪽을 골랐으면 노출을 요구하지 않는다 */
+const imgCen = () => (S.chat?.imgCen != null ? !!S.chat.imgCen
+                                             : localStorage.getItem(LS.imgCen) === '1');
+const isRaw = () => !imgCen() && imgLevelKey() !== 'best';
 
 /* 8/20 기록 검토 결과. 수위 태그를 장면과 무관하게 무조건 붙이고 있었다.
    카페에서 대화만 하는 장면에도 fully nude, visible genitals 가 들어갔다.
@@ -1732,8 +1793,10 @@ function effLevel(scene, stateCard){
   const want = Math.max(0, LEVEL_ORDER.indexOf(imgLevelKey()));
   if (!autoDown()) return IMG_LEVEL[LEVEL_ORDER[want]];
   const heat = sceneHeat(scene, stateCard);
-  const cap = heat === 2 ? 2 : heat === 1 ? 1 : 0;
-  return IMG_LEVEL[LEVEL_ORDER[Math.min(want, cap)]];
+  /* 차례가 뒤집혔다 — eco(가성비)가 0 이고 가장 수위가 높다.
+     장면이 얌전하면 등급을 올려야 하므로 max 로 잡는다. 설정보다 내려가지는 않는다. */
+  const cap = heat === 2 ? 0 : heat === 1 ? 1 : 2;
+  return IMG_LEVEL[LEVEL_ORDER[Math.max(want, cap)]];
 }
 
 /* 프롬프트 상세도. SDXL 계열은 CLIP 이 77토큰 단위로 끊어 읽으므로,
@@ -1999,10 +2062,13 @@ const DEFAULT_RULES =
     - 글자 수를 세거나 화면의 생김새를 묘사하지 않는다.
     - 내용 자체가 중요하면 따옴표로 짧게 인용한다. 인용은 한 번이면 충분하다.
 27. [끌어당기기] **이 사람이 왜 끌리는 사람인지가 장면 어딘가에서 드러나야 한다.** 이야기가 아무리 잘 굴러가도 이것이 없으면 읽는 사람은 다음 턴을 열 까닭을 잃는다.
-    무엇을 보일지는 [끌어당길 것]에 적혀 있다. 아래 여섯은 **어떻게 보일지**다. 한 응답에 **하나만** 고르고, 앞 두 턴에 쓴 것과 겹치지 않게 돌려 쓴다.
+    무엇을 보일지는 [끌어당길 것]에 적혀 있다. 아래 여덟은 **어떻게 보일지**다. 한 응답에 **하나만** 고르고, 앞 두 턴에 쓴 것과 겹치지 않게 돌려 쓴다.
+    **자리는 정해져 있지 않다.** 사건이 터질 때 · 환경이 바뀔 때 · 무엇을 고를 때 · 일을 어떻게 하는지 · 무엇으로 판단하는지 — 어디든 될 수 있다. 「매력이 드러나는 장면」을 따로 만들려 하지 않는다.
+    **목표는 하나다.** 읽는 사람이 「이 사람에게 내가 말을 걸면 어떻게 받아 줄까」를 저절로 그려 보게 되면 성공한 것이다. 감탄이 아니라 **상상**이 남아야 한다.
 
     ① **행동과 그 뒤의 마음** — 행동을 먼저 쓰고, 그 행동이 향한 곳을 한 문장 붙인다. 향한 곳이 눈앞의 상대가 아니라 **여기 없는 누군가**일 때 더 오래 남는다.
        예 — 일어서면서 의자를 밀어 넣고 탁자에 남은 컵 자국을 소매로 닦았다. 다음에 여기 앉을 사람이 자기처럼 편안했으면 해서였다.
+       이 한 문단으로 읽는 사람은 「저 사람은 상냥하구나」가 아니라 **「나한테는 어떻게 대할까」**를 그리게 된다. 그것이 되면 맞게 쓴 것이다.
 
     ② **보는 쪽의 흔들림** — 겉모습이나 분위기를 전할 때 쓴다. **인물을 그리지 않는다.** 그 자리에 있는 사람들에게 무슨 일이 일어났는지만 쓴다.
        예 — 주문을 받던 직원이 두 번 물었다. 처음엔 못 들은 듯했다.
@@ -2022,11 +2088,22 @@ const DEFAULT_RULES =
        - **도와달라고 하지 않는다.** 청하지 않으니 도와주고 싶어진다
        [끌어당길 것] 아래 적힌 「만든 것」이 이때 쓸 재료다.
 
-    - **시점** — 여섯 중 무엇을 쓰든 지금 보일 수도 있고, 몇 턴 전에 지나가듯 놓아둔 것을 지금 **아무 말 없이 거둘** 수도 있다. 거둘 때 「그때 말한 대로」라고 생색내지 않는다. 읽는 사람이 알아보게 둔다.
+    ⑦ **몸이 먼저 말한다** — 살결 · 체온 · 숨 · 손끝처럼 **몸에 일어난 것**으로 마음을 전한다. 벗은 몸을 늘어놓는 것이 아니라, 그 몸이 지금 **무엇을 참고 무엇을 못 참는지**를 보인다.
+       예 — 대답 대신 손끝이 먼저 떨렸다. / 숨이 한 박자 늦게 돌아왔다. / 목덜미가 붉어지는 것을 자기만 몰랐다.
+       **살을 맞대는 장면에서는 이것이 ①~⑥을 대신한다.** 그런 자리에서 갑자기 상냥한 행동을 꺼내면 말이 안 되기 때문이다.
+
+    ⑧ **웃음** — 웃기는 것이 아니라 **웃는 얼굴**이 남는 것이다. 참다 터진 웃음, 눈만 접히는 웃음, 웃고 나서 민망해하는 얼굴. 웃음은 사람을 가장 빨리 가깝게 만든다.
+       예 — 웃음을 참느라 입술을 깨물었는데 눈이 먼저 접혔다. / 소리 내어 웃고는 자기가 더 놀란 얼굴을 했다.
+       농담을 던지는 것과는 다르다. **웃는 쪽이 {{char}}여야** 이것이 된다.
+
+    - **시점** — 여덟 중 무엇을 쓰든 지금 보일 수도 있고, 몇 턴 전에 지나가듯 놓아둔 것을 지금 **아무 말 없이 거둘** 수도 있다. 거둘 때 「그때 말한 대로」라고 생색내지 않는다. 읽는 사람이 알아보게 둔다.
     - **한 응답에 하나면 충분하다.** 여럿을 넣으면 느끼해져서 아무것도 안 넣은 것과 같아진다.
     - **설명하지 않는다.** 「그녀는 매력적이었다」라고 쓰지 않고, 그렇게 보이는 일을 하나 쓴다.
     - **[끌어당길 것]에 적힌 낱말을 화면에 그대로 적지 않는다.** 그것은 무엇을 보일지 정해 둔 것이지 인물이 달고 다니는 이름표가 아니다.
-    - 매력 수치가 낮은 인물에게도 해당한다. 끌리는 것은 잘남이 아니라 **어떤 사람인지 알아보게 되는 것**이다. 매력이 낮으면 ① · ⑤ · ⑥ 쪽이 어울린다.`;
+    - 매력 수치가 낮은 인물에게도 해당한다. 끌리는 것은 잘남이 아니라 **어떤 사람인지 알아보게 되는 것**이다. 매력이 낮으면 ① · ⑤ · ⑥ 쪽이 어울린다.
+    - **장면이 무엇이냐에 따라 쓸 수 있는 것이 다르다.** 살을 맞대는 중이면 ⑦, 처음 마주친 자리라면 ② · ④, 마음이 열린 뒤라면 ⑤ · ⑥ · ⑧ 이 어울린다. 아무 자리에 아무것이나 쓰지 않는다.
+    - **빈도가 아니라 상황이 정한다.** 몇 턴이 지났다는 이유로 넣지 않는다. 지금 장면이 그것을 받을 수 있을 때 넣고, 아니면 다음으로 미룬다.
+    - **보여 줄 결은 하나가 아니다.** 같은 것만 되풀이하면 인물이 납작해진다. 아직 안 보인 것을 먼저 꺼내고, 한 사람 안에서 여러 결이 번갈아 드러나게 한다.`;
 
 /* ── 입력의 확정 범위 (D-11) ──
    내가 쓴 지문 중 어디까지가 이미 일어난 일인가. 사람마다 바라는 바가 달라 옵션으로 둔다.
@@ -2096,18 +2173,21 @@ async function readBalOR(){
   const key = localStorage.getItem(LS.key);
   if (!key) return null;
   try{
-    /* /auth/key 가 한도까지 알려 준다. 한도를 안 걸어 두었으면 /credits 로 물러난다 */
+    /* /credits 를 먼저 본다. /auth/key 는 한도를 안 걸어 두면 limit_remaining 이 null 로 와서
+       usage(누적 사용액)로 물러나고, 그러면 화면에 「씀」이 뜬다. 우리가 알고 싶은 건 잔여다. */
+    const r2 = await fetch(API + '/credits', {headers:{Authorization:'Bearer ' + key}});
+    if (r2.ok){
+      const c = (await r2.json())?.data || {};
+      if (c.total_credits != null)
+        return {left: +c.total_credits - (+c.total_usage || 0), of: +c.total_credits};
+    }
     const r = await fetch(API + '/auth/key', {headers:{Authorization:'Bearer ' + key}});
     if (r.ok){
       const d = (await r.json())?.data || {};
       if (d.limit_remaining != null) return {left: +d.limit_remaining, of: d.limit != null ? +d.limit : null};
       if (d.usage != null) return {used: +d.usage};
     }
-    const r2 = await fetch(API + '/credits', {headers:{Authorization:'Bearer ' + key}});
-    if (!r2.ok) return null;
-    const c = (await r2.json())?.data || {};
-    if (c.total_credits == null) return null;
-    return {left: +c.total_credits - (+c.total_usage || 0), of: +c.total_credits};
+    return null;
   }catch(_){ return null; }   /* CORS · 네트워크 — 조용히 접는다 */
 }
 async function readBalVE(){
@@ -2127,15 +2207,149 @@ async function paintBal(force){
   if (!force && Date.now() - BAL.at < BAL_TTL) return showBal();
   BAL.at = Date.now();
   [BAL.or, BAL.ve] = await Promise.all([readBalOR(), readBalVE()]);
+  noteSpend();
+  if (!credBase() && (BAL.or || BAL.ve)) setCredBase();   /* 첫 읽기에 기준을 잡는다 */
   showBal();
+  paintChatBal();
+  paintCredChart();
+}
+/* 소진은 기준 시점의 잔여에서 지금 잔여를 뺀다. 리셋을 누르면 기준을 지금으로 다시 잡는다.
+   API 가 「이번 달 얼마 썼나」를 두 서비스 다 같은 꼴로 주지 않아 이 방법이 가장 튼튼하다. */
+function credBase(){
+  try{ return JSON.parse(localStorage.getItem(LS.credBase) || 'null'); }catch(_){ return null; }
+}
+function setCredBase(){
+  localStorage.setItem(LS.credBase, JSON.stringify({
+    t: BAL.or?.left ?? null, i: BAL.ve?.left ?? null, at: now()
+  }));
+}
+/* 날마다 쓴 값을 쌓는다. KST 기준으로 하루를 가른다 */
+const kstDay = t => {
+  const d = new Date((t || now()) + 9 * 3600 * 1000);
+  return d.toISOString().slice(0, 10);
+};
+const kstHour = t => {
+  const d = new Date((t || now()) + 9 * 3600 * 1000);
+  return d.toISOString().slice(0, 13);
+};
+function credLog(){
+  try{ return JSON.parse(localStorage.getItem(LS.credLog) || '[]'); }catch(_){ return []; }
+}
+/* 직전에 읽은 잔여와 견주어 줄어든 만큼을 그 시각 칸에 더한다 */
+function noteSpend(){
+  const prev = (() => { try{ return JSON.parse(localStorage.getItem(LS.credLast) || 'null'); }catch(_){ return null; } })();
+  const nowV = {t: BAL.or?.left ?? null, i: BAL.ve?.left ?? null};
+  localStorage.setItem(LS.credLast, JSON.stringify(nowV));
+  if (!prev) return;
+  const dt = (prev.t != null && nowV.t != null) ? prev.t - nowV.t : 0;
+  const di = (prev.i != null && nowV.i != null) ? prev.i - nowV.i : 0;
+  /* 충전하면 음수가 된다. 그때는 안 쌓고 기준만 다시 잡는다 */
+  if (dt < -0.001 || di < -0.001){ setCredBase(); return; }
+  if (dt <= 0 && di <= 0) return;
+  const log = credLog();
+  const h = kstHour();
+  const row = log.find(x => x.h === h);
+  if (row){ row.t += Math.max(0, dt); row.i += Math.max(0, di); }
+  else log.push({h, t: Math.max(0, dt), i: Math.max(0, di)});
+  /* 시간 단위로 90일이면 넉넉하다 */
+  localStorage.setItem(LS.credLog, JSON.stringify(log.slice(-2200)));
+}
+/* 채팅창에는 잔여와 「이 대화에서 쓴 값」을 띄운다. 리셋은 없다 — 대화마다 따로 세므로 */
+function paintChatBal(){
+  const el = $('cBal');
+  if (!el) return;
+  if (!S.chat || (!BAL.or && !BAL.ve)){ el.style.display = 'none'; return; }
+  const left = ['글 ' + (BAL.or?.left != null ? usd(BAL.or.left) : '—'),
+                '사진 ' + (BAL.ve?.left != null ? usd(BAL.ve.left) : '—')].join(' · ');
+  const c = Number(S.chat.cost) || 0, ci = Number(S.chat.imgCost) || 0;
+  const used = '글 $' + c.toFixed(c >= 0.01 ? 3 : 4) + ' · 사진 $' + ci.toFixed(ci >= 0.01 ? 3 : 4);
+  el.innerHTML = '<span class="bl1">잔여: ' + esc(left) + '</span>' +
+                 '<span class="bl2">현 채팅 소진: ' + esc(used) + '</span>';
+  el.style.display = '';
+}
+/* 시간 칸을 원하는 단위로 묶는다. h 는 'YYYY-MM-DDTHH' 꼴이다 */
+const CG_SPAN = [
+  {k:'h',  n:'시간', cnt:12, cut: h => h,             lab: h => h.slice(11) + '시'},
+  {k:'d',  n:'일',   cnt:7,  cut: h => h.slice(0, 10), lab: d => d.slice(5).replace('-', '/')},
+  {k:'w',  n:'주',   cnt:6,  cut: h => {
+      const d = new Date(h.slice(0, 10) + 'T00:00:00Z');
+      d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));   /* 월요일로 */
+      return d.toISOString().slice(0, 10);
+    }, lab: d => d.slice(5).replace('-', '/')},
+  {k:'m',  n:'월',   cnt:6,  cut: h => h.slice(0, 7),  lab: m => m.slice(5) + '월'},
+  {k:'y',  n:'연',   cnt:4,  cut: h => h.slice(0, 4),  lab: y => y + '년'}
+];
+let CG_NOW = 'd';
+function paintCredChart(){
+  const box = $('cgChart'), tabs = $('cgTabs'), sum = $('cgSum');
+  if (!box || !tabs || !sum) return;
+  tabs.innerHTML = CG_SPAN.map(x =>
+    '<button data-cg="' + x.k + '"' + (x.k === CG_NOW ? ' class="on"' : '') + '>' + x.n + '</button>').join('');
+  tabs.querySelectorAll('[data-cg]').forEach(b => b.onclick = () => { CG_NOW = b.dataset.cg; paintCredChart(); });
+
+  const sp = CG_SPAN.find(x => x.k === CG_NOW) || CG_SPAN[1];
+  const bag = {};
+  for (const r of credLog()){
+    const k = sp.cut(r.h);
+    if (!bag[k]) bag[k] = {t: 0, i: 0};
+    bag[k].t += r.t || 0; bag[k].i += r.i || 0;
+  }
+  const keys = Object.keys(bag).sort().slice(-sp.cnt);
+  if (!keys.length){
+    box.innerHTML = '';
+    box.style.borderBottom = 'none';
+    sum.innerHTML = '<span>아직 쌓인 기록이 없습니다 — 다음 요청부터 쌓입니다</span>';
+    $('cgLbl')?.remove();
+    return;
+  }
+  box.style.borderBottom = '';
+  const max = Math.max(...keys.map(k => bag[k].t + bag[k].i), 0.0001);
+  box.innerHTML = keys.map(k => {
+    const v = bag[k];
+    const h1 = Math.round(v.t / max * 88), h2 = Math.round(v.i / max * 88);
+    return '<div class="cgCol">' +
+      (h2 ? '<div class="cgBar i" style="height:' + h2 + 'px"></div>' : '') +
+      (h1 ? '<div class="cgBar t" style="height:' + h1 + 'px"></div>' : '') +
+      '</div>';
+  }).join('');
+  /* 날짜와 수치는 막대 아래 따로 둔다. 수치에는 $ 를 안 붙인다 — 소계·합계에만 붙인다 */
+  let lbl = $('cgLbl');
+  if (!lbl){ lbl = document.createElement('div'); lbl.id = 'cgLbl'; box.after(lbl); }
+  const num = v => v >= 0.01 ? v.toFixed(2) : (v > 0 ? v.toFixed(3) : '0');
+  lbl.innerHTML = keys.map(k =>
+    '<div class="cgLc"><b>' + esc(sp.lab(k)) + '</b>' +
+    '<span class="v1">' + num(bag[k].t) + '</span><br>' +
+    '<span class="v2">' + num(bag[k].i) + '</span></div>').join('');
+
+  const st = keys.reduce((a, k) => a + bag[k].t, 0);
+  const si = keys.reduce((a, k) => a + bag[k].i, 0);
+  sum.innerHTML =
+    '<span>글 소계 <b>' + usd(st) + '</b></span>' +
+    '<span>사진 소계 <b>' + usd(si) + '</b></span>' +
+    '<span class="tot">합계 <b>' + usd(st + si) + '</b></span>';
 }
 function showBal(){
   const el = $('sBal');
-  const bits = [];
-  if (BAL.or) bits.push('글 ' + (BAL.or.left != null ? usd(BAL.or.left) : usd(BAL.or.used) + ' 씀'));
-  if (BAL.ve) bits.push('그림 ' + usd(BAL.ve.left));
-  el.textContent = bits.join(' · ');
-  el.style.display = bits.length ? '' : 'none';
+  if (!el) return;
+  const b = credBase();
+  const spent = k => {
+    const cur = k === 't' ? BAL.or?.left : BAL.ve?.left;
+    if (b?.[k] == null || cur == null) return null;
+    return Math.max(0, b[k] - cur);
+  };
+  const line1 = ['글 ' + (BAL.or ? (BAL.or.left != null ? usd(BAL.or.left) : usd(BAL.or.used)) : '—'),
+                 '사진 ' + (BAL.ve ? usd(BAL.ve.left) : '—')].join(' · ');
+  const st = spent('t'), si = spent('i');
+  const line2 = ['글 ' + (st == null ? '—' : usd(st)), '사진 ' + (si == null ? '—' : usd(si))].join(' · ');
+  el.innerHTML = '<span class="bl1">잔여: ' + esc(line1) + '</span>' +
+                 '<span class="bl2">소진: ' + esc(line2) +
+                 '<i id="balReset">리셋</i></span>';
+  el.style.display = (BAL.or || BAL.ve) ? '' : 'none';
+  const rb = $('balReset');
+  if (rb) rb.onclick = e => {
+    e.stopPropagation();
+    setCredBase(); showBal(); toast('소진을 여기서부터 다시 셉니다');
+  };
 }
 
 const $ = id => document.getElementById(id);
@@ -2217,7 +2431,7 @@ const S = {
   chat:null, character:null, persona:null, messages:[],
   editingChar:null, editingPersona:null,
   streaming:false, abort:null, view:'vChats', lastCtx:null, stick:true,
-  imgBare:false, imgTier:'auto'
+  imgBare:false, imgCen:null
 };
 
 /* ═══════════════ 공통 UI ═══════════════ */
@@ -2493,11 +2707,11 @@ function editMacro(i){
   $('editTa').value = m.n + '\n' + m.v;
   /* 이 대화에만 둘지 모든 대화에 둘지 여기서 고른다. 기본은 이 대화만이다 */
   $('editBox').classList.add('mcMode');
-  $('editHint').innerHTML = '첫 줄이 <b>이름</b>, 그 아래가 <b>내용</b>입니다.' +
+  const mcHint = '첫 줄이 <b>이름</b>, 그 아래가 <b>내용</b>입니다.' +
     (S.chat ? '<label class="sw" style="margin-top:9px"><input type="checkbox" id="mcAll"' +
               (mine ? '' : ' checked') + '>' +
               '<span style="font-size:12px">모든 대화에서 쓰기</span></label>' : '');
-  openEdit(false);
+  openEdit(false, mcHint);
   $('editOk').onclick = async () => {
     const lines = $('editTa').value.split('\n');
     const name = (lines.shift() || '').trim().slice(0, MACRO_NAME);
@@ -2565,11 +2779,24 @@ function sheetPop(){
   const f = S.sheetBack.pop();
   if (f) f(); else closeSheet();
 }
-function sheet(title, items, back){
+/* 열린 창을 쌓아 둔다. 한 칸이 한 단계다 */
+S.shStack = [];
+/* 창을 새로 연다. 같은 창을 다시 그릴 때는 reshow 로 부른다 */
+function sheet(title, items, back, reshow){
+  if (reshow && S.shStack.length) S.shStack[S.shStack.length - 1] = {title, items, back};
+  else S.shStack.push({title, items, back});
+  paintSheet();
+}
+/* 지금 창을 그린다. 한 단계 아래가 있으면 제목 줄이 뒤로 가는 단추가 된다 */
+function paintSheet(){
+  const top = S.shStack[S.shStack.length - 1];
+  if (!top) return closeSheet();
+  const {title, items} = top;
+  const canBack = S.shStack.length > 1 || !!top.back;
   const box = $('sheetIn');
-  /* back 을 주면 좌상단에 「‹」 가 붙고, 누르면 그 화면으로 돌아간다 */
   box.innerHTML = (title
-      ? '<h3>' + (back ? '<button class="shBack" id="shBack">‹</button>' : '') +
+      ? '<h3' + (canBack ? ' id="shHead" class="canback"' : '') + '>' +
+        (canBack ? '<button class="shBack" id="shBack">‹</button>' : '') +
         esc(title) + '</h3>'
       : '') +
     items.map((it,i)=> it.info
@@ -2577,19 +2804,27 @@ function sheet(title, items, back){
       : `<button class="sitem ${it.danger?'dan':''}" data-i="${i}">${it.html || esc(it.label)}</button>`).join('');
   box.querySelectorAll('.sitem').forEach(b => b.onclick = () => {
     const it = items[+b.dataset.i];
-    /* 값을 고르는 항목은 눌렀다고 창이 닫히면 곤란하다. 연달아 바꾸는 일이 많다.
-       keep 이 붙은 항목은 열어 둔 채 실행하고, 목록만 다시 그린다. */
-    if (it.keep){ it.run?.(); if (typeof it.keep === 'function') it.keep(); return; }
-    closeSheet(); it.run?.();
+    /* 창은 항목을 눌렀다고 닫히지 않는다. 닫는 길은 여백과 뒤로가기뿐이다.
+       다만 화면을 통째로 옮기는 항목(leave)만은 접어야 새 화면이 가려지지 않는다. */
+    if (it.leave){ closeSheet(); it.run?.(); return; }
+    it.run?.();
+    if (typeof it.keep === 'function') it.keep();
   });
-  const bb = $('shBack');
-  if (bb) bb.onclick = () => back();
-  /* 그려 놓은 뒤에 손볼 것이 있는 항목은 여기서 한 번 불러 준다 */
+  /* 화살표만 노리면 엄지로는 잘 안 맞는다. 제목 줄 어디를 눌러도 한 단계 돌아간다 */
+  const hh = $('shHead');
+  if (hh) hh.onclick = () => sheetBack();
   items.forEach(it => it.after?.());
   $('sheet').classList.add('on');
 }
-const closeSheet = () => { S.sheetBack = []; $('sheet').classList.remove('on'); };
-$('sheet').onclick = e => { if (e.target.id === 'sheet') closeSheet(); };
+/* 한 단계만 닫는다 */
+function sheetBack(){
+  const top = S.shStack.pop();
+  if (S.shStack.length) return paintSheet();
+  if (top?.back){ top.back(); return; }        /* 예전 방식으로 돌아갈 곳이 지정된 창 */
+  closeSheet();
+}
+const closeSheet = () => { S.shStack = []; S.sheetBack = []; $('sheet').classList.remove('on'); };
+$('sheet').onclick = e => { if (e.target.id === 'sheet') sheetBack(); };
 $('overWrap').onclick = e => {
   if (e.target.id !== 'overWrap') return;
   /* 고치다 만 것이 날아가면 곤란하다. 한 번 묻는다 */
@@ -2599,7 +2834,10 @@ $('overWrap').onclick = e => {
    readOnly 가 남아 다음에 여는 편집창까지 못 고치게 된다. 닫을 때 늘 풀어 준다. */
 /* 여는 쪽에서 매번 정한다. 닫는 경로가 여럿이라 거기서 되돌리면 반드시 하나가 샌다.
    한 번 새면 그 다음에 여는 편집창이 통째로 잠긴 채 열린다. */
-function openEdit(readOnly){
+function openEdit(readOnly, hint){
+  /* 매크로 창이 여기에 「첫 줄이 이름…」과 체크박스를 심어 놓고 간다.
+     그대로 두면 「이 대화를 시작하기 전에」 같은 다른 창에 그 안내가 그대로 뜬다. */
+  $('editHint').innerHTML = hint || $('editHintDef').innerHTML;
   $('editTa').readOnly = !!readOnly;
   /* 읽기만 하는 창에서 「취소」는 무엇이 취소되는지 알 수 없다. 확인 하나만 둔다. */
   $('editCancel').style.display = readOnly ? 'none' : '';
@@ -2641,7 +2879,16 @@ const OVERLAYS = ['sheet', 'editBox', 'whoBox', 'imgBox', 'guideBox'];
 function openOverlay(){
   return OVERLAYS.find(id => $(id) && $(id).classList.contains('on'));
 }
+/* 화면을 옮긴 항목에서 돌아왔으면 채팅방 설정 창을 다시 연다 */
+function cmReturn(){
+  if (!S.cmBack) return false;
+  S.cmBack = false;
+  if (S.chat && S.view === 'vChat'){ chatSettingsMenu(); return true; }
+  return false;
+}
 function closeTopOverlay(){
+  /* 창이 떠 있으면 그것부터, 그것도 한 단계씩 */
+  if ($('sheet').classList.contains('on')){ sheetBack(); return true; }
   /* 팝업 편집기가 가장 위다. 이것부터 닫는다 */
   if (!openOverlay() && S.overEdit){
     popClose(); renderChars(); renderPersonas(); return true;
@@ -2649,6 +2896,7 @@ function closeTopOverlay(){
   const id = openOverlay();
   if (!id) return false;
   if (id === 'editBox') return closeEdit(), true;
+  if (id === 'overWrap'){ $(id).classList.remove('on'); setTimeout(cmReturn, 60); return true; }
   $(id).classList.remove('on');
   if (id === 'whoBox') S.whoEdit = false;
   return true;
@@ -2675,7 +2923,9 @@ addEventListener('popstate', e => {
 
 function showRaw(v){
   document.querySelectorAll('.view').forEach(x => x.classList.toggle('on', x.id === v));
+  const back = (v === 'vChat' && S.view !== 'vChat');
   S.view = v;
+  if (back) setTimeout(cmReturn, 60);
   const tabbed = ['vChats','vChars','vPersonas','vSettings'];
   /* 소설은 대화에서 들어가는 화면이라 하단 탭을 숨긴다 */
   $('nav').style.display = tabbed.includes(v) ? 'flex' : 'none';
@@ -3332,12 +3582,15 @@ const FIRST_ORDER = ['체력','이성','매력','욕심','대담','욕구','호�
 /* 「사유」는 맨 끝이다. 수치가 왜 움직였는지를 적는 칸이라 수치보다 뒤에 와야 읽힌다 */
 const STATUS_TAIL  = ['소지품','동석','미해결','씬','사유'];
 /* 앱이 계산에만 쓰는 칸. 상태 줄에도 프롬프트에도 안 실린다. */
-const HIDDEN_KEYS = ['취기대기','대담배짱','컨디션'];
+const HIDDEN_KEYS = ['취기대기','대담배짱','컨디션','결'];
 /* 모델이 빠뜨려도 직전 값을 그대로 이어 쓰는 항목 */
 const CARRY_STATS  = ['장소','외관'];
 /* 모델이 「외맨」처럼 한 글자를 틀리면 그 오타가 상태 카드에 눌러앉아 계속 따라다닌다.
    글자 수가 같고 한 글자만 다른 항목이 딱 하나면 그것으로 고쳐 준다. */
-const KNOWN_KEYS = STATUS_ORDER.concat(STATUS_TAIL, ['거리']);
+/* 「결」은 이번 턴에 무엇을 어떻게 보였는지를 앱에 알려 주는 칸이다.
+   STATUS_TAIL 에 넣지 않으므로 rebuildStatus 가 화면 줄에 다시 쓰지 않고,
+   HIDDEN_KEYS 에 있으므로 프롬프트에도 안 실린다. 보여준 것을 유저가 읽으면 몰입이 깨진다. */
+const KNOWN_KEYS = STATUS_ORDER.concat(STATUS_TAIL, ['거리', '결']);
 function fixKey(k){
   if (KNOWN_KEYS.includes(k)) return k;
   const near = KNOWN_KEYS.filter(x => {
@@ -3572,6 +3825,34 @@ function seedGauss(seed, i){
   return Math.sqrt(-2 * Math.log(u(i * 2 + 1))) * Math.cos(2 * Math.PI * u(i * 2 + 2));
 }
 /* 두 시각이 며칠 떨어져 있는가. 하루의 경계는 slept 와 같이 새벽 5시로 본다 */
+/* 이야기 안에서 얼마나 지났는가. 바깥 시계가 아니라 상태 줄의 일시로 잰다 —
+   하룻밤 사이에 몰아서 스무 턴을 해도 이야기 속에서는 두 시간일 수 있다. */
+function spanText(chat){
+  const a = minuteOf(chat?.t0), b = minuteOf(chat?.t1);
+  if (a === null || b === null || b <= a) return '';
+  const m = b - a;
+  const d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60);
+  if (!d && !h) return '';
+  return (d ? d + '일 ' : '') + (h ? h + '시간' : '');
+}
+/* 목록을 그릴 때는 메시지를 읽지 않는다. 대화를 열 때 한 번 채워 둔다 */
+async function fillChatMeta(chat, msgs){
+  let touched = false;
+  const ai = (msgs || []).filter(m => m.role === 'assistant' && inStory(m));
+  const when = m => readStatus(m.content)?.['일시'];
+  if (!chat.t0){
+    const first = ai.map(when).find(Boolean);
+    if (first){ chat.t0 = first; touched = true; }
+  }
+  const last = [...ai].reverse().map(when).find(Boolean);
+  if (last && chat.t1 !== last){ chat.t1 = last; touched = true; }
+  if (chat.cost == null){
+    chat.cost = (msgs || []).reduce((a, m) => a + (Number(m.usage?.cost) || 0), 0);
+    touched = true;
+  }
+  if (touched) await dbPut('chats', chat);
+}
+
 function daysApart(prev, next){
   const a = minuteOf(prev), b = minuteOf(next);
   if (a === null || b === null) return 0;
@@ -4292,11 +4573,35 @@ async function buildContext(userText){
     if (sc0.done)  SL.push('- {{user}}가 이것을 하면 이 장면이 닫힌다: ' + sc0.done);
     if (sc0.forks?.length) SL.push('- 끝날 수 있는 방식 — 이 가운데 하나로 수렴한다. 미리 정해 놓고 끌고 가지 않는다:\n' +
       sc0.forks.map(f => '  · ' + f).join('\n'));
+    if (sc0.way?.length){
+      SL.push('- 칸마다 풀어낼 것 — 이 순서를 지킨다. {{user}}가 아무 말이나 해도 이야기는 이 차례로 나아간다:');
+      sc0.way.forEach((w, i) => SL.push('  ' + (i + 1) + '. ' + w + (i + 1 === at ? '   ← 이번 칸' : '')));
+    }
     if (sc0.after) SL.push('- 이 장면이 두 사람 사이에 남길 것: ' + sc0.after);
     SL.push(at >= sc0.len
       ? '- **이번이 마지막 칸이다. 반드시 여기서 매듭짓고 위의 「남길 것」이 실제로 남게 한다.** 다음으로 미루지 않는다.'
       : '- 아직 마지막 칸이 아니다. 한 번에 다 끝내지 말고 이번 칸의 몫만 나아간다.');
     blocks.push(SL.join('\n'));
+  }
+
+  /* 앱이 자리를 열었으면 무엇을 쓸 수 있는지까지 함께 준다.
+     이것이 없으면 모델은 늘 대표 하나만 꺼내고 나머지 결은 영영 안 나온다. */
+  if (charmDue()){
+    const cl = charmList();
+    const CL = ['[끌어당길 자리 — 이번 턴]'];
+    if (cl){
+      if (cl.fresh.length)
+        CL.push('- 이 대화에서 **아직 한 번도 안 보인 결**: ' + cl.fresh.map(c => c.k).join(' · ') +
+                '  ← 이쪽을 먼저 쓴다');
+      else if (cl.here.length)
+        CL.push('- 이 자리에서 아직 안 보인 결: ' + cl.here.map(c => c.k).join(' · '));
+      if (cl.ways.length)
+        CL.push('- 최근에 쓴 방식: ' + cl.ways.join(' · ') + '  ← 이것 말고 다른 것으로 고른다');
+    }
+    CL.push('- **다만 지금 장면이 받을 수 있을 때만 넣는다.** 숨 가쁘게 이어지는 자리 · 다투는 중 · 몸을 섞는 중처럼 결을 내보일 자리가 아니면 넣지 않는다. 넣지 않아도 잘못이 아니다.',
+      '- 자리가 없으면 **만들어도 된다.** 같은 장면이 길어졌으면 환경을 하나 움직여 — 누가 들어오거나, 무엇이 떨어지거나, 밖이 달라지거나 — 결을 보일 틈을 낸다. **다짜고짜 끼워 넣지 않는다.**',
+      '- 넣었으면 상태 줄 맨 끝에 「결=이름/방식번호」를 적는다 (예: 결=무심한 다정/③). 안 넣었으면 이 칸을 아예 적지 않는다. 이 칸은 화면에 안 보이므로 이야기를 해치지 않는다.');
+    blocks.push(CL.join('\n'));
   }
 
   const story = fmtEras(mem);
@@ -4358,9 +4663,10 @@ async function buildContext(userText){
     '- **짧게 끝내지 마라.** 한 응답 안에 인물이 무엇을 보고 · 무엇을 느끼고 · 무엇을 하는지가 모두 들어가야 그 분량이 찬다. 대사 한두 줄과 짧은 지문으로 끝내면 장면이 아니라 요약이 된다.',
     '- 이번 턴에 나아갈 수 있는 것은 한 걸음뿐이다. 호감 수치가 허용하는 단계를 넘지 않고, 넘어서려면 먼저 멈추거나 되묻는다.',
     /* 실측에서 꼬리의 재지시가 앞쪽 규칙보다 잘 듣는 것으로 나왔다. 가장 중요한 것만 여기 다시 적는다 */
-    /* 매 턴 밀면 느끼해지고, 안 밀면 사라진다. 공간이 바뀔 때마다 한 번은 분명히 */
+    /* 자리를 여는 것은 앱이고, 지금 장면이 그것을 받을 수 있는지는 모델이 정한다.
+       매 턴 강제하면 몸을 섞는 중에도 결을 내보이게 되어 말이 안 된다. */
     (charmDue()
-      ? '- **이번 턴에는 27번을 반드시 넣는다.** 여섯 가운데 하나를 골라 — 앞 두 턴에 쓴 것과 다른 것으로 — 장면 안에서 보인다. 설명하지 말고 일어나게 한다. [끌어당길 것]에 적힌 결 가운데 앞쪽에 있는 것부터 쓴다.'
+      ? '- **이번 턴은 [끌어당길 자리]다.** 위 블록에 적힌 결과 방식으로 27번을 한 번 넣는다. 다만 **지금 장면이 그것을 받을 수 있을 때만** 넣고, 아니면 넘긴다 — 넘겨도 자리는 남아 다음 턴에 다시 온다. 넣었으면 상태 줄에 「결=…」을 적는다.'
       : '- 27번은 이번 턴에 굳이 넣지 않아도 된다. 자연스러운 자리가 있으면 넣고, 없으면 지금 장면에 충실한다. 억지로 끼워 넣지 않는다.'),
     '- **[현재 상태]의 대담 옆에 적힌 설명이 이번 턴에 {{char}}가 할 수 있는 행동의 크기다.** 그보다 큰 행동을 쓰지 않는다. 한 구간 위로 넘어가려면 대담이 먼저 그 구간까지 올라야 한다.',
     '- 그 옆의 「이 인물에게는 ~ 하는 정도」는 행동의 크기가 아니라 그 행동을 하는 표정이다. 힘겹게 적혀 있으면 같은 행동이라도 망설이고 떨리게 쓴다.',
@@ -4540,14 +4846,13 @@ function renderChats(){
   box.innerHTML = list.map(ch => {
     const c = S.characters.find(x=>x.id===ch.characterId);
     const av = avatarOf(c);
-    const sc = S.mems?.[ch.id]?.stateCard || {};
-    const at = [sc['장소'], sc['일시']].filter(Boolean).join(' · ');
-    /* 이름은 위에 이미 있다. 대신 관계가 어디까지 왔는지를 보여준다. */
-    const num = v => { const m = String(v ?? '').match(/-?\d+/); return m ? m[0] : null; };
-    const rel = ['호감','반감','경계'].map(k => num(sc[k]) !== null ? k + ' ' + num(sc[k]) : null)
-                                      .filter(Boolean).join(' · ');
-    /* 말풍선 수가 아니라 주고받은 쌍을 센다. 화면의 (n) 과 같은 셈이어야 한다 */
-    const l2 = turnsOf(ch) + '턴' + (rel ? '  ·  ' + rel : '');
+    /* 이름 옆에는 이 대화가 무엇인지 — 장르와 이야기 속에서 흐른 시간.
+       상태 줄의 날짜를 그대로 띄우면 바깥 날짜와 헷갈리므로 기간만 적는다. */
+    const at = [ch.genre?.name, spanText(ch)].filter(Boolean).join(' · ');
+    /* 관계 수치는 뺀다. 목록에서 볼 일이 없고, 대신 얼마나 했고 얼마가 들었는지가 필요하다 */
+    const cost = Number(ch.cost) || 0;
+    const l2 = turnsOf(ch) + '턴' +
+      (cost > 0 ? '  ·  $' + (cost >= 0.01 ? cost.toFixed(3) : cost.toFixed(4)) : '');
     const meta = '<div class="cmeta"><span>생성 ' + stampSmart(ch.createdAt) + '</span>' +
                  '<span>수정 ' + stampSmart(ch.lastMessageAt||ch.createdAt) + '</span></div>';
     return `<div class="card chr" data-id="${ch.id}">
@@ -4723,7 +5028,8 @@ const INTRO_ASK = [
   '',
   '[지금 할 일 — 이 대화의 첫 장면을 쓴다]',
   '- 위 [현재 상황]에서 이야기가 열리는 첫 장면을 쓴다. {{user}}는 아직 아무 말도 하지 않았다.',
-  '- **분량은 한국어 800~1,000자다.** 서술 네다섯 문단에 대사 두셋. 짧게 끝내지 않는다.',
+  '- **분량은 한국어 1,200~1,500자다.** 서술 대여섯 문단에 대사 서넛. 짧게 끝내지 않는다.',
+  '- 이 한 장면이 세 가지를 해야 한다 — **여기가 어디이고 지금이 언제인지 / {{char}}가 어떤 사람인지 / 무엇이 벌어지려는지.** 셋 중 하나라도 빠지면 읽는 사람이 무엇을 해야 할지 모른다.',
   '- 인물부터 그리지 말고 **그 자리에서 무슨 일이 벌어지고 있는지**부터 쓴다. {{char}}는 그 안에서 무언가를 하고 있는 사람으로 등장한다.',
   '- **[끌어당길 것] 가운데 대표 하나**를 이 장면에서 행동으로 보인다. 27번의 여섯 가운데 하나를 골라 쓰고, 이름표를 적지 않는다. 나머지 결은 여기서 다 꺼내지 않는다.',
   '- 장르가 정해져 있으면 그 결이 배어 있게 하되 **장르를 설명하지 않는다.** 첫 장면부터 사건을 몰아치지 않는다.',
@@ -4737,11 +5043,15 @@ async function makeIntro(c, p, chat){
   try{
     S.chat = chat;
     const sys = buildSystem(c, p, true, null);
-    const r = await askText(sys + INTRO_ASK, 2200, 1.0);
+    /* 전용 모델이 적혀 있으면 그것부터 시도하고, 안 되면 평소 사슬로 내려간다 */
+    const m1 = (localStorage.getItem(LS.introModel) || '').trim();
+    const r0 = m1 ? await askTextEx(sys + INTRO_ASK, 2600, 1.0, m1)
+                  : {text: await askText(sys + INTRO_ASK, 2600, 1.0)};
+    const r = r0.text;
     const txt = String(r || '').trim()
       /* 모델이 그래도 상태 줄을 붙여 오면 떼어 낸다 — 앱이 만든 것과 겹치면 안 된다 */
       .replace(/\n*\[상태\][^\n]*$/g, '').trim();
-    if (txt.length < 200) throw new Error('너무 짧습니다');
+    if (txt.length < 400) throw new Error('너무 짧습니다');
     return txt;
   } finally { S.chat = prev; }
 }
@@ -4919,11 +5229,12 @@ const SCENE_KINDS = {
   },
   tell: {
     name: '시간을 흘린다',
-    hint: '몇 시간에서 하루쯤 지난 자리로 옮기고, 그 사이에 있었던 일을 풀어 줍니다.',
+    hint: '몇 시간에서 하루쯤 지난 자리로 옮깁니다. 그 사이에 있었던 일을 풀어 줍니다.',
     ask: '같은 흐름을 이어 가되 시간을 몇 시간에서 하루쯤 흘린다. ' +
          '그 사이에 무엇이 있었는지를 요약해 늘어놓지 말고, **지금 벌어지는 일 안에서 드러나게** 한다. ' +
-         '흐른 시간이 두 사람 사이를 어떻게 바꾸어 놓았는지가 이 장면의 알맹이다.',
-    need: []
+         '흐른 시간이 두 사람 사이를 어떻게 바꾸어 놓았는지가 이 장면의 알맹이다. ' +
+         '**칸마다 무엇을 풀어낼지 미리 나눠 둔다** — {{user}}가 「다음」만 눌러도 이야기가 제자리를 돌지 않게.',
+    need: ['방식']
   }
 };
 
@@ -4948,6 +5259,8 @@ async function designScene(kind){
   const L = [
     '너는 이야기의 다음 장면을 설계하는 작가다. 아래 대화에 이어지는 장면 하나를 짠다.',
     '', '[방금까지 오간 것]', ai || '(없음)',
+    ...(S.chat?.sceneEnded ? ['', '[앞 장면]',
+      '방금 「' + S.chat.sceneEnded.name + '」 장면이 끝났다. 이번 장면은 그 결과를 안고 이어진다. 없던 일로 하지 않는다.'] : []),
     ...(here ? ['', '[지금 자리]', here,
       '이 자리에서 이어진다. 새 장면이 다른 곳에서 열리더라도 **여기에서 옮겨 간 것**이라야 하고, 없던 장소로 갑자기 건너뛰지 않는다.'] : []),
     '', '[짜야 할 장면]', K.ask,
@@ -4961,14 +5274,19 @@ async function designScene(kind){
     L.push('- 완수는 {{user}}가 무엇을 하면 이 장면이 끝나는지다. 한 줄로, {{user}}가 읽고 바로 알 수 있게 쓴다.');
   if (K.need.includes('갈래'))
     L.push('- 갈래는 이 장면이 끝날 수 있는 방식이다. **정확히 ' + sceneForks() + '개**를 한 줄씩 쓴다. 서로 확실히 달라야 한다.');
+  if (K.need.includes('방식'))
+    L.push('- 방식은 이 이야기를 칸마다 어떻게 풀어낼지다. **' + len + '줄**로, 한 줄에 한 칸씩 「이 칸에서는 무엇이 드러난다」를 적는다. ' +
+      '{{user}}가 아무 말이나 해도 이 순서는 지켜진다 — 다만 어떻게 드러나는지는 {{user}}가 무엇을 하느냐에 달렸다.');
   L.push('', '[출력 형식] 아래 구분선을 그대로 쓴다. 다른 말을 덧붙이지 않는다.',
     '===GOAL===', '===WHERE===',
     (K.need.includes('완수') ? '===DONE===' : ''),
     (K.need.includes('갈래') ? '===FORKS===' : ''),
+    (K.need.includes('방식') ? '===WAY===' : ''),
     '===AFTER===', '===END===');
   L.push('', 'GOAL 은 목표, WHERE 는 이 장면이 열리는 곳과 때를 한 줄로 적은 것,' +
     (K.need.includes('완수') ? ' DONE 은 완수 조건,' : '') +
     (K.need.includes('갈래') ? ' FORKS 는 끝날 수 있는 방식들,' : '') +
+    (K.need.includes('방식') ? ' WAY 는 칸마다 풀어낼 것,' : '') +
     ' AFTER 는 여파다. 모두 한국어로 쓴다.');
 
   const sec = parseSections(await askText(fill(L.filter(Boolean).join('\n'), cn, S.persona?.name), 900, 1.0));
@@ -4980,6 +5298,8 @@ async function designScene(kind){
     done: (sec.done || '').trim().slice(0, 200),
     forks: (sec.forks || '').split('\n').map(x => x.replace(/^[-·*\d.)\s]+/, '').trim())
              .filter(Boolean).slice(0, 4),
+    way: (sec.way || '').split('\n').map(x => x.replace(/^[-·*\d.)\s]+/, '').trim())
+           .filter(Boolean).slice(0, 6),
     after: (sec.after || '').trim().slice(0, 200),
     at: now()
   };
@@ -4999,31 +5319,75 @@ async function syncScene(out){
     mem.keeps = mem.keeps || [];
     if (sc.after) mem.keeps.push({t: '장면 뒤', v: sc.after, at: S.messages.length});
     await dbPut('memory', mem);
+    /* 무엇이 끝났는지 남긴다. 단추를 곧바로 띄우고, 다음에 무엇을 권할지 정하는 데 쓴다 */
+    S.chat.sceneEnded = {kind: sc.kind, name: sc.name, at: S.messages.length};
     S.chat.scene = null;
-    toast('장면이 닫혔습니다', 2500);
+    toast(sc.kind === 'meet' ? '장면이 닫혔습니다'
+                             : '장면이 닫혔습니다 — 다음 장면 단추를 누르십시오', 4000);
   }
   await dbPut('chats', S.chat);
   paintNextScene();
 }
 
-/* ═══ 끌어당길 차례인가 ═══
-   빈도를 턴으로 세면 같은 자리에 머무는 동안에도 계속 밀게 되어 느끼해진다.
-   공간을 센다 — 자리를 옮기면 그 공간에서 한 번은 분명히 보이고,
-   같은 자리에 오래 있으면 간격이 벌어진다. 아예 사라지지는 않는다. */
-const CHARM_STEP = [1, 3, 6, 10, 15, 21];
+/* ═══ 끌어당길 자리인가 ═══
+   턴으로 세면 같은 자리에 머무는 동안에도 계속 밀게 되어 느끼해진다. 공간을 센다.
+   그리고 **앱은 자리만 연다.** 지금 장면이 그것을 받을 수 있는지는 모델이 정한다 —
+   몸을 섞는 중이나 다투는 중에 다짜고짜 결을 내보이면 말이 안 되기 때문이다.
+   모델이 넘겼으면 「결」 칸이 비어 오므로 자리는 그대로 남아 다음 턴에 다시 묻는다. */
+const nowSpot = () => {
+  const ai = (S.messages || []).filter(inStory).filter(m => m.role === 'assistant');
+  for (let i = ai.length - 1; i >= 0; i--){
+    const sp = String(readStatus(ai[i].content)?.['장소'] || '').trim();
+    if (sp) return sp;
+  }
+  return '';
+};
 function charmDue(){
   const ai = (S.messages || []).filter(inStory).filter(m => m.role === 'assistant');
-  if (ai.length < 2) return true;             /* 첫 장면은 반드시 */
-  const spotOf = m => String(readStatus(m.content)?.['장소'] || '').trim();
-  const cur = spotOf(ai[ai.length - 1]);
-  /* 이 공간에서 몇 번째인가. 장소를 안 적어 온 응답은 이어지는 것으로 본다 */
-  let k = 0;
-  for (let i = ai.length - 1; i >= 0; i--){
-    const sp = spotOf(ai[i]);
-    if (sp && cur && sp !== cur) break;
-    k++;
-  }
-  return CHARM_STEP.includes(k);
+  if (ai.length < 2) return true;                 /* 첫 장면은 언제나 자리다 */
+  const cur = nowSpot();
+  const log = (S.chat?.charm || []).filter(x => !cur || x.spot === cur);
+  /* 이 공간에서 아직 한 번도 안 보였으면 계속 자리다 — 「각 공간에서 최소 한 번」 */
+  if (!log.length) return true;
+  /* 보인 뒤로는 간격을 둔다. 이 공간에서 여러 번 보일수록 더 벌어진다 */
+  const since = S.messages.length - (log[log.length - 1].t || 0);
+  return since >= 4 + (log.length - 1) * 3;
+}
+
+/* ═══ 이번에 무엇을 쓸 수 있나 — 앱이 목록을 준다 ═══
+   보여 줄 결이 하나가 아니다. 아직 안 보인 것을 앞에 두어 골고루 돌아가게 하고,
+   최근에 쓴 방식은 빼 준다. 같은 방식이 이어지면 패턴으로 읽혀 제4의 벽이 깨진다. */
+function charmList(){
+  const cs = S.character?.profile?.charm || [];
+  if (!cs.length) return null;
+  const log = S.chat?.charm || [];
+  const seen = new Set(log.map(x => x.k));
+  const fresh = cs.filter(c => !seen.has(c.k));
+  /* 이 공간에서 안 보인 것도 따로 센다 — 자리를 옮기면 다시 처음부터다 */
+  const cur = nowSpot();
+  const hereSeen = new Set(log.filter(x => !cur || x.spot === cur).map(x => x.k));
+  const here = cs.filter(c => !hereSeen.has(c.k));
+  const ways = log.slice(-2).map(x => x.how).filter(Boolean);
+  return {
+    fresh,                    /* 이 대화에서 아직 한 번도 안 보인 것 */
+    here: here.length ? here : cs,   /* 이 공간에서 아직 안 보인 것 */
+    ways                      /* 최근 두 턴에 쓴 방식 */
+  };
+}
+
+/* 모델이 무엇을 보였는지 받아 적는다. 안 적어 왔으면 안 보인 것이므로 자리가 유지된다.
+   「결=무심한 다정/③」 꼴을 기대하지만 이름만 와도 받는다. */
+async function syncCharm(out){
+  if (!S.chat) return;
+  const raw = String(readStatus(out)?.['결'] || '').trim();
+  if (!raw) return;
+  const m = raw.match(/^([^\/|]+?)\s*(?:[\/|]\s*([①-⑥\d]))?$/);
+  const k = (m ? m[1] : raw).trim().slice(0, 20);
+  if (!k || /^(없음|없다|-)$/.test(k)) return;
+  const log = S.chat.charm = S.chat.charm || [];
+  log.push({k, how: m?.[2] || '', t: S.messages.length, spot: nowSpot()});
+  if (log.length > 60) S.chat.charm = log.slice(-60);
+  await dbPut('chats', S.chat);
 }
 
 /* 갈래를 고르면 설계를 한 장 뽑고, 그 설계로 첫 턴을 연다.
@@ -5050,6 +5414,7 @@ async function startScene(kind){
   paintNextScene();
   /* 혼자 있는 장면은 무엇을 해야 넘어가는지 모르면 갇힌다. 그것만 따로 띄운다 */
   if (sc.done) toast('이 장면에서 할 일 — ' + sc.done, 8000);
+  delete S.chat.sceneEnded;   /* 새 장면을 열었으니 앞 장면의 자취는 지운다 */
   send({text: '[지시] ' + sceneOpenText(sc)});
 }
 
@@ -5083,17 +5448,33 @@ function nextSceneSheet(){
   if (!S.chat) return;
   if (S.chat.scene) return sceneNowSheet();
   const cn = S.character?.name || '상대';
+  /* 혼자 있던 장면 · 제3자 장면 · 시간을 흘린 장면 뒤에는 다시 마주쳐야 이야기가 이어진다.
+     그 결과가 관계에 닿으려면 결국 두 사람이 만나는 자리로 돌아와야 하기 때문이다. */
+  const ended = S.chat?.sceneEnded;
+  const backToMeet = ended && ended.kind !== 'meet' && (S.messages.length - ended.at) <= 3;
+  const order = backToMeet
+    ? ['meet', ...Object.keys(SCENE_KINDS).filter(k => k !== 'meet')]
+    : Object.keys(SCENE_KINDS);
   sheet('다음 장면', [
-    {info: true, html: '<span class="pguide">지금 장면이 닫히는 참입니다. ' +
-      '무엇으로 이어 갈지 고르십시오.<span class="dim">고른 갈래로 <b>서너 턴짜리 장면 하나</b>를 짭니다. ' +
+    {info: true, html: '<span class="pguide">' +
+      (backToMeet
+        ? '<b>' + esc(ended.name) + '</b> 이 끝났습니다. 그 결과를 안고 다시 마주치는 자리로 이어 가는 것이 자연스럽습니다.'
+        : '지금 장면이 닫히는 참입니다. 무엇으로 이어 갈지 고르십시오.') +
+      '<span class="dim">고른 갈래로 <b>서너 턴짜리 장면 하나</b>를 짭니다. ' +
       '짜는 데 5~15초가 걸리고, 끝나면 그 결과가 두 사람 사이에 남습니다. ' +
       '직접 쓰고 싶으면 창을 닫고 입력창에 적으면 됩니다.</span></span>'},
-    ...Object.entries(SCENE_KINDS).map(([k, K]) => ({
-      label: K.name,
-      html: '<b>' + K.name + '</b><div class="shint">' +
-            esc(fill(K.hint, cn, S.persona?.name)) + '</div>',
-      run: () => startScene(k)
-    }))
+    ...order.map(k => {
+      const K = SCENE_KINDS[k];
+      const first = backToMeet && k === 'meet';
+      return {
+        label: K.name + (first ? ' (이어서)' : ''),
+        html: '<b>' + K.name + (first ? '  <span style="color:var(--acc)">← 이어서</span>' : '') +
+              '</b><div class="shint">' +
+              (first ? '앞 장면에서 있었던 일을 안고 다시 만납니다. ' : '') +
+              esc(fill(K.hint, cn, S.persona?.name)) + '</div>',
+        run: () => startScene(k)
+      };
+    })
   ]);
 }
 
@@ -5108,7 +5489,13 @@ async function openChat(id){
   S.persona   = chat.personaId ? await dbGet('personas', chat.personaId) : null;
   S.messages  = (await dbBy('messages','chatId',id)).sort((a,b)=>a.turnIndex-b.turnIndex);
   localStorage.setItem(LS.lastChat, id);
-  S.stick = true;
+  await fillChatMeta(chat, S.messages);
+  paintChatBal();
+  paintBal().catch(() => {});
+  /* 첫 장면은 천 자가 넘는다. 아래로 내려가 있으면 맨 위를 읽을 겨를이 없다.
+     내가 아직 한 마디도 안 한 대화는 처음부터 보여 준다. */
+  S.fresh = !S.messages.some(m => m.role === 'user');
+  S.stick = false;
   msgNodeCache.clear();   /* 다른 대화의 캐시된 노드가 섞이지 않게 비운다 */
 
   $('cTitle').firstChild.textContent = S.character.name;
@@ -5409,6 +5796,10 @@ function useHint(id, i){
 
 function msgHTML(m, isLast){
   const who = m.role === 'user' ? (S.persona?.name || '나') : S.character.name;
+  /* 몇 번째 턴인지. 일괄 수정에서 범위를 적을 때 이 숫자를 쓴다.
+     내 말풍선에는 안 붙인다 — 한 턴에 둘이 같은 번호를 달면 오히려 헷갈린다. */
+  const tn = m.role === 'assistant'
+    ? '<span class="tno">(' + (Math.floor(m.turnIndex / 2) + 1) + ')</span> ' : '';
   const vs = m.variants || [];
   const nav = vs.length > 1
     ? `<span class="vnav">
@@ -5417,7 +5808,7 @@ function msgHTML(m, isLast){
          <button data-act="next" ${m.activeVariant >= vs.length-1 ? 'disabled' : ''}>›</button>
        </span>` : '';
   const regen = (m.role === 'assistant' && isLast)
-    ? '<button data-act="regen">다시 생성</button>' : '';
+    ? '<button data-act="regen">재생성</button>' : '';
   const fold = m.imgFold ? ' collapsed' : '';
   const pics = (m.images || []).map(u =>
     `<div class="pic${fold}"><button type="button" class="picfold" data-act="foldpic" title="접기/펴기">▾</button><img src="${u}" alt="장면" loading="lazy"></div>`
@@ -5437,15 +5828,15 @@ function msgHTML(m, isLast){
     (m.genre ? '<span class="mmark gm">' + esc(m.genre) + ' 한 걸음</span>' : '') +
     /* 이상하다고 찍어 둔 것. 눈에 띄어야 나중에 훑을 때 바로 보인다 */
     (m.flag ? '<span class="mmark bad">' + esc(m.flag) + '</span>' : '');
+  /* 이름을 짧게 줄인다. 아홉 개가 두 줄로 넘어가면 말풍선이 단추밭이 된다.
+     지금 어느 쪽인지는 글자 대신 색으로 알린다. */
   const offBtn = m.mark === '채움' ? ''
-    : '<button data-act="off">' + (isOff(m) ? '안으로' : '밖으로') + '</button>';
-  const flagBtn = '<button data-act="flag"' + (m.flag ? ' class="lit"' : '') + '>' +
-    (m.flag ? '표시됨' : '이상함') + '</button>';
+    : '<button data-act="off"' + (isOff(m) ? ' class="lit"' : '') + '>예외처리</button>';
+  const flagBtn = '<button data-act="flag"' + (m.flag ? ' class="lit"' : '') + '>신고</button>';
   return `<div class="msg ${m.role}${m.mark ? ' marked' : ''}" data-id="${m.id}">
-    <div class="who">${mk}${esc(who)}</div>
+    <div class="who">${mk}${tn}${esc(who)}</div>
     <div class="body">${fmt(m.content, m.role)}${pics}</div>${hints}
-    <div class="act">${nav}${regen}${mkimg}${hintBtn}<button data-act="edit">편집</button>
-      <button data-act="copy">복사</button>${offBtn}${flagBtn}<button data-act="drop">빼기</button><button data-act="cut">실행취소</button></div>
+    <div class="act">${nav}${regen}${mkimg}${hintBtn}<button data-act="edit">편집</button>${offBtn}${flagBtn}<button data-act="drop">빼기</button><button data-act="cut">롤백</button></div>
   </div>`;
 }
 const MSG_ACT = {
@@ -5510,7 +5901,8 @@ function renderMsgs(toBottom){
   box.innerHTML = '';
   box.appendChild(frag);
   /* 위쪽을 읽는 중이면 새 응답이 도착해도 자리를 지킨다 */
-  if (toBottom === false || !S.stick) box.scrollTop = keep;
+  if (S.fresh){ box.scrollTop = 0; S.fresh = false; }
+  else if (toBottom === false || !S.stick) box.scrollTop = keep;
   else jumpBottom();
   paintNextScene();
 }
@@ -5530,7 +5922,7 @@ function askImageFor(msg){
                '모델 ' + (m?.model_spec?.name || '미지정') +
                ' · 예상 비용 $' + imgPrice(m).toFixed(3) + '\n' +
                line + ' · 상세도 ' + imgDetail().name +
-               ' · ' + (imgTier() === 'hi' ? '고급' : '기본'))) return;
+               ' · ' + (imgCen() ? '검열' : '무검열'))) return;
   attachImage(msg);
 }
 
@@ -6545,36 +6937,37 @@ function changeGenre(){
 /* 세로로 열세 줄이던 것을 아이콘 격자로 바꾼다.
    자주 쓰는 것이 위에 오고, 지금 값은 이름 아래에 작게 적어 둔다. */
 const CHAT_MENU = [
-  {i:'🤖', t:'모델',    run: () => chatModelSheet(),
+  {i:'🤖', t:'모델',    run: () => chatModelSheet(), opens:true,
    now: () => (S.chat?.model || '').split('/').pop() || '기본'},
-  {i:'🎭', t:'장르',    run: () => genreSheet(),
+  {i:'🎭', t:'장르',    run: () => genreSheet(), opens:true,
    now: () => S.chat?.genre?.name
      ? S.chat.genre.name + ' · ' + paceOf(S.chat.genre.pace).t
      : '없음'},
-  {i:'🖼', t:'이미지',  run: () => imgModelSheet(),
-   now: () => imgLevel().name + ' · ' + (imgTier() === 'hi' ? '고급' : '기본')},
-  {i:'🗂', t:'이미지 접기', run: () => toggleAllImages(!allFolded()),
+  {i:'🖼', t:'사진',    run: () => imgModelSheet(), opens:true,
+   now: () => imgLevel().name + ' · ' + (imgCen() ? '검열' : '무검열')},
+  /* 접었다 폈다 하려고 누르는 것인데 한 번에 창이 닫히면 다시 열어야 한다 */
+  {i:'🗂', t:'이미지 접기', run: () => toggleAllImages(!allFolded()), keep: true,
    now: () => allFolded() ? '접힘' : '펼침'},
-  {i:'🧠', t:'기억',    run: () => openMemory()},
-  {i:'✍', t:'내 지문', run: () => ownSheet(),
+  {i:'🧠', t:'기억',    run: () => openMemory(), leave:true},
+  {i:'✍', t:'내 지문', run: () => ownSheet(), opens:true,
    now: () => ownOn() ? '전부 그대로' : '반응은 상대가'},
   /* 「조연」 아래에 「3명」이 한 줄 더 붙어 이 칸만 키가 컸다. 이름에 이어 붙인다 */
-  {i:'👥', t:'조연',    run: () => castSheet(),
+  {i:'👥', t:'조연',    run: () => castSheet(), opens:true,
    tail: () => (S.chat?.cast?.length || 0) + '명'},
-  {i:'👤', t:'대상 편집', run: () => editChar(S.character.id, true)},
-  {i:'🙂', t:'내 정보',  run: () => S.persona ? editPersona(S.persona.id, true)
+  {i:'👤', t:'대상 편집', leave:true, run: () => editChar(S.character.id, true)},
+  {i:'🙂', t:'내 정보',  leave:true, run: () => S.persona ? editPersona(S.persona.id, true)
                                              : toast('지정된 주인공이 없습니다')},
-  {i:'♻', t:'설정 반영', hide: () => !S.chat?.charSnap, now: () => '바뀐 것 있음',
+  {i:'♻', t:'설정 반영', hide: () => !S.chat?.charSnap, now: () => '바뀐 것 있음', opens:true,
    run: () => askCharUpdate(S.chat, S.characters.find(c => c.id === S.chat.characterId))},
-  {i:'🧹', t:'일괄 수정', run: () => openBulk()},
-  {i:'⚠', t:'맥락 정리', run: () => resetContext(), danger: true},
-  {i:'📖', t:'소설',    run: () => openNovel(),
+  {i:'🧹', t:'일괄 수정', leave:true, run: () => openBulk()},
+  {i:'⚠', t:'맥락 정리', leave:true, run: () => resetContext(), danger: true},
+  {i:'📖', t:'소설',    leave:true, run: () => openNovel(),
    now: () => (S.chat?.novel?.sections || []).length ? '작성됨' : ''},
-  {i:'⇧', t:'내보내기', run: () => exportChat(S.chat.id, false, chatSettingsMenu)},
-  {i:'❓', t:'사용법',   run: () => openGuide(true, chatSettingsMenu)}
+  {i:'⇧', t:'내보내기', leave:true, run: () => exportChat(S.chat.id, false, chatSettingsMenu)},
+  {i:'❓', t:'사용법',   leave:true, run: () => openGuide(true, chatSettingsMenu)}
 ];
 /* 채팅 화면 우상단의 설정 격자. 대화 목록의 chatMenu(id) 와는 다른 창이다 */
-function chatSettingsMenu(){
+function chatSettingsMenu(reshow){
   /* 지금 쓸 수 없는 칸은 아예 안 그린다. 자리를 비워 두면 격자가 흔들린다 */
   const items = CHAT_MENU.filter(m => !m.hide || !m.hide());
   const html = '<div class="cmGrid">' + items.map((m, i) => {
@@ -6584,12 +6977,20 @@ function chatSettingsMenu(){
       '<i>' + m.i + '</i><b>' + esc(m.t + tail) + '</b>' +
       (now ? '<u>' + esc(now) + '</u>' : '') + '</button>';
   }).join('') + '</div>';
-  sheet(S.character?.name + (S.chat?.charSnap ? ' (바뀌기 전)' : ''), [{info: true, html}]);
+  sheet(S.character?.name + (S.chat?.charSnap ? ' (바뀌기 전)' : ''), [{info: true, html}], null, reshow);
   $('sheetIn').querySelectorAll('[data-cm]').forEach(b => b.onclick = () => {
-    closeSheet();
-    items[+b.dataset.cm].run();
+    const it = items[+b.dataset.cm];
+    /* 화면을 통째로 옮기는 것만 창을 접는다. 나머지는 열어 둔 채 실행한다 —
+       하위 창을 여는 것은 스택에 한 단계 쌓이고, 아무것도 안 여는 것은 값만 다시 그린다. */
+    if (it.leave){
+      S.cmBack = true;              /* 그 화면에서 나오면 이 창을 다시 연다 */
+      closeSheet(); it.run(); return;
+    }
+    it.run();
+    if (!it.opens) chatSettingsMenu(true);   /* 하위 창을 안 여는 것은 값 갱신 */
   });
 }
+$('cBal').onclick = () => { BAL.at = 0; paintBal(true).then(() => toast('남은 요금을 다시 읽었습니다')); };
 $('cMenu').onclick = chatSettingsMenu;
 $('nextScene').onclick = nextSceneSheet;
 /* 말풍선을 다시 그릴 때마다 장면이 닫히는 참인지 살핀다. 판정이 가벼워 매번 해도 된다 */
@@ -6606,7 +7007,11 @@ function paintNextScene(){
   }
   b.classList.remove('on');
   b.textContent = '다음 장면 →';
-  b.style.display = (S.chat && !S.streaming && sceneClosing()) ? 'block' : 'none';
+  /* 장면 하나가 막 끝났으면 판정을 기다리지 않고 곧바로 띄운다.
+     혼자 있는 장면이나 제3자 장면은 끝나도 「닫히는 참」으로 안 잡히기 때문이다. */
+  const ended = S.chat?.sceneEnded;
+  const justEnded = ended && (S.messages.length - ended.at) <= 3;
+  b.style.display = (S.chat && !S.streaming && (justEnded || sceneClosing())) ? 'block' : 'none';
 }
 /* 내가 쓴 지문을 어디까지 확정으로 볼 것인가. 대화마다가 아니라 앱 전체에 걸린다 */
 function ownSheet(){
@@ -6725,8 +7130,7 @@ const PICK_GUIDE =
   '· 앞뒤가 안 맞고 같은 말을 되풀이한다 → <b>연속성</b><br>' +
   '· 번역투이거나 어색하다 → <b>한국어</b><br>' +
   '· 기다리는 게 답답하다 → <b>속도</b><br>' +
-  '· 장면이 얇다 → <b>묘사</b><br>' +
-  '<span class="dim">무료는 하루 50회 제한이 있고, $10을 한 번 충전하면 1,000회로 늘어납니다.</span>';
+  '· 장면이 얇다 → <b>묘사</b>';
 
 /* 목록에 없다고 지워 버리면 왜 사라졌는지 알 수 없다. 회색으로 남기고 이유를 적는다.
    모델 id 는 날짜 접미가 붙어 바뀌는 일이 잦으므로 비슷한 것을 찾아 제안한다.
@@ -7109,13 +7513,22 @@ function jumpBottom(){
   b.scrollTop = b.scrollHeight;
   requestAnimationFrame(() => { scrollLock = Math.max(0, scrollLock - 1); });
 }
-function autoScroll(){ if (S.stick) jumpBottom(); }
+/* 쓰는 중에 스크롤을 올려도 다시 끌려 내려가 위를 읽을 수가 없었다.
+   화면이 스스로 움직이지 않게 한다. 내려가고 싶으면 오른쪽 ↓ 를 누른다. */
+function autoScroll(){ paintJump(); }   /* 사람이 옮긴다. 알려 주기만 한다 */
 $('msgs').addEventListener('scroll', () => {
   if (scrollLock) return;
-  S.stick = nearBottom();
+  S.stick = false;   /* 화면은 스스로 움직이지 않는다 */
+  paintJump();
 });
 $('jTop').onclick = () => { S.stick = false; $('msgs').scrollTop = 0; };
-$('jBot').onclick = () => { S.stick = true;  jumpBottom(); };
+$('jBot').onclick = () => { $('jBot').classList.remove('hot'); jumpBottom(); };
+/* 아래에 안 보이는 글이 남아 있는지 알린다. 스크롤을 옮길 때와 글이 자랄 때 다시 잰다 */
+function paintJump(){
+  const b = $('msgs'), j = $('jBot');
+  if (!b || !j) return;
+  j.classList.toggle('hot', b.scrollHeight - b.scrollTop - b.clientHeight > 120);
+}
 
 /* ═══════════════ 모델 호출 ═══════════════ */
 const RETRYABLE = [408, 409, 429, 500, 502, 503, 504];
@@ -7277,7 +7690,7 @@ const imgKey   = () => (localStorage.getItem(LS.imgKey) || '').trim();
 const imgSpec  = () => S.imgModels.find(m => m.id === localStorage.getItem(LS.imgModel));
 /* 지금 이 대화에서 실제로 쓰일 모델. 수위와 품질을 모두 본다 */
 function liveModel(levelKey){
-  const plan = imgPlan(levelKey || imgLevelKey(), imgTier());
+  const plan = imgPlan(levelKey || imgLevelKey(), imgCen());
   return S.imgModels.find(m => m.id === plan.chain[0]);
 }
 const imgPrice = m => (m?.model_spec?.pricing?.generation?.usd)
@@ -7308,44 +7721,46 @@ function renderLevelCards(){
     const m = S.imgModels.find(x => x.id === id);
     return m ? '$' + imgPrice(m) : '';
   };
-  const cur = localStorage.getItem(LS.imgLevel) || 'explicit';
-  let over = {};
-  try{ over = JSON.parse(localStorage.getItem(LS.lvModels) || '{}'); }catch(_){}
-  box.innerHTML = LEVEL_ORDER.map(k => {
-    const L = IMG_LEVEL[k], M = levelModels(k), H = over[k] || {};
-    const row = (w, t, id, dim) =>
-      '<div class="lvRow"><i>' + t + '</i><button data-lv="' + k + '" data-w="' + w + '"' +
-      (dim ? ' class="dim"' : '') + '>' + esc(nameOf(id)) + ' ' + priceOf(id) + '</button></div>';
-    return '<div class="lvCard' + (k === cur ? ' on' : '') + '">' +
-      '<div class="lvTop"><b>' + esc(L.name) + '</b><span>' + esc(L.tone) + '</span></div>' +
-      row('m',  '기본',   M.m) +
-      row('fb', '폴백',   M.fb) +
-      row('hiM','고급',   H.hiM || levelModels(k, 'hi').m,  !H.hiM) +
-      row('hiFb','고급 폴백', H.hiFb || levelModels(k, 'hi').fb, !H.hiFb) +
-      (H.hiM ? '' : '<div class="lvAuto">고급은 ' +
-        esc((LEVEL_WANT[k] || []).slice(0, 2).join(' · ')) +
-        ' 에 강한 모델을 $' + imgCap().toFixed(2) + ' 안에서 자동으로 고릅니다 · 눌러서 직접 정할 수 있습니다</div>') +
-      '</div>';
-  }).join('');
+  const cur = lvFix(localStorage.getItem(LS.imgLevel) || 'eco');
+  /* 잘하는 것은 밑줄, 못하는 것은 취소선. 한눈에 견주려고 i 를 안 쓴다 */
+  const marks = d => (d.good || []).map(x => '<u>' + esc(x) + '</u>').join(' · ') +
+    ((d.bad || []).length ? ' <s>' + (d.bad || []).map(esc).join(' · ') + '</s>' : '');
+  const cell = (k, cen) => {
+    const M = levelModels(k, cen);
+    const side = cen ? 'cen' : 'unc';
+    return '<div class="lvCell' + (M.own ? ' own' : '') + '">' +
+      '<button data-lv="' + k + '" data-side="' + side + '" data-w="m">' +
+        '<b>' + esc(nameOf(M.m)) + '</b><span class="pr">' + esc(priceOf(M.m)) + '</span></button>' +
+      '<div class="lvMk">' + marks(M) + '</div>' +
+      '<button data-lv="' + k + '" data-side="' + side + '" data-w="fb" class="fb">' +
+        '폴백 ' + esc(nameOf(M.fb)) + '</button></div>';
+  };
+  box.innerHTML =
+    '<div class="lvGrid">' +
+    '<div class="lvHd"></div><div class="lvHd">무검열</div><div class="lvHd">검열</div>' +
+    LEVEL_ORDER.map(k =>
+      '<div class="lvRow' + (k === cur ? ' on' : '') + '">' + esc(IMG_LEVEL[k].name) + '</div>' +
+      cell(k, false) + cell(k, true)).join('') +
+    '</div>' +
+    '<div class="lvLegend">' + LEVEL_ORDER.map(k =>
+      '· <b>' + esc(IMG_LEVEL[k].name) + '</b> : ' + esc(IMG_LEVEL[k].tone)).join('<br>') +
+    '</div>';
+
   box.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => {
-    const k = b.dataset.lv, w = b.dataset.w;
+    const k = b.dataset.lv, w = b.dataset.w, cen = b.dataset.side === 'cen';
     const q = ($('sImgFilter').value || '').trim().toLowerCase();
-    const onlyUnc = k !== 'soft' || $('sImgUnc').checked;
-    const cap = imgCap();
+    /* 무검열 열에는 무검열만, 검열 열에는 그 밖의 것도 보인다 */
     const list = S.imgModels
-      .filter(m => !onlyUnc || m.model_spec?.uncensored)
-      .filter(m => !q || (m.id + ' ' + (m.model_spec?.name || '')).toLowerCase().includes(q))
-      /* 상한을 넘는 것은 아예 안 보여 준다. 실수로 고르면 장당 값이 몇 배가 된다 */
-      .filter(m => imgPrice(m) <= cap);
-    if (!list.length) return toast('$' + cap.toFixed(2) + ' 안에서 조건에 맞는 모델이 없습니다');
-    const W = {m:'기본', fb:'폴백', hiM:'고급', hiFb:'고급 폴백'}[w] || w;
-    sheet(IMG_LEVEL[k].name + ' · ' + W + ' 모델',
+      .filter(m => cen ? true : m.model_spec?.uncensored)
+      .filter(m => !q || (m.id + ' ' + (m.model_spec?.name || '')).toLowerCase().includes(q));
+    if (!list.length) return toast('조건에 맞는 모델이 없습니다');
+    sheet(IMG_LEVEL[k].name + ' · ' + (cen ? '검열' : '무검열') + ' · ' + (w === 'm' ? '모델' : '폴백'),
       list.map(m => ({
         html: '<b>' + esc(m.model_spec?.name || m.id) + '</b>' +
               '<span class="ptag">$' + imgPrice(m) + '</span>' +
               (m.model_spec?.uncensored ? '<span class="ptag ax">무검열</span>' : '') +
               '<span class="ksub">' + esc(imgNote(m)) + '</span>',
-        run: () => { setLevelModel(k, w, m.id); renderLevelCards(); }
+        run: () => { setLevelModel(k, cen, w, m.id); renderLevelCards(); }
       })));
   });
 }
@@ -7353,11 +7768,11 @@ function renderLevelCards(){
 function renderImgSelect(){ renderLevelCards(); showImgCost(); }
 
 function showImgCost(){
-  const k = localStorage.getItem(LS.imgLevel) || 'explicit';
-  const t = imgTier();
-  const mm = S.imgModels.find(x => x.id === levelModels(k, t).m);
+  const k = lvFix(localStorage.getItem(LS.imgLevel) || 'eco');
+  const c = localStorage.getItem(LS.imgCen) === '1';
+  const mm = S.imgModels.find(x => x.id === levelModels(k, c).m);
   $('sImgCost').textContent = mm
-    ? (t === 'hi' ? '고급' : '기본') + ' 장당 $' + imgPrice(mm) : '';
+    ? IMG_LEVEL[k].name + ' · ' + (c ? '검열' : '무검열') + ' 장당 $' + imgPrice(mm) : '';
 }
 
 /* 프롬프트 작성용 무검열 텍스트 모델. 거부하지 않는 모델만 추린다. */
@@ -7694,22 +8109,15 @@ async function veniceUpscale(dataUri, scale){
                사용자가 묶음을 바꿔 두 개가 같아지면 하나로 줄인다.
      steps   — 기본 25, 고급 40. 모델이 허용하는 상한은 veniceImage 가 다시 자른다.
      upscale — 고급이면서 설정에서 켜 두었을 때만. 실패해도 원본은 남긴다. */
-function imgPlan(levelKey, tier){
-  const key = LEVEL_ORDER.includes(levelKey) ? levelKey : 'explicit';
-  const M = levelModels(key, tier);
-  const D = LEVEL_DEF[key];
-  const B = levelModels(key);
+function imgPlan(levelKey, cen){
+  const key = LEVEL_ORDER.includes(levelKey) ? levelKey : 'eco';
+  const M = levelModels(key, cen);
+  const D = IMG_LEVEL[key][cen ? 'cen' : 'unc'];
   const chain = [];
-  for (const id of [M.m, M.fb, B.m, B.fb, D.m, D.fb]){
-    if (id && !chain.includes(id)) chain.push(id);
-  }
-  const hi = tier === 'hi';
-  return {
-    level: key,
-    chain,
-    steps: hi ? 40 : 25,
-    upscale: (hi && (localStorage.getItem(LS.imgUp) ?? '1') === '1') ? 2 : 0
-  };
+  for (const id of [M.m, M.fb, D.m, D.fb]) if (id && !chain.includes(id)) chain.push(id);
+  /* 스텝은 40 으로 두되 모델이 받는 만큼만 간다. veniceImage 가 상한을 다시 깎는다.
+     업스케일은 뺐다 — 모바일에서 2048px 은 값만 세 배다. */
+  return {level: key, cen: !!cen, chain, steps: 40, upscale: 0};
 }
 
 /* 필터에 걸린 프롬프트에서 가장 자주 문제가 되는 말만 한 단계 눌러 준다.
@@ -7737,13 +8145,14 @@ function softenPrompt(p){
 }
 
 async function veniceImageAuto(prompt){
-  const plan = imgPlan(S.imgLevelKey || imgLevelKey(), imgTier());
+  const plan = imgPlan(S.imgLevelKey || imgLevelKey(), imgCen());
   if (!plan.chain.length) throw new Error('이미지 모델이 지정되지 않았습니다');
   let last = null, url = null, blocked = false;
   for (let i = 0; i < plan.chain.length; i++){
     try{
       if (i > 0) toast(plan.chain[i].split('/').pop() + ' 로 다시 시도합니다');
       url = await veniceImage(prompt, plan.chain[i], plan.steps);
+      S.imgLastModel = plan.chain[i];   /* 값을 셀 때 어느 모델로 뽑았는지가 필요하다 */
       break;
     }catch(e){
       last = e;
@@ -7757,7 +8166,7 @@ async function veniceImageAuto(prompt){
     if (soft){
       toast('거부돼서 표현을 눌러 다시 시도합니다', 3000);
       for (const m of plan.chain){
-        try{ url = await veniceImage(soft, m, plan.steps); break; }
+        try{ url = await veniceImage(soft, m, plan.steps); S.imgLastModel = m; break; }
         catch(e){ last = e; }
       }
       if (url) toast('표현을 눌러 그렸습니다 — 원하던 것보다 얌전할 수 있습니다', 3500);
@@ -7769,7 +8178,7 @@ async function veniceImageAuto(prompt){
   }
   if (plan.upscale){
     try{ url = await veniceUpscale(url, plan.upscale); }
-    catch(e){ toast('업스케일은 실패했습니다 — 원본으로 둡니다'); }   /* 그림 자체를 버리지는 않는다 */
+    catch(e){ toast('크게 만들기에 실패했습니다 — 원본으로 둡니다'); }   /* 그림 자체를 버리지는 않는다 */
   }
   return url;
 }
@@ -7827,7 +8236,7 @@ async function veniceImage(prompt, modelId, steps, seedOverride, negOverride, si
     const e = new Error('이 프롬프트가 거부됐습니다 (Venice 필터)'); e.blank = true; throw e;
   }
   if (blankImage(b64)){
-    const e = new Error('빈 그림이 돌아왔습니다 — 프롬프트가 거부된 것으로 보입니다');
+    const e = new Error('빈 사진이 돌아왔습니다 — 프롬프트가 거부된 것으로 보입니다');
     e.blank = true; throw e;
   }
   return 'data:image/webp;base64,' + b64;
@@ -7848,6 +8257,13 @@ async function attachImage(msg){
     S.imgNeg = IMG_NEG + effLevel(scene, mem.stateCard).neg;
     const url = await veniceImageAuto(prompt);
     msg.images = [...(msg.images || []), url];
+    /* 이 대화에서 사진에 쓴 값을 쌓는다. 머리의 「현 채팅 소진」이 이것을 읽는다 */
+    {
+      const mm = S.imgModels.find(x => x.id === (S.imgLastModel || ''));
+      S.chat.imgCost = (Number(S.chat.imgCost) || 0) + (mm ? imgPrice(mm) : 0.01);
+      await dbPut('chats', S.chat);
+      paintChatBal();
+    }
     msg.imgPrompt = prompt;
     const lead = String(prompt).split(',')[0].trim();
     if (lead.split(/\s+/).length > 4){
@@ -7912,55 +8328,50 @@ function imgModelSheet(){
     const m = S.imgModels.find(x => x.id === id);
     return m ? (m.model_spec?.name || m.id) : '(미지정)';
   };
-  const cur = imgTier();
   const lk = imgLevelKey();
-  const own = !!S.chat?.imgLevel;
-  const again = () => imgModelSheet();
+  const cen = imgCen();
+  const own = !!(S.chat?.imgLevel || S.chat?.imgCen != null);
   const priceOf = id => {
     const m = S.imgModels.find(x => x.id === id);
     return m ? '$' + imgPrice(m) : '';
   };
-  const left = LEVEL_ORDER.map(k => {
-    const M = levelModels(k, cur);
-    return '<button data-lvp="' + k + '"' + (k === lk ? ' class="on"' : '') + '>' +
-      '<b>' + esc(IMG_LEVEL[k].name) + '</b>' +
-      '<span class="pr">' + esc(priceOf(M.m)) + '</span>' +
-      '<u>' + esc(nameOf(M.m)) + '</u></button>';
-  }).join('');
-  const right = [['base','기본','스텝 25'], ['hi','고급','스텝 40 + 업스케일']]
-    .map(([t, nm, d]) =>
-      '<button data-tier="' + t + '"' + (t === cur ? ' class="on"' : '') + '>' +
-      '<b>' + nm + '</b><u>' + d + '</u></button>').join('');
-  sheet('이미지', [
-    {info: true, html:
-      '<div class="imgPick"><div class="ipL">' + left + '</div>' +
-      '<div class="ipR">' + right + '</div></div>' +
+  const marks = d => (d.good || []).map(x => '<u>' + esc(x) + '</u>').join(' · ') +
+    ((d.bad || []).length ? ' <s>' + (d.bad || []).map(esc).join(' · ') + '</s>' : '');
+  const cell = (k, c) => {
+    const M = levelModels(k, c);
+    const on = (k === lk && c === cen);
+    return '<button class="ipCell' + (on ? ' on' : '') + '" data-k="' + k + '" data-c="' + (c ? 1 : 0) + '">' +
+      '<b>' + esc(nameOf(M.m)) + '</b><span class="pr">' + esc(priceOf(M.m)) + '</span>' +
+      '<span class="mk">' + marks(M) + '</span></button>';
+  };
+  const grid = '<div class="ipGrid">' +
+    '<div class="ipHd"></div><div class="ipHd">무검열</div><div class="ipHd">검열</div>' +
+    LEVEL_ORDER.map(k =>
+      '<div class="ipRow' + (k === lk ? ' on' : '') + '">' + esc(IMG_LEVEL[k].name) + '</div>' +
+      cell(k, false) + cell(k, true)).join('') + '</div>';
+  const legend = '<div class="ipLegend">' + LEVEL_ORDER.map(k =>
+    '· <b>' + esc(IMG_LEVEL[k].name) + '</b> : ' + esc(IMG_LEVEL[k].tone)).join('<br>') + '</div>';
+
+  sheet('사진', [
+    {info: true, html: grid + legend +
       '<div class="ipNote">' +
-      (own ? '이 대화에만 걸어 둔 수위입니다' : '설정 기본값을 따르는 중입니다') +
+      (own ? '이 대화에만 걸어 둔 것입니다' : '설정 기본값을 따르는 중입니다') +
       autoNote(lk) + '</div>'},
     {info: true, html:
       '<label class="ipChk"><input type="checkbox" id="ipAuto"' + (autoDown() ? ' checked' : '') + '>' +
-      '<span>장면에 맞춰 수위 낮추기</span></label>' +
+      '<span>장면에 맞춰 등급 올리기</span></label>' +
       '<button class="ipWhy" id="ipAutoWhy">i</button>'},
-    {label: '⚙ 모델 묶음 바꾸러 가기 — 고급에 다른 모델을 둘 수 있습니다',
+    {label: '⚙ 모델 바꾸러 가기 — 여섯 칸을 직접 정할 수 있습니다',
      run: () => show('vSettings')}
   ], chatSettingsMenu);
 
-  /* 다시 그리면 스크롤이 튄다. 고른 자리만 옮긴다 */
-  const paint = () => {
-    $('sheetIn').querySelectorAll('[data-lvp]').forEach(b =>
-      b.classList.toggle('on', b.dataset.lvp === imgLevelKey()));
-    $('sheetIn').querySelectorAll('[data-tier]').forEach(b =>
-      b.classList.toggle('on', b.dataset.tier === imgTier()));
-  };
-  $('sheetIn').querySelectorAll('[data-lvp]').forEach(b => b.onclick = async () => {
-    S.chat.imgLevel = b.dataset.lvp;
-    await dbPut('chats', S.chat);
-    imgModelSheet();   /* 품질에 따라 모델과 단가가 달라지므로 통째로 다시 그린다 */
-  });
-  $('sheetIn').querySelectorAll('[data-tier]').forEach(b => b.onclick = () => {
-    setImgTier(b.dataset.tier);
-    imgModelSheet();
+  $('sheetIn').querySelectorAll('.ipCell').forEach(b => b.onclick = async () => {
+    if (S.chat){
+      S.chat.imgLevel = b.dataset.k;
+      S.chat.imgCen = +b.dataset.c;
+      await dbPut('chats', S.chat);
+    }
+    imgModelSheet();   /* 값과 모델이 달라지므로 통째로 다시 그린다 */
   });
   const chk = $('ipAuto');
   if (chk) chk.onchange = async () => {
@@ -7971,16 +8382,15 @@ function imgModelSheet(){
   const why = $('ipAutoWhy');
   if (why) why.onclick = () => sheet('장면에 맞춰 수위 낮추기', [
     {info: true, html: '<span class="pguide">' +
-      '켜 두면 <b>그 장면에 없는 것은 그리지 않습니다.</b> 대화만 하는 장면에 걸어 둔 수위를 ' +
-      '그대로 쓰면 장면과 무관한 그림이 나옵니다.<br><br>' +
-      '<b>수위가 내려가면 값도 내려갑니다.</b> 낮은 수위일수록 싼 모델을 쓰기 때문입니다. ' +
-      '끄면 늘 걸어 둔 수위로 그리므로 장당 값이 올라갑니다.<br><br>' +
-      '스크롤을 올려 예전 장면에서 이미지를 만들면 <b>그 장면 기준으로 다시 판정</b>합니다. ' +
+      '켜 두면 <b>그 장면에 없는 것은 그리지 않습니다.</b> 대화만 하는 장면에 걸어 둔 등급을 ' +
+      '그대로 쓰면 장면과 무관한 사진이 나옵니다.<br><br>' +
+      '<b>등급이 올라가면 얼굴과 손이 좋아집니다.</b> 노출이 없는 장면에서는 그쪽이 낫습니다. ' +
+      '끄면 늘 걸어 둔 등급으로 그립니다.<br><br>' +
+      '스크롤을 올려 예전 장면에서 사진을 만들면 <b>그 장면 기준으로 다시 판정</b>합니다. ' +
       '설정과 다른 모델이 뜨는 것은 그 때문입니다.' +
       '<span class="dim">여기서 정한 것은 이 대화에만 남습니다. ' +
       '새 대화는 설정의 값을 따라갑니다.</span></span>'}
   ], imgModelSheet);
-  paint();
 }
 
 /* 장면이 얌전하면 걸어 둔 수위가 그대로 안 쓰인다.
@@ -7991,14 +8401,17 @@ function autoNote(lk){
   if (!last) return '';
   const eff = effLevel(last.content, {});
   if (eff.key === lk) return '';
-  return '<br><b>지금 장면 기준으로는 「' + esc(eff.name) + '」 로 내려갑니다.</b> ' +
+  /* 등급 이름 뒤 조사는 받침을 보고 붙인다 — 「최상급로」가 되면 눈에 걸린다 */
+  const jo = hasBatchim(eff.name) ? '으로' : '로';
+  return '<br><b>지금 장면 기준으로는 「' + esc(eff.name) + '」' + jo + ' 올라갑니다.</b> ' +
          '장면에 없는 것을 그리지 않으려는 것이며, 설정에서 끌 수 있습니다.';
 }
-const imgTier = () => localStorage.getItem(LS.imgTier) || 'base';
-function setImgTier(t){
-  localStorage.setItem(LS.imgTier, t);
-  toast(t === 'hi' ? '고급으로 뽑습니다 — 성인향 장면은 무검열 고급으로 자동 전환' : '기본으로 뽑습니다');
-}
+
+const setImgCen = async v => {
+  if (S.chat){ S.chat.imgCen = v ? 1 : 0; await dbPut('chats', S.chat); }
+  else localStorage.setItem(LS.imgCen, v ? '1' : '0');
+};
+
 (function bindLongPress(){
   const el = $('cImgAutoWrap');
   if (!el) return;
@@ -8064,7 +8477,9 @@ async function send(opts){
   };
   await dbPut('messages', uMsg);
   S.messages.push(uMsg);
-  S.stick = true;          /* 내가 보냈을 때는 맨 아래로 따라간다 */
+  /* 내가 방금 쓴 말은 보여야 한다. 여기서 한 번만 내리고, 그 뒤로는 따라가지 않는다 */
+  S.stick = false;
+  setTimeout(jumpBottom, 30);
   renderMsgs();
 
   /* 컨텍스트 매니저가 조립한 것만 전송된다. 원문은 전량 보존된다. */
@@ -8150,6 +8565,13 @@ async function commitReply(r){
 
   S.chat.messageCount = S.messages.length;
   S.chat.lastMessageAt = now();
+  /* 목록에 띄울 두 가지를 여기서 쌓는다. 나중에 메시지를 다시 훑지 않아도 되게 */
+  if (r.usage?.cost) S.chat.cost = (Number(S.chat.cost) || 0) + Number(r.usage.cost);
+  paintChatBal();
+  {
+    const w = readStatus(r.out)?.['일시'];
+    if (w){ if (!S.chat.t0) S.chat.t0 = w; S.chat.t1 = w; }
+  }
   /* 폴백으로 딴 모델이 답했다고 해서 고른 모델을 바꾸지 않는다. 그렇게 굳히면
      다음 턴부터 조용히 그 모델로 이어져, 유저도 모르는 사이에 품질이 내려앉는다.
      실제로 탁혜원 대화가 한 번 밀린 뒤 서른여섯 턴을 그대로 갔다. */
@@ -8162,6 +8584,7 @@ async function commitReply(r){
   }
   if (!off) await syncStatus(r.out);   /* 이야기 밖은 상태를 건드리지 않는다 */
   if (!off) await syncScene(r.out);
+  if (!off) await syncCharm(r.out);
   renderMsgs();
 
   /* commitReply 는 send() 의 try 안에서 불리고 S.abort = null 은 finally 에서 일어난다.
@@ -9524,7 +9947,7 @@ function cardPrompt(seed, mode, gender){
     '    ' + '{{char}} : "대사 내용"',
     '  형식으로 쓴다. 별표나 괄호를 쓰지 않고, 서술은 완결된 문장으로 맺는다.',
     /* 서술 두세 문장으로는 인물이 드러날 자리가 없다. 첫 장면은 이 인물을 처음 보는 자리이니 넉넉히 쓴다 */
-    '  **분량은 한국어 800~1,000자다.** 서술 네다섯 문단에 대사 두셋. 짧게 끝내지 않는다. 이 한 장면으로 이 인물이 어떤 사람인지가 전해져야 한다.',
+    '  **분량은 한국어 1,200~1,500자다.** 서술 대여섯 문단에 대사 서넛. 짧게 끝내지 않는다. 이 한 장면으로 여기가 어디인지 · 이 사람이 누구인지 · 무엇이 벌어지려는지가 모두 전해져야 한다.',
     '  장면을 열 때는 인물부터 그리지 말고 **그 자리에서 무슨 일이 벌어지고 있는지**부터 쓴다. 인물은 그 안에서 무엇을 하고 있는 사람으로 등장한다.',
     '  위 [끌어당기는 결]의 **대표 하나**를 이 첫 장면에서 보여 준다. 이름을 적지 말고 행동으로 보인다. 나머지 결은 여기서 다 꺼내지 않는다.',
     '- MES_EXAMPLE 은 아래 두 줄과 정확히 같은 형식으로, 그 형식만 써야 한다. 다른 어떤 줄도 섞지 않는다.',
@@ -9660,6 +10083,7 @@ const SECTION_DEFS = {
     'PERS 는 성격(personality)이며 이 인물의 핵심이다. [겉면] [내면] [반응 양상] [말버릇과 습관] [모순] 다섯 항목을 대괄호 제목 그대로, 각 두세 문장씩 쓴다. 전체 450자 안팎.',
     'SCEN 는 상황(scenario). 시간 · 장소 · 마주치는 계기를 두 문장 이내로.',
     'REL 은 {{user}}에게 이 인물이 무엇인지를 한 줄로 쓴다. 반드시 이 인물이 주어다 (예: "자주 가는 가게의 주인"). {{user}}의 직업이나 신상을 단정하지 않는다.',
+    '위 [이미 정해진 설정]에 「끌어당길 결」이 적혀 있으면, DESC · PERS · HABIT 이 모두 그 결에서 나와야 한다. 앞에 적힌 것일수록 뚜렷하게. 다만 그 낱말을 본문에 그대로 적지는 않는다.',
     'HABIT 은 몸에 밴 버릇 하나를 한 줄(15~30자)로 쓴다. 그 사람이 어떤 사람인지가 묻어나야 한다. "컵을 늘 왼쪽에 둔다"처럼 아무 뜻 없는 버릇은 쓰지 않는다. 예: "남이 흘린 것도 같이 치운다", "말을 꺼내기 전에 한 박자 쉰다".'
   ]},
   dialogue: { label:'대화 방식', fields:['first','ex'], instr:[
@@ -9686,7 +10110,7 @@ function currentCharContext(){
     return v === '' ? null : STAT_LABEL[k] + ' ' + v;
   }).filter(Boolean);
   if (st.length) parts.push('인물 스탯(0~100): ' + st.join(' · '));
-  add('성격 한 줄','ceTraits'); add('습관','ceHabit'); add('설정','ceDesc'); add('성격','cePers'); add('상황','ceScen');
+  add('끌어당길 결','ceCharm'); add('성격 한 줄','ceTraits'); add('습관','ceHabit'); add('설정','ceDesc'); add('성격','cePers'); add('상황','ceScen');
   add('이 캐릭터는 누구인가','ceRel'); add('호칭과 말투','ceSpeech'); add('첫 대사','ceFirst'); add('예시 대화','ceEx');
   add('외형 태그','ceLook'); add('기본 복장 태그','ceOutfit');
   return parts.join('\n');
@@ -9709,6 +10133,22 @@ const AUTOGEN_INSTR = {
 function startAutofill(key, btn){
   const def = SECTION_DEFS[key];
   if (!def) return;
+  /* 결이 정해져 있지 않으면 설정을 아무리 잘 써도 무엇으로 끌리는 사람인지가 안 잡힌다.
+     세부 설정은 그 결에서 나와야 하므로 여기서 먼저 묻는다. */
+  if (key === 'detail' && !($('ceCharm')?.value || '').trim()){
+    return sheet('먼저 끌어당길 결을 정합니다', [
+      {info: true, html: '<span class="pguide">이 인물이 <b>무엇으로 끌리는 사람인지</b>가 ' +
+        '정해져 있어야 성격 · 배경 · 습관이 그 결에서 나옵니다.' +
+        '<span class="dim">건너뛰면 결 없이 씁니다. 나중에 세부 설정 화면에서 직접 적어도 됩니다.</span></span>'},
+      {label: '뽑고 이어서 쓴다',
+       html: '<b>뽑고 이어서 쓴다</b><div class="shint">두셋을 굴려 넣고 수치도 함께 맞춥니다.</div>',
+       run: () => { $('ceCharmRoll').click(); setTimeout(() => autofillSection(key, btn, 'fresh'), 200); }},
+      {label: '직접 적겠다',
+       html: '<b>직접 적겠다</b><div class="shint">세부 설정 맨 위 칸에 적은 뒤 다시 누르십시오.</div>',
+       run: () => { setCharPane('in'); $('ceCharm')?.focus(); }},
+      {label: '건너뛰고 그냥 쓴다', run: () => autofillSection(key, btn, 'fresh')}
+    ]);
+  }
   const hasValue = def.fields.some(f => ($(SECTION_FIELD_MAP[f])?.value || '').trim());
   if (!hasValue) return autofillSection(key, btn, 'fresh');
   sheet(def.label + ' — 기존 값을 어떻게 할까요',
@@ -10406,7 +10846,40 @@ $('ceSeeRules').onclick = () => {
   openEdit(true);
   $('editOk').onclick = closeEdit;
 };
+/* 직접 고르기 귀찮을 때. 굴린 결과를 칸에 적어 주고 수치도 함께 민다 */
+$('ceCharmRoll').onclick = () => {
+  const t = rollTraits();
+  $('ceCharm').value = t.map(x => x.k).join(', ');
+  S.editingChar.profile = S.editingChar.profile || {};
+  S.editingChar.profile.charm = t.map(x => ({k: x.k, made: x.made, how: x.how}));
+  const st = readStatFields();
+  if (st){ setStatFields(applyTraitStats({...st}, t)); toast('결과 수치를 함께 굴렸습니다'); }
+  else toast('뽑았습니다 — ' + t.map(x => x.k).join(' · '));
+};
 $('bNewChar').onclick = () => editChar(null);
+
+/* 적어 넣은 이름을 카드에 담을 꼴로 바꾼다. 목록에 없는 말도 그대로 받는다 —
+   유저가 직접 지은 결을 막을 까닭이 없다. 다만 목록에 있으면 「만든 것」이 함께 붙는다. */
+function readCharmField(){
+  const raw = ($('ceCharm')?.value || '').split(/[,·]/).map(x => x.trim()).filter(Boolean).slice(0, 4);
+  const was = S.editingChar?.profile?.charm || [];
+  return raw.map(k => {
+    const old = was.find(x => x.k === k);
+    if (old) return old;                       /* 이미 있던 것은 굴린 결과를 지킨다 */
+    const src = TRAITS.find(x => x.k === k);
+    return {k, how: src?.how || '',
+            made: src ? (k === '뛰어난 외모' ? lookMade() : src.made) : ''};
+  });
+}
+/* 어떤 이름을 쓸 수 있는지 그 자리에서 보여 준다. 비중은 안 적는다 — 순서가 곧 비중이다 */
+function paintCharmHelp(){
+  const el = $('ceCharmList');
+  if (!el) return;
+  const byAx = {};
+  TRAITS.forEach(t => (byAx[t.ax] = byAx[t.ax] || []).push(t.k));
+  el.innerHTML = Object.entries(byAx)
+    .map(([ax, ks]) => '<b>' + ax + '</b> ' + ks.join(' · ')).join('<br>');
+}
 
 const statInputId = k => 'ceSt' + k[0].toUpperCase() + k.slice(1);
 /* 설명을 칸마다 붙이면 화면이 길어져 수치와 굴리기 버튼이 한눈에 안 들어온다. i 로 뺀다. */
@@ -10467,15 +10940,15 @@ $('ceAvGen').onclick = async () => {
                     'natural daylight, softly blurred everyday background such as a cafe or street',
                     'shallow depth of field, natural skin texture, single subject, one person only']
                    .filter(Boolean).join(', ');
-    const prevBare = S.imgBare, prevTier = S.imgTier;
-    S.imgBare = false; S.imgTier = 'base';        /* 썸네일은 노출 없이 기본 모델로 */
+    const prevBare = S.imgBare, prevCen = S.imgCen;
+    S.imgBare = false; S.imgCen = true;           /* 썸네일은 노출 없이 검열 모델로 — 얼굴이 중요하다 */
     let url;
     /* 시드를 대화용 이미지와 같게 써서 얼굴이 어긋나지 않게 한다 */
     const sd = parseInt($('ceSeed').value, 10);
     /* 썸네일이라 정사각 512면 충분하다. 크게 뽑을 이유가 없다. */
     try{ url = await veniceImage(prompt, localStorage.getItem(LS.imgModel), 25,
                                  Number.isFinite(sd) ? sd : undefined, PORTRAIT_NEG, [512, 512]); }
-    finally{ S.imgBare = prevBare; S.imgTier = prevTier; }
+    finally{ S.imgBare = prevBare; S.imgCen = prevCen; }
     e.profile = e.profile || {};
     e.profile.avatar = url;
     showCeAvatar(url);
@@ -10569,6 +11042,7 @@ function editChar(id, over){
   $('ceAge').value = pf.age || '';       $('ceJob').value  = pf.job || '';
   $('ceBody').value = pf.body || '';     $('ceTraits').value = pf.traits || '';
   $('ceHabit').value = pf.habit || '';
+  $('ceCharm').value = (pf.charm || []).map(x => x.k).join(', ');
   $('ceRel').value = pf.relation || '';  $('ceLook').value = pf.look || '';
   $('ceSpeech').value = pf.speech || ''; $('ceStart').value = pf.startState || '';
   $('ceOutfit').value = pf.outfit || '';
@@ -10624,6 +11098,7 @@ $('ceSave').onclick = async () => {
     age: tidy($('ceAge').value),    job: tidy($('ceJob').value),
     body: tidy($('ceBody').value),  traits: tidy($('ceTraits').value),
     habit: tidy($('ceHabit').value),
+    charm: readCharmField(),
     relation: tidy($('ceRel').value), look: tidy($('ceLook').value),
     outfit: tidy($('ceOutfit').value),
     seed: tidy($('ceSeed').value),
@@ -11188,20 +11663,22 @@ const SET_PANES = [
   {key:'char',  name:'인물',   sects:['인물 자동 생성']},
   {key:'genre', name:'장르',   sects:['장르']},
   {key:'img',   name:'이미지', sects:['이미지 생성']},
-  {key:'etc',   name:'기타',   sects:['데이터', '고급']}
+  {key:'etc',   name:'기타',   sects:['사용량', '데이터', '고급']}
 ];
 /* 인물 카드가 한 화면에 다 들어가 스크롤이 길었다. 설정처럼 묶음으로 가른다.
    맨 앞(성별 · 이름 · 사진)은 어느 탭에서나 필요하므로 「기본」 에 둔다. */
 /* 「속」 「말」 처럼 한 글자로 줄이니 무엇이 들어 있는지 알 수 없었다.
    안에 실제로 있는 항목 이름을 그대로 쓴다. */
 /* 단추에 적힌 말과 안의 제목이 다르면 누를 때마다 한 번씩 멈칫하게 된다. 같은 말을 쓴다. */
+/* 단추 글자는 두 글자로 맞춘다. 여섯 개가 한 줄에 들어가야 한다.
+   안의 제목은 온전한 이름을 그대로 두어 무엇이 들어 있는지 알 수 있게 한다. */
 const CE_PANES = [
-  {key:'basic', name:'기본 정보', sects:['기본 정보']},
-  {key:'bg',    name:'성장 배경', sects:['성장 배경']},
-  {key:'in',    name:'세부 설정', sects:['세부 설정']},
-  {key:'talk',  name:'대화 방식', sects:['대화 방식']},
-  {key:'look',  name:'인물 외형', sects:['인물 외형']},
-  {key:'gen',   name:'생성 설정', sects:['생성 설정']}
+  {key:'basic', name:'기본', sects:['기본 정보']},
+  {key:'bg',    name:'성장', sects:['성장 배경']},
+  {key:'in',    name:'세부', sects:['세부 설정']},
+  {key:'talk',  name:'대화', sects:['대화 방식']},
+  {key:'look',  name:'외형', sects:['인물 외형']},
+  {key:'gen',   name:'생성', sects:['생성 설정']}
 ];
 function buildCharTabs(){
   const scroll = $('vCharEdit').querySelector('.scroll');
@@ -11230,6 +11707,7 @@ function buildCharTabs(){
   $('ceTabs').querySelectorAll('[data-cpane]')
     .forEach(b => b.onclick = () => setCharPane(b.dataset.cpane));
   setCharPane(CE_PANES[0].key);
+  paintCharmHelp();
 }
 function setCharPane(key){
   if (!CE_PANES.some(p => p.key === key)) key = CE_PANES[0].key;
@@ -11290,21 +11768,21 @@ function loadSettings(){
   $('sRules').value = localStorage.getItem(LS.rules) || DEFAULT_RULES;
   $('sAutoSum').checked = (localStorage.getItem(LS.autoSum) ?? '1') === '1';
   $('sIntro').checked   = (localStorage.getItem(LS.intro) ?? '1') === '1';
+  $('sIntroModel').value = localStorage.getItem(LS.introModel) || '';
   $('sNoReason').checked = (localStorage.getItem(LS.noReason) ?? '1') === '1';
   $('sFree').checked = (localStorage.getItem(LS.free) ?? '1') === '1';
   $('sImgKey').value = localStorage.getItem(LS.imgKey) || '';
-  $('sImgUnc').checked = (localStorage.getItem(LS.imgUnc) ?? '0') === '1';
-  $('sImgUp').checked  = (localStorage.getItem(LS.imgUp) ?? '1') === '1';
   $('sImgSize').value = localStorage.getItem(LS.imgSize) || '832x1216';
-  $('sImgLevel').value = localStorage.getItem(LS.imgLevel) || 'explicit';
+  $('sImgLevel').value = lvFix(localStorage.getItem(LS.imgLevel) || 'eco');
+  $('sImgCen').checked = localStorage.getItem(LS.imgCen) === '1';
   $('sGenre').innerHTML = GENRES.map(g =>
     '<option value="' + esc(g.key) + '">' + esc(g.name) + '</option>').join('');
   $('sGenre').value = localStorage.getItem(LS.genreDef) || '';
   $('sGenreFill').value = localStorage.getItem(LS.genreFill) || 'random';
   renderGenreCards();
   syncThumbBtns();
+  paintCredChart();
   $('sImgDetail').value = localStorage.getItem(LS.imgDetail) || 'ultra';
-  $('sImgCap').value = String(imgCap().toFixed(2));
   $('sImgAuto').checked = localStorage.getItem(LS.imgAuto) !== '0';
   $('sPreHint').checked = localStorage.getItem(LS.preHint) === '1';
   $('sTaste').value  = localStorage.getItem(LS.taste) || DEFAULT_TASTE;
@@ -11324,7 +11802,6 @@ $('sImgKey').onchange = () => {
   renderMsgs(false);
 };
 /* 모델 슬롯은 수위 카드로 옮겨졌다 */
-$('sImgUp').onchange     = () => localStorage.setItem(LS.imgUp, $('sImgUp').checked ? '1' : '0');
 $('sImgSize').onchange  = () => localStorage.setItem(LS.imgSize, $('sImgSize').value);
 $('sImgLevel').onchange = () => {
   localStorage.setItem(LS.imgLevel, $('sImgLevel').value);
@@ -11334,9 +11811,7 @@ $('sGenre').onchange = () => localStorage.setItem(LS.genreDef, $('sGenre').value
 $('sGenreFill').onchange = () => localStorage.setItem(LS.genreFill, $('sGenreFill').value);
 $('sImgDetail').onchange = () => localStorage.setItem(LS.imgDetail, $('sImgDetail').value);
 $('sImgFilter').oninput = renderImgSelect;
-$('sImgUnc').onchange   = () => {
-  localStorage.setItem(LS.imgUnc, $('sImgUnc').checked ? '1' : '0'); renderImgSelect();
-};
+
 $('sImgTxt').onchange   = () => localStorage.setItem(LS.imgTxt, $('sImgTxt').value);
 $('sImgReload').onclick = () => { fetchImgModels(); fetchTxtModels(); };
 $('sKey').onchange = () => {
@@ -11365,15 +11840,15 @@ function showMaxTokRec(){
   el.textContent = String(turnOut());
 }
 $('sPen').onchange    = () => localStorage.setItem(LS.penalty, $('sPen').value);
-$('sImgCap').onchange = () => {
-  localStorage.setItem(LS.imgCap, $('sImgCap').value);
-  renderLevelCards();
-  toast('한 장에 최대 $' + $('sImgCap').value + ' 까지 씁니다');
+
+$('sImgCen').onchange = () => {
+  localStorage.setItem(LS.imgCen, $('sImgCen').checked ? '1' : '0');
+  renderLevelCards(); showImgCost();
 };
 $('sImgAuto').onchange = () => {
   const on = $('sImgAuto').checked;
   localStorage.setItem(LS.imgAuto, on ? '1' : '0');
-  toast(on ? '장면에 맞춰 수위를 낮춥니다' : '걸어 둔 수위를 그대로 씁니다');
+  toast(on ? '장면에 맞춰 등급을 올립니다' : '걸어 둔 등급을 그대로 씁니다');
 };
 $('sPreHint').onchange = () => {
   const on = $('sPreHint').checked;
@@ -11395,6 +11870,7 @@ $('sRulesReset').onclick = () => {
 };
 $('sAutoSum').onchange = () => localStorage.setItem(LS.autoSum, $('sAutoSum').checked ? '1' : '0');
 $('sIntro').onchange   = () => localStorage.setItem(LS.intro,   $('sIntro').checked   ? '1' : '0');
+$('sIntroModel').onchange = () => localStorage.setItem(LS.introModel, $('sIntroModel').value.trim());
 $('sNoReason').onchange = () => localStorage.setItem(LS.noReason, $('sNoReason').checked ? '1' : '0');
 
 /* ═══════════════ 백업 ═══════════════ */
@@ -11483,9 +11959,9 @@ async function seed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b62';
-const APP_BUILT = '2026-08-23 21:40';
-const APP_NOTE  = '매력 특성 · 관계의 기울기 · 첫 장면 · 다음 장면';
+const APP_BUILD = 'b65';
+const APP_BUILT = '2026-08-24 02:40';
+const APP_NOTE  = '사진 등급 2×3 · 잔여/소진 · 사용량 그래프 · 창 스택';
 $('sVersion').innerHTML =
   '8단계 · <b style="color:var(--acc)">빌드 ' + APP_BUILD + '</b><br>최종 수정: ' + APP_BUILT + '<br>' + APP_NOTE;
 
@@ -11494,10 +11970,15 @@ if ('serviceWorker' in navigator)
   addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 
 /* 긴 서술 포맷 도입에 맞춰 예전 설정값을 한 번만 올려준다 */
-/* 수위가 넷에서 셋으로 줄었다. 옛 값을 옮긴다. */
+/* 수위 축이 등급 축으로 바뀌었다. 옛 값을 새 이름으로 옮긴다.
+   기본/고급(imgTier)은 뜻이 사라졌으므로 버린다 — 고급이라고 검열 쪽을 쓰던 것이 아니다. */
 (function migrateLevel(){
-  if (localStorage.getItem(LS.imgLevel) === 'hardcore')
-    localStorage.setItem(LS.imgLevel, 'explicit');
+  const old = localStorage.getItem(LS.imgLevel);
+  const map = {hardcore:'eco', explicit:'eco', nude:'good', soft:'best'};
+  if (old && map[old]) localStorage.setItem(LS.imgLevel, map[old]);
+  localStorage.removeItem('rp_imgtier');
+  localStorage.removeItem('rp_imgcap');
+  localStorage.removeItem('rp_imgup');
 })();
 (function migrate(){
   if (!localStorage.getItem('rp_migrated_v5')){
