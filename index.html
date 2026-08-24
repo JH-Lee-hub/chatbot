@@ -350,6 +350,9 @@
   .mkDone span{display:block;font-size:11px;color:var(--tx3);line-height:1.5}
   .mkDone i{font-style:normal;color:var(--tx2);display:inline-block;min-width:44px}
   .mkPick{display:block;font-size:11.5px;color:var(--tx2);line-height:1.5;margin-top:3px}
+  /* 이 대화에만 걸린 값은 눈에 띄어야 한다 — 왜 다른 대화와 다른지 알 수 있게 */
+  .cfgV{float:right;font-size:12px;color:var(--tx3)}
+  .cfgV.own{color:var(--acc);font-weight:600}
   .memKey{display:block;line-height:1.5}
   .memKey b{display:block;font-size:12.5px;color:var(--acc);margin-bottom:2px}
   .memKey span{display:block;font-size:11.5px;color:var(--tx2)}
@@ -442,6 +445,8 @@
   .sitem .ksub.cost{color:var(--tx2);margin-top:5px}
   .ptag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:5px;
         background:var(--panel2);border:1px solid var(--line);color:var(--tx3);vertical-align:middle}
+  .ptag.bad{background:rgba(255,107,107,.14);color:var(--err);border-color:rgba(255,107,107,.4)}
+  .ptag.warn{background:rgba(255,180,84,.13);color:var(--warn);border-color:rgba(255,180,84,.36)}
   .ptag.ax{color:var(--tx2)}
   .ptag.hot{background:var(--accent,#7c9cff);border-color:transparent;color:#0b0d12;font-weight:600}
   /* 값이 비슷한 것끼리 묶어 준다. 목록이 길어 어디까지가 같은 값대인지 알기 어려웠다 */
@@ -1027,7 +1032,8 @@
           여는 데 <b>10~30초</b>가 더 걸리고 <b>한 번 호출</b> 만큼 비용이 듭니다.
           실패하면 카드의 첫 대사를 그대로 씁니다.
         </div>
-        <input type="text" id="sIntroModel" placeholder="첫 장면 전용 모델 — 비우면 기본 모델" style="margin-top:8px">
+        <input type="text" id="sIntroModel" placeholder="첫 장면 전용 모델 — 비우면 권장 모델" style="margin-top:8px">
+        <div class="hint" id="sIntroModelHint"></div>
         <div class="hint">
           첫 장면은 분량도 길고 인물을 처음 세우는 자리라 <b>모델을 크게 탑니다.</b>
           잘 나오는 모델을 하나 적어 두면 대화용 모델을 바꿔도 첫 장면 품질이 흔들리지 않습니다.
@@ -3101,6 +3107,11 @@ function fill(tpl, charName, userName){
 /* 이번 턴이 장르를 한 걸음 미는 차례인가.
    프롬프트를 짓는 쪽과 말풍선에 표를 다는 쪽이 같은 답을 봐야 해서 한 곳에 둔다.
    응답이 저장되기 전에 세므로, 저장된 뒤 그 응답의 차례를 물으려면 turnIndex 로 다시 센다. */
+/* 습관을 실을 차례인가. 다섯 턴에 한 번쯤이면 사람의 버릇처럼 읽힌다 */
+function habitDue(){
+  const n = (S.messages || []).filter(m => m.role === 'assistant').length;
+  return n % 5 === 0;
+}
 function genreDue(){
   const pc = paceOf(S.chat?.genre?.pace);
   if (!S.chat?.genre?.text || !pc || pc.turns <= 0) return false;
@@ -3123,18 +3134,33 @@ function buildSystem(char, persona, withExample, drift){
   if (pf.body || sizes) head.push('신체: ' + (pf.body || '') + sizes);
   if (pf.relation) head.push('{{user}}에게 이 인물은: ' + pf.relation);
   if (pf.speech)   head.push('호칭과 말투: ' + pf.speech);
-  if (pf.habit)    head.push('습관: ' + pf.habit);
+  /* 매 턴 실으면 매 턴 나온다. 몇 턴에 한 번만 싣고, 실을 때도 눌러 준다 */
+  if (pf.habit && habitDue())
+    head.push('습관: ' + pf.habit +
+      ' (이번 턴에 스칠 수 있다. **눈에 띄면 안 된다** — 읽는 사람이 알아채면 이미 많이 쓴 것이다. ' +
+      '설명하지 말고 동작 한 조각으로만 지나간다)');
   if (head.length) c.push(head.join('\n'));
+  /* 실측: 카드가 두꺼울수록 지어내기가 줄고 사연이 살아나지만,
+     카드 문장을 그대로 옮기는 경향이 늘어 겹침이 두 배가 됐다. 그쪽만 눌러 준다. */
+  if (c.length) c.push('위 설정은 **이 인물이 어떤 사람인지**를 적어 둔 것이다. ' +
+    '문장을 그대로 옮겨 쓰지 않는다 — 같은 말이 여러 턴에 되풀이되면 설정 낭독이 된다. ' +
+    '한 턴에는 그 가운데 **지금 장면에 걸리는 것 하나**만 스친다.');
 
   /* 이 인물이 무엇으로 끌어당기는가. 규칙 27이 「어떻게」라면 여기는 「무엇을」이다.
      비중은 순서로만 전한다 — 숫자를 주면 모델이 그것을 화면에 적어 버린다. */
   if (pf.charm?.length){
     const cm = ['\n[끌어당길 것 — 이 인물의 결]'];
     pf.charm.forEach((t, i) => cm.push('- ' + t.k + (i === 0 ? ' (대표)' : '') +
-      (t.made ? ' — ' + t.made : '')));
+      (t.made ? ' — ' + t.made : '') +
+      (t.how ? '   [' + t.how + ' 로 보인다]' : '')));
     cm.push('앞의 것일수록 자주 드러나고 뒤로 갈수록 가끔이다. **이름표를 화면에 적지 않는다.**',
             '이것은 설명할 것이 아니라 행동 · 말버릇 · 반응에서 새어 나올 것이다.',
-            '「만든 것」 쪽은 이 인물의 약한 자리다. 규칙 27의 ⑥ 이 그것을 쓴다.');
+            '「만든 것」 쪽은 이 인물의 약한 자리다. 규칙 27의 ⑥ 이 그것을 쓴다.',
+            /* 실측: 방식을 안 알려 주면 겉모습 계열이 통째로 사라진다.
+               인물이 스스로 여유를 부리려다 성격 설정에 눌려 없던 일이 됐다. */
+            '**대괄호 안의 번호는 규칙 27의 여덟 방식 가운데 이 결에 맞는 것이다.** 그 방식으로 보인다.',
+            '특히 겉모습 · 분위기처럼 **남이 보는 것**은 ② 로 쓴다 — {{char}}가 스스로 여유를 부리는 것이 ' +
+            '아니라 **그 자리에 있던 사람이 흔들리는 것**으로 쓴다. 성격이 방어적이어도 ② 는 그대로 성립한다.');
     c.push(cm.join('\n'));
   }
 
@@ -3194,7 +3220,7 @@ function buildSystem(char, persona, withExample, drift){
     const L = ['\n[장르 — ' + G.name + ']', G.text,
       '이 뼈대는 방향일 뿐이다. 장면을 여기에 억지로 맞추지 않으며, 한 번에 다 드러내지 않는다.',
       '{{user}}가 다른 쪽으로 끌고 가면 그쪽을 따른다.',
-      '이 장르가 걸리는 쪽: ' + targetText(G.target) +
+      '이 장르가 걸리는 쪽: ' + targetAsk(G.target) +
       '. 그 밖의 사람에게는 배경으로만 스친다.'];
     /* 매 턴 밀어붙이면 설정 낭독이 된다. 정해진 간격에 한 번만 한 걸음 나아가게 한다. */
     if (pc.turns > 0){
@@ -4122,7 +4148,17 @@ function flagSheet(id){
       m.flag = k; await dbPut('messages', m);
       msgNodeCache.delete(m.id); renderMsgs(false);
       toast('「' + k + '」 으로 표시했습니다');
-    }}))
+    }})),
+    /* 여섯 갈래에 안 맞는 것이 늘 있다. 그때 그냥 지나치면 기록이 안 남는다 */
+    {label: '직접 적기', run: async () => {
+      const v = prompt('무엇이 이상했습니까', m.flag || '');
+      if (v === null) return;
+      const t = String(v).trim().slice(0, 40);
+      if (!t) return;
+      m.flag = t; await dbPut('messages', m);
+      msgNodeCache.delete(m.id); renderMsgs(false);
+      toast('「' + t + '」 으로 표시했습니다');
+    }}
   ]);
 }
 
@@ -5132,9 +5168,12 @@ function pickGenre(characterId, personaId){
       (g.closed ? '<span class="gClosed">끝이 있음 · ' + (g.acts || []).length + '막</span>' : '') +
       '<div class="shint">' + esc(g.desc) + '</div>',
     run: () => {
+      /* 빈칸을 직접 채우는 갈래는 다른 창으로 이어지므로 그대로 둔다 */
       if (ask && g.key && Object.keys(g.slots || {}).length)
         return fillGenre(g, characterId, personaId);
       S.pendingGenre = rollGenre(g.key);
+      /* 여기서부터는 새 대화로 화면이 옮겨진다. 접지 않으면 그 위에 남는다 */
+      closeSheet();
       newChat(characterId, personaId);
     }
   })));
@@ -5175,8 +5214,10 @@ async function newChat(characterId, personaId){
 
   if (opening){
     /* 첫 출력에도 상태 줄을 온전히 붙인다. 장소·일시·외관·내면은 카드의 「첫 장면 상태」에서 가져온다. */
-    const st1 = st0 ? initialState(st0, c.profile?.startState) : {};
-    const head = readStatus('[상태] ' + (c.profile?.startState || '')) || {};
+    /* 옛 인물은 첫 장면 상태가 없을 수 있다. 그대로 두면 일시조차 없이 시작한다 */
+    const start0 = c.profile?.startState || guessStartState(c);
+    const st1 = st0 ? initialState(st0, start0) : {};
+    const head = readStatus('[상태] ' + start0) || {};
     /* 최대치가 있는 항목은 「26/64」로 병기한다. pickVisible 은 모델 응답에만 걸리므로
        앱이 직접 만드는 첫 인사에는 여기서 붙여야 한다. */
     for (const k of Object.keys(st1)){
@@ -5196,6 +5237,9 @@ async function newChat(characterId, personaId){
   await openChat(chat.id);
   startGuide(c, p);
 }
+
+/* 첫 장면만은 값을 아끼지 않는다. 여기서 잡힌 문체를 뒤가 내내 따라간다 */
+const INTRO_MODEL = 'google/gemini-3.1-flash-lite';
 
 /* ═══ 이 대화의 첫 장면 ═══
    카드 정보를 다시 조립하지 않고 buildSystem 을 그대로 쓴다 — 규칙 · 장르 · 주인공 · 특성이
@@ -5222,7 +5266,10 @@ async function makeIntro(c, p, chat){
     S.chat = chat;
     const sys = buildSystem(c, p, true, null);
     /* 전용 모델이 적혀 있으면 그것부터 시도하고, 안 되면 평소 사슬로 내려간다 */
-    const m1 = (localStorage.getItem(LS.introModel) || '').trim();
+    /* 비워 두면 평소 사슬로 내려가는데, 거기 무료 모델이 걸려 있으면
+       첫 장면이 못 봐줄 수준으로 나온다. 그리고 뒤가 그 문체를 따라간다.
+       비었을 때는 기본 모델이 아니라 권장 모델을 쓴다. */
+    const m1 = (localStorage.getItem(LS.introModel) || '').trim() || INTRO_MODEL;
     const r0 = m1 ? await askTextEx(sys + INTRO_ASK, 2600, 1.0, m1)
                   : {text: await askText(sys + INTRO_ASK, 2600, 1.0)};
     const r = r0.text;
@@ -5377,7 +5424,12 @@ const LEAVE_PLACE = /(에서[^|]{0,14}?(방향|쪽으로|으로 가|가는 중|�
 const LEAVE_WORD = /(헤어지|돌아서|작별|배웅|인사를 (건네|나누)|집으로|귀가|자리를 뜨|떠났|나섰다|잠이 들|잠들|눈을 감|불을 끄)/;
 /* 장면이 닫히는 중인가. 셋 중 둘이면 그렇다고 본다 */
 function sceneClosing(){
-  const list = (S.messages || []).filter(inStory);
+  /* 맨 끝이 이야기 밖이면 판정하지 않는다. 거르고 나면 그 앞의 장면이 마지막처럼 보여
+     시스템 답변 뒤에 단추가 뜨던 것이 이 때문이다. */
+  const all = S.messages || [];
+  const tail = all[all.length - 1];
+  if (tail && tail.role === 'assistant' && !inStory(tail)) return false;
+  const list = all.filter(inStory);
   const last = list[list.length - 1];
   if (!last || last.role !== 'assistant') return false;
   const st = readStatus(last.content) || {};
@@ -6068,7 +6120,8 @@ function msgHTML(m, isLast){
       '</button>' : '';
   const hints = hintBox(m);
   /* 이야기 밖 · 앱이 채움 — 같은 자리에 값만 달리 붙인다 */
-  const mk = (MARK_TXT[m.mark] ? '<span class="mmark">' + MARK_TXT[m.mark] + '</span>' : '') +
+  const mk = (MARK_TXT[m.mark]
+      ? '<span class="mmark" data-act="markwhy">' + MARK_TXT[m.mark] + ' ⓘ</span>' : '') +
     /* 장르가 한 걸음 나아간 턴. 어디가 장르인지는 모델만 알므로 턴 표시까지만 한다 */
     (m.genre ? '<span class="mmark gm">' + esc(m.genre) + ' 한 걸음</span>' : '') +
     /* 이상하다고 찍어 둔 것. 눈에 띄어야 나중에 훑을 때 바로 보인다 */
@@ -6097,7 +6150,24 @@ const MSG_ACT = {
     }
     suggestReplies(id);
   },
-  hintoff: id => { delete S.hintMap[id]; renderMsgs(false); }
+  hintoff: id => { delete S.hintMap[id]; renderMsgs(false); },
+  /* 딱지만 붙어 있으면 무슨 말인지 알 길이 없다 */
+  markwhy: id => {
+    const m = S.messages.find(x => x.id === id); if (!m) return;
+    sheet(MARK_TXT[m.mark] || '표시', [{info: true, html: '<span class="pguide">' +
+      (m.mark === '채움'
+        ? '모델이 <b>상태 줄을 빠뜨려</b> 앱이 대신 채운 턴입니다.<br>' +
+          '장소 · 일시 · 수치는 <b>직전 값에서 그대로 이어집니다</b> — ' +
+          '이번 턴에 실제로 무엇이 달라졌는지는 반영되지 않았습니다.<br>' +
+          '어색하면 <b>재생성</b>으로 다시 받으십시오.' +
+          '<span class="dim">자주 나오면 모델을 바꾸는 편이 낫습니다. ' +
+          '요청 끝의 재지시를 못 지키는 모델이 있습니다.</span>'
+        : '이 턴은 <b>이야기 밖</b>으로 찍혀 있습니다.<br>' +
+          '프롬프트에 안 실리고, 요약 · 소설 · 상태 줄 어디에도 안 들어갑니다.<br>' +
+          '설정을 묻거나 시스템에 말을 걸 때 쓰는 자리입니다.' +
+          '<span class="dim">「예외처리」로 켜고 끕니다.</span>') +
+      '</span>'}]);
+  }
 };
 const msgNodeCache = new Map();   /* id -> {sig, node} — 안 바뀐 메시지는 다시 그리지 않는다 */
 function renderMsgs(toBottom){
@@ -7404,7 +7474,10 @@ function changeGenre(){
       await saveGenre(rollGenre(x.key, null,
         {target: S.chat.genre?.target, pace: S.chat.genre?.pace}));
       toast('장르를 ' + x.name + ' 로 바꿨습니다');
-      genreSheet();
+      /* 이 창을 물리고 그 아래 장르 창을 갈아 끼운다.
+         그냥 부르면 스택이 한 칸 늘어 나가는 데 네 번 눌러야 한다. */
+      S.shStack.pop();
+      genreSheet(true);
     }
   })), genreSheet);
 }
@@ -7437,6 +7510,10 @@ const CHAT_MENU = [
   {i:'🧠', t:'기억',    run: () => openMemory(), leave:true},
   {i:'✍', t:'내 지문', run: () => ownSheet(), opens:true,
    now: () => ownOn() ? '전부 그대로' : '반응은 상대가'},
+  {i:'⚙', t:'이 대화 설정', run: () => chatCfgSheet(), opens:true,
+   /* 걸어 둔 것이 있으면 몇 가지인지 보인다 — 왜 다른 대화와 다른지 알 수 있게 */
+   now: () => { const n = CFG_META.filter(m => cfgOwn(m.k)).length;
+     return n ? n + '가지' : '기본값'; }},
   /* 「조연」 아래에 「3명」이 한 줄 더 붙어 이 칸만 키가 컸다. 이름에 이어 붙인다 */
   {i:'👥', t:'조연',    run: () => castSheet(), opens:true,
    tail: () => (S.chat?.cast?.length || 0) + '명'},
@@ -7463,8 +7540,9 @@ function chatSettingsMenu(reshow){
       '<i>' + m.i + '</i><b>' + esc(m.t + tail) + '</b>' +
       (now ? '<u>' + esc(now) + '</u>' : '') + '</button>';
   }).join('') + '</div>';
-  sheet(S.character?.name + (S.chat?.charSnap ? ' (바뀌기 전)' : ''), [{info: true, html}], null, reshow);
-  $('sheetIn').querySelectorAll('[data-cm]').forEach(b => b.onclick = () => {
+  /* 핸들러는 after 로 붙인다. 여기서 곧바로 붙이면 되돌아왔을 때 안 붙어
+     격자는 그려지는데 아무것도 안 눌리게 된다. */
+  const bindCm = () => $('sheetIn').querySelectorAll('[data-cm]').forEach(b => b.onclick = () => {
     const it = items[+b.dataset.cm];
     /* 화면을 통째로 옮기는 것만 창을 접는다. 나머지는 열어 둔 채 실행한다 —
        하위 창을 여는 것은 스택에 한 단계 쌓이고, 아무것도 안 여는 것은 값만 다시 그린다. */
@@ -7475,6 +7553,8 @@ function chatSettingsMenu(reshow){
     it.run();
     if (!it.opens) chatSettingsMenu(true);   /* 하위 창을 안 여는 것은 값 갱신 */
   });
+  sheet(S.character?.name + (S.chat?.charSnap ? ' (바뀌기 전)' : ''),
+        [{info: true, html, after: bindCm}], null, reshow);
 }
 $('cBal').onclick = () => { BAL.at = 0; paintBal(true).then(() => toast('남은 요금을 다시 읽었습니다')); };
 $('cMenu').onclick = chatSettingsMenu;
@@ -7544,46 +7624,54 @@ const PICK_AXIS = {
    첫 토큰까지 · 완료까지 · 실제 분량 · 규칙을 지킨 비율을 함께 봤다. */
 const CHAT_PICKS = [
   {id:'nvidia/nemotron-3-ultra-550b-a55b:free', good:['연속성'], best:2,
-   d:'550B · 1M · 무료 중에서는 앞뒤가 가장 덜 틀립니다. 붐비면 첫 글자까지 40초가 걸립니다'},
+   d:'550B · 무료 중에서는 앞뒤가 가장 덜 틀립니다. 붐비면 첫 글자까지 40초가 걸립니다'},
   {id:'z-ai/glm-5.2:free', good:['묘사'],
-   d:'256k · 롤플레잉 감이 좋고 검열이 약합니다. 429가 잦고 빈 응답이 나올 때가 있습니다'},
+   d:'롤플레잉 감이 좋고 검열이 약합니다. 429가 잦고 빈 응답이 나올 때가 있습니다'},
   {id:'nvidia/nemotron-3.5-lightning:free', good:['속도'],
-   d:'1M · 가장 빠릅니다. 대신 긴 대화에서 설정을 자주 놓칩니다'},
+   d:'가장 빠릅니다. 대신 긴 대화에서 설정을 자주 놓칩니다'},
   {id:'nvidia/nemotron-3-super-120b-a12b:free', good:['연속성'],
-   d:'1M · 위 ultra보다 가볍고 대기가 짧습니다. 묘사는 얕습니다'},
+   d:'위 ultra보다 가볍고 대기가 짧습니다. 묘사는 얕습니다'},
 
-  {id:'inclusionai/ling-2.6-flash', good:['속도'],
-   d:'262k · 가장 저렴합니다. 가볍고 빠르지만 긴 서술은 얕습니다'},
+  /* 260825 · 2.6 이 목록에서 사라지고 3.0 이 그 자리다. 값은 오히려 내렸다 */
+  {id:'inclusionai/ling-3.0-flash', good:['속도'],
+   d:'가장 저렴합니다. 가볍고 빠르지만 긴 서술은 얕습니다'},
   {id:'upstage/solar-pro4', good:['한국어'],
-   d:'524k · 한국 기업이 만든 한국어 특화. 문장이 가장 자연스럽습니다. ' +
+   d:'한국 기업이 만든 한국어 특화. 문장이 가장 자연스럽습니다. ' +
      '다만 긴 대화에서 앞 내용을 놓치는 일이 있습니다'},
   {id:'qwen/qwen3.7-flash', good:['속도','연속성'],
-   d:'1M · 값에 비해 균형이 좋고 컨텍스트가 넉넉합니다. 가끔 중국어가 섞입니다'},
+   d:'값에 비해 균형이 좋고 컨텍스트가 넉넉합니다. 가끔 중국어가 섞입니다'},
   {id:'deepseek/deepseek-v4-flash', good:['연속성'],
-   d:'1M · 가장 빠르고(완료 4초) 가장 쌉니다. 상태·인과 추적이 오픈모델 최상위입니다. ' +
+   d:'가장 빠르고(완료 4초) 가장 쌉니다. 상태·인과 추적이 오픈모델 최상위입니다. ' +
      '다만 실측 분량이 155자로 가장 짧고, 요청 끝의 재지시가 없으면 상태 줄을 빠뜨립니다'},
 
   {id:'google/gemini-3.1-flash-lite', good:['속도','연속성','묘사'], best:1,
-   d:'1M · 첫 글자 1.3초 · 완료 3.3초로 가장 빠르면서 규칙을 하나도 안 흘립니다. ' +
+   d:'첫 글자 1.3초 · 완료 3.3초로 가장 빠르면서 규칙을 하나도 안 흘립니다. ' +
      '분량도 넉넉합니다. 지금 가장 권합니다'},
+  /* 260825 실측 · 3턴 · 앱과 같은 조건(추론 끔) — 533자 · 상태 줄 3/3 · 첫 응답 8.5초.
+     추론을 안 끄면 401자에 상태 줄을 하나 빠뜨렸다. 값은 $1/$5 로 소넷의 삼분의 일이다. */
+  {id:'anthropic/claude-haiku-4.5', good:['묘사','연속성'],
+   d:'실측 533자에 상태 줄을 한 번도 안 빠뜨립니다. ' +
+     '소넷보다 세 배 싸면서 문장이 고릅니다. 다만 첫 응답이 8.5초로 느린 편입니다'},
   {id:'google/gemini-3.7-flash', good:['묘사','연속성'], best:3,
-   d:'1M · 실측 분량이 가장 두껍고(약 800자) 문장이 고릅니다. ' +
+   d:'실측 분량이 가장 두껍고(약 800자) 문장이 고릅니다. ' +
      'flash-lite 보다 두 배 가까이 비싸고 조금 느립니다'},
   {id:'qwen/qwen3-235b-a22b-2507', good:['묘사','연속성'],
-   d:'262k · 235B. 지시를 잘 지킵니다. 다만 실측 분량이 짧고 외국어가 섞이는 일이 있습니다'},
+   d:'235B. 지시를 잘 지킵니다. 다만 실측 분량이 짧고 외국어가 섞이는 일이 있습니다'},
 
   {id:'moonshotai/kimi-k2.5', good:['묘사','한국어'],
-   d:'262k · 문장이 두껍고 한국어가 자연스럽습니다. 첫 글자까지 40초가 넘을 때가 있습니다'},
+   d:'문장이 두껍고 한국어가 자연스럽습니다. 첫 글자까지 40초가 넘을 때가 있습니다'},
   {id:'anthropic/claude-sonnet-5', good:['연속성','한국어','묘사'],
-   d:'1M · 문장과 심리 묘사가 가장 낫고 지시를 정확히 지킵니다. ' +
+   d:'문장과 심리 묘사가 가장 낫고 지시를 정확히 지킵니다. ' +
      '수위가 오르면 완곡해지고, 다른 것들의 스무 배쯤 듭니다'}
 ];
-/* 값으로 나눈 구간. 받아 온 단가로 그때그때 가른다 */
+/* 값으로 나눈 구간. 받아 온 단가로 그때그때 가른다.
+   260825 에 한 턴 입력을 실제 값(17,000)으로 고치면서 경계를 다시 그었다 —
+   예전 경계로는 0.6원짜리와 7.5원짜리가 같은 칸에 들어갔다. */
 const PICK_TIERS = [
-  {t:'무료',   max: 0,      d:'하루 50회 · $10 충전 시 1,000회'},
-  {t:'가성비', max: 0.001,  d:'건당 $0.001 미만'},
-  {t:'고성능', max: 0.005,  d:'건당 $0.001 ~ $0.005'},
-  {t:'최상급', max: Infinity, d:'건당 $0.005 초과'}
+  {t:'무료',   max: 0,        d:'하루 50회 · $10 충전 시 1,000회'},
+  {t:'가성비', max: 0.002,    d:'턴당 3원 미만'},
+  {t:'고성능', max: 0.010,    d:'턴당 3 ~ 15원'},
+  {t:'최상급', max: Infinity, d:'턴당 15원 초과'}
 ];
 function tierOf(id){
   const c = turnCost(id);
@@ -7591,9 +7679,12 @@ function tierOf(id){
   const one = c.free ? 0 : c.one;
   return PICK_TIERS.find(t => one <= t.max) || PICK_TIERS[PICK_TIERS.length - 1];
 }
-/* 한 턴에 오가는 토큰 — 입력은 컨텍스트 예산, 출력은 목표 분량에서 잡는다.
-   한국어는 글자당 대략 1.4 토큰이라 900자면 1,300 안팎이다. */
-const TURN_IN  = 2500;
+/* 한 턴에 오가는 토큰 — 출력은 목표 분량에서 잡는다.
+   한국어는 글자당 대략 1.4 토큰이라 900자면 1,300 안팎이다.
+   입력은 눈대중으로 2,500 을 쓰고 있었는데, 실제 대화 1,790턴을 재 보니 17,242 였다.
+   규칙 · 카드 · 기억 · 최근 대화를 매 턴 다시 보내기 때문이다.
+   일곱 배 낮게 셈하고 있었으므로 값 구간도 함께 어긋나 있었다. */
+const TURN_IN  = 17000;
 const turnOut  = () => Math.round(Math.max(300, parseInt(cfg('len', '900'), 10)) * 1.4);
 /* 1회 · 월(3,000턴) 비용. 시세를 못 받았으면 null 을 돌려 준다. */
 /* 월 비용은 「하루 100턴」을 가정해야 나오는 값이라 사람마다 뜻이 달랐다.
@@ -7605,13 +7696,60 @@ function turnCost(id){
   const p = price(m);   /* $/100만 토큰 */
   return {free: false, one: (TURN_IN * p.in + turnOut() * p.out) / 1e6};
 }
-/* 0.0007 처럼 0 이 늘어지면 읽히지 않는다. 100회 묶음으로도 함께 보여 준다. */
+/* 달러는 넷째 자리까지. 그 아래는 반올림한다 — 자릿수가 들쭉날쭉하면 견주기 어렵다 */
+const USD_KRW = 1480;
 function costText(id, fallback){
   const c = turnCost(id);
   if (!c) return fallback;
   if (c.free) return '무료 · 하루 50회(충전 시 1,000회)';
-  const one = c.one < 0.001 ? c.one.toFixed(5) : c.one.toFixed(4);
-  return '건당 $' + one + ' · 100건 $' + (c.one * 100).toFixed(2);
+  const m = S.models?.find(x => x.id === id);
+  const p = m ? price(m) : null;
+  const won = Math.round(c.one * USD_KRW * 10) / 10;
+  const L = [won + '원(' + fmtUSD(c.one) + ')/턴'];
+  /* 실측한 것만 적는다. 안 재 본 모델의 속도를 지어내지 않는다 */
+  const sec = MEAS[id]?.sec;
+  if (sec) L.push(sec.toFixed(1) + 'sec/턴');
+  if (p) L.push('입력 ' + fmtUSD2(p.in), '출력 ' + fmtUSD2(p.out));
+  return L.join(' · ');
+}
+/* 달러 기호를 문자열 안에 직접 넣지 않는다 — replace 의 특수 기호와 부딪힌다 */
+const DOL = String.fromCharCode(36);
+const fmtUSD  = v => DOL + v.toFixed(4);
+const fmtUSD2 = v => DOL + v.toFixed(2);
+
+/* 컨텍스트는 받아 온 값에서 뽑는다. 손으로 적으면 어긋난다 —
+   실제로 1M 이라 적힌 것이 262k 였고, 목록에서 사라진 모델도 하나 있었다.
+   이 값은 입력과 출력을 합쳐 세므로 「/턴」으로 적는다. */
+function ctxText(id){
+  const n = S.models?.find(x => x.id === id)?.context_length;
+  if (!n) return '';
+  return '최대 ' + (n >= 1e6 ? Math.round(n / 1e5) / 10 + 'M' : Math.round(n / 1000) + 'k') + '/턴';
+}
+
+/* ── 실측한 것 (260825 · 3턴 · 앱과 같은 조건) ──
+   값만 보고 고르면 반드시 후회한다. 무엇을 포기하는지 함께 보여야 한다.
+   sec 완료까지 초 · st 세 턴 중 상태 줄을 적은 횟수 · ec 앞 응답과 겹친 비율 */
+const MEAS = {
+  'google/gemini-3.1-flash-lite': {sec: 3.6,  st: 3, ec: 2},
+  'anthropic/claude-haiku-4.5':   {sec: 10.0, st: 2, ec: 4},
+  'deepseek/deepseek-v3.2':       {sec: 37.7, st: 3, ec: 2},
+  'z-ai/glm-4.7-flash':           {sec: 82.0, st: 2, ec: 36},
+  'qwen/qwen3.7-flash':           {sec: 5.9,  st: 0, ec: 10},
+  'nousresearch/hermes-4-70b':    {sec: 2.0,  st: 0, ec: 25},
+  'meta-llama/llama-3.3-70b-instruct': {sec: 31.9, st: 0, ec: 36}
+};
+/* 무엇을 포기하는가. 좋은 것은 안 적는다 — 없는 것만 눈에 띄면 된다 */
+function measTags(id){
+  const m = MEAS[id];
+  if (!m) return '';
+  const T = [];
+  if (m.st === 0) T.push(['bad', '상태줄 ✗']);
+  else if (m.st < 3) T.push(['warn', '상태줄 ' + m.st + '/3']);
+  if (m.ec >= 20) T.push(['bad', '같은 말 ' + m.ec + '%']);
+  else if (m.ec >= 10) T.push(['warn', '같은 말 ' + m.ec + '%']);
+  if (m.sec >= 30) T.push(['bad', '느림 ' + Math.round(m.sec) + '초']);
+  else if (m.sec >= 15) T.push(['warn', '조금 느림']);
+  return T.map(([k, t]) => '<span class="ptag ' + k + '">' + esc(t) + '</span>').join('');
 }
 const PICK_GUIDE =
   '<b>무엇이 불편한지로 고르십시오.</b><br>' +
@@ -7638,7 +7776,9 @@ const PICK_RANK = {1:'가장 추천', 2:'가장 추천', 3:'추천'};
 function pickRow(p, cur, onPick, again){
   const name = esc(p.id.split('/').pop());
   const tags = (p.best ? '<span class="ptag hot">' + PICK_RANK[p.best] + '</span>' : '') +
-    p.good.map(g => '<span class="ptag ax">' + esc(g) + '</span>').join('');
+    p.good.map(g => '<span class="ptag ax">' + esc(g) + '</span>').join('') +
+    /* 실측한 것만 붙는다. 무엇을 포기하는지가 값 옆에 보여야 한다 */
+    measTags(p.id);
   if (!modelHave(p.id)){
     const near = modelNear(p.id);
     return {
@@ -7654,7 +7794,8 @@ function pickRow(p, cur, onPick, again){
   }
   return {
     html: '<b>' + (p.id === cur ? '● ' : '○ ') + name + '</b>' + tags +
-      '<span class="ksub">' + esc(p.d) + '</span>' +
+      '<span class="ksub">' + (ctxText(p.id) ? esc(ctxText(p.id)) + ' · ' : '') +
+        esc(p.d) + '</span>' +
       '<span class="ksub cost">' + esc(costText(p.id, '시세 미확인')) + '</span>',
     keep: again,
     run: () => onPick(p.id)
@@ -8878,7 +9019,7 @@ function imgModelSheet(reshow){
       '<span>장면에 맞춰 등급 올리기</span></label>' +
       '<button class="ipWhy" id="ipAutoWhy">i</button>'},
     {label: '⚙ 모델 바꾸러 가기 — 여섯 칸을 직접 정할 수 있습니다',
-     run: () => show('vSettings')}
+     run: () => { closeSheet(); show('vSettings'); }}
   ], chatSettingsMenu, reshow);
 
   $('sheetIn').querySelectorAll('.ipCell').forEach(b => b.onclick = async () => {
@@ -9273,6 +9414,9 @@ function eraBody(key, text, open){
     '<a class="eraMore" data-fold="' + key + '">…</a></em>';
 }
 
+/* 기억은 메시지 번호로 세고 화면은 쌍으로 센다. 화면에 보일 때는 쌍으로 옮긴다 */
+const turnNo = i => Math.floor(Math.max(0, i || 0) / 2) + 1;
+
 function paintEras(q){
   const mem = S.mem || {};
   const eras = mem.eras || [];
@@ -9300,7 +9444,7 @@ function paintEras(q){
     eraBody('v' + v.n, v.text, S.eraOpen['v' + v.n]) + '</span></div>';
   const rowE = e => '<div class="eraRow" data-e="' + e.n + '">' +
     '<i>' + volNo(e.n) + '-' + volPos(e.n) + '</i><span><b>' + esc(e.title) + '</b>' +
-    '<u>' + (e.from + 1) + '~' + (e.to + 1) + '턴</u>' +
+    '<u>' + turnNo(e.from) + '~' + turnNo(e.to) + '턴</u>' +
     eraBody('e' + e.n, e.text, S.eraOpen['e' + e.n]) + '</span></div>';
 
   /* 검색 중이 아니면 접힌 회차는 권 아래로 숨긴다. 찾을 때는 숨은 것도 보여야 한다 */
@@ -9367,12 +9511,8 @@ function picsSheet(){
     '<img src="' + x.u + '" loading="lazy" alt="">' +
     '<i>' + x.t + '</i></button>').join('') + '</div>';
 
-  sheet('사진 ' + list.length + '장', [
-    {info: true, html: grid +
-      '<div class="shint">누르면 그 턴으로 갑니다. 왼쪽 위 숫자가 턴입니다.</div>'}
-  ], chatSettingsMenu);
-
-  $('sheetIn').querySelectorAll('.pcell').forEach(b => b.onclick = () => {
+  /* 되돌아왔을 때도 붙어야 한다. after 로 걸면 다시 그릴 때마다 붙는다 */
+  const bindPics = () => $('sheetIn').querySelectorAll('.pcell').forEach(b => b.onclick = () => {
     const x = list[+b.dataset.p];
     closeSheet();
     const el = $('msgs').querySelector('.msg[data-id="' + x.id + '"]');
@@ -9382,6 +9522,11 @@ function picsSheet(){
     el.scrollIntoView({block:'center'});
     setTimeout(() => el.classList.remove('hit'), 1600);
   });
+  sheet('사진 ' + list.length + '장', [
+    {info: true, html: grid +
+      '<div class="shint">누르면 그 턴으로 갑니다. 왼쪽 위 숫자가 턴입니다.</div>',
+     after: bindPics}
+  ], chatSettingsMenu);
 }
 /* 입력창 위 숫자들이 무엇인지 아무 데도 안 적혀 있었다 */
 $('mHelp').onclick = () => sheet('입력창 위 숫자', [
@@ -10168,8 +10313,14 @@ const PACE_DEF = 'normal';
 const paceOf = k => GENRE_PACE.find(p => p.k === k) ||
                     GENRE_PACE.find(p => p.k === PACE_DEF) || GENRE_PACE[0];
 const paceIdx = k => Math.max(0, GENRE_PACE.findIndex(p => p.k === k));
+/* 화면에 보일 때 — 고르는 자리의 이름표 그대로 */
 const targetText = list => (list || [])
   .map(k => GENRE_TARGETS.find(t => t.k === k)?.t).filter(Boolean).join(' · ') || '상대';
+/* 프롬프트에 나갈 때 — 이름표를 그대로 실으면 모델이 그것을 인물 이름으로 읽는다.
+   실제로 대사 앞에 「상대 : 」가 붙어 나왔다. 치환 표기로 내보내 fill 이 이름을 넣게 한다. */
+const TARGET_ASK = {user:'{{user}}', char:'{{char}}', other:'주변 사람들과 바깥 사정'};
+const targetAsk = list => (list || [])
+  .map(k => TARGET_ASK[k]).filter(Boolean).join(' · ') || '{{char}}';
 
 /* 카드 생성 · 대화 프롬프트에 함께 넘기는 한 줄 설명 */
 const STAT_MEAN = {
@@ -10756,6 +10907,98 @@ function cardPrompt(seed, mode, gender){
 
 
 
+/* ═══════════════ 이 대화만의 설정 ═══════════════
+   여덟 가지를 대화별로 걸 수 있다. 안 걸면 설정의 기본값을 그대로 따른다.  */
+const CFG_META = [
+  {k:'len',       t:'분량',        d:'한 턴에 몇 자쯤 쓸까',        kind:'num',  dflt:'900',       min:300, max:2000, unit:'자'},
+  {k:'maxTok',    t:'최대 출력',   d:'토큰 상한. 분량보다 넉넉해야 한다', kind:'num', dflt:'1400', min:300, max:8000, unit:'토큰'},
+  {k:'temp',      t:'온도',        d:'높을수록 들쭉날쭉해진다',      kind:'num',  dflt:'0.9',       min:0,   max:2,    step:'0.1'},
+  {k:'penalty',   t:'반복 억제',   d:'같은 표현을 누르는 정도',      kind:'num',  dflt:'0.3',       min:0,   max:1,    step:'0.1'},
+  {k:'imgDetail', t:'사진 상세도', d:'태그를 얼마나 자세히 쓸까',    kind:'pick', dflt:'ultra',
+   opts: () => Object.keys(IMG_DETAIL).map(k => [k, IMG_DETAIL[k].name])},
+  {k:'imgSize',   t:'사진 크기',   d:'가로세로. 비율만 쓰는 모델도 있다', kind:'pick', dflt:'832x1216',
+   opts: () => [['832x1216','세로 (인물)'], ['1024x1024','정사각'],
+                ['1216x832','가로 (배경)'], ['640x960','세로 · 저용량']]},
+  {k:'intro',     t:'첫 장면 생성', d:'카드의 첫 대사 대신 새로 쓴다', kind:'bool', dflt:'1'},
+  {k:'own',       t:'내 지문',     d:'쓴 대로 전부 일어나게 할까',   kind:'bool', dflt:'0'}
+];
+
+/* 값을 사람이 읽는 말로 */
+function cfgLabel(m, v){
+  if (m.kind === 'bool') return v === '1' ? '켬' : '끔';
+  if (m.kind === 'pick'){
+    const hit = m.opts().find(o => o[0] === v);
+    return hit ? hit[1] : v;
+  }
+  return v + (m.unit || '');
+}
+
+function chatCfgSheet(reshow){
+  if (!S.chat) return;
+  const mine = CFG_META.filter(m => cfgOwn(m.k)).length;
+  const rows = CFG_META.map(m => {
+    const own = cfgOwn(m.k);
+    return {
+      html: '<b>' + esc(m.t) + '</b>' +
+            '<span class="cfgV' + (own ? ' own' : '') + '">' + esc(cfgLabel(m, cfg(m.k, m.dflt))) + '</span>' +
+            '<span class="ksub">' + esc(m.d) + ' · ' + (own ? '이 대화에만' : '설정 기본값') + '</span>',
+      run: () => cfgEdit(m)
+    };
+  });
+  const items = [
+    {info: true, html: '<span class="pguide">여기서 바꾼 것은 <b>이 대화에만</b> 걸립니다. ' +
+      '다른 대화는 설정의 기본값을 그대로 따릅니다.' +
+      (mine ? '<br>지금 <b>' + mine + '가지</b>가 이 대화에 걸려 있습니다.' :
+              '<span class="dim">아직 걸어 둔 것이 없습니다.</span>') + '</span>'},
+    ...rows
+  ];
+  if (mine) items.push({label: '모두 기본값으로 되돌리기', danger: true, run: async () => {
+    if (!confirm('이 대화에 걸어 둔 ' + mine + '가지를 모두 풉니다.')) return;
+    for (const m of CFG_META) await setCfg(m.k, null);
+    toast('모두 기본값으로 되돌렸습니다');
+  }, keep: () => chatCfgSheet(true)});
+  sheet('이 대화 설정' + (mine ? ' — ' + mine + '가지' : ''), items, chatSettingsMenu, reshow);
+}
+
+/* 한 가지를 이 대화에만 건다. 「기본값 따르기」로 언제든 풀 수 있다 */
+function cfgEdit(m){
+  const cur = cfg(m.k, m.dflt), own = cfgOwn(m.k);
+  const back = () => chatCfgSheet(true);
+  const put = async v => { await setCfg(m.k, v);
+    toast(v === null ? m.t + ' — 기본값을 따릅니다' : m.t + ' — ' + cfgLabel(m, v)); };
+
+  const head = {info: true, html: '<span class="pguide">' + esc(m.d) + '<br>' +
+    '지금 <b>' + esc(cfgLabel(m, cur)) + '</b> · ' + (own ? '이 대화에만 걸려 있습니다' :
+     '설정 기본값(' + esc(cfgLabel(m, localStorage.getItem(LS[m.k]) || m.dflt)) + ')을 따르는 중입니다') +
+    '</span>'};
+  const loose = own ? [{label: '기본값 따르기 — 걸어 둔 것을 풉니다',
+                        run: () => put(null), keep: back}] : [];
+
+  if (m.kind === 'bool')
+    return sheet(m.t, [head,
+      {html: '<b>켬</b>' + (cur === '1' ? ' ✓' : ''), run: () => put('1'), keep: back},
+      {html: '<b>끔</b>' + (cur === '0' ? ' ✓' : ''), run: () => put('0'), keep: back},
+      ...loose], chatCfgSheet);
+
+  if (m.kind === 'pick')
+    return sheet(m.t, [head,
+      ...m.opts().map(([v, t]) => ({html: '<b>' + esc(t) + '</b>' + (cur === v ? ' ✓' : ''),
+                                    run: () => put(v), keep: back})),
+      ...loose], chatCfgSheet);
+
+  /* 숫자는 직접 적는다. 범위를 벗어나면 잘라 준다 */
+  sheet(m.t, [head,
+    {label: '값 적기', run: async () => {
+      const raw = prompt(m.t + '\n\n' + m.d + '\n' +
+        m.min + ' ~ ' + m.max + (m.unit ? ' (' + m.unit + ')' : ''), String(cur));
+      if (raw === null) return;
+      const n = parseFloat(raw);
+      if (!Number.isFinite(n)) return toast('숫자를 적어 주십시오');
+      const v = Math.max(m.min, Math.min(m.max, n));
+      await put(m.step ? String(Math.round(v * 10) / 10) : String(Math.round(v)));
+    }, keep: () => chatCfgSheet(true)},
+    ...loose], chatCfgSheet);
+}
 /* ═══════════════ 인물 만들기 — 다섯 단계 ═══════════════
    후보를 셋씩 굴려 그중에서 고른다. 앞 단계에서 정한 것은 그대로 이어 간다.
    관계가 직업을 못 박는 경우가 있어(피아니스트 · 수의사) 그때는 첫인상 단계를 건너뛴다 —
@@ -10912,12 +11155,17 @@ async function generateCharacter(mode, gender, seed){
         /* 쓰리사이즈는 본문(신체)이 아니라 숨김 항목에만 들어간다 */
         bust: seed.bust || '', waist: seed.waist || '', hip: seed.hip || '',
         speech: seed.speech || '', growth: sec.growth || '', edu: sec.edu || '', finance: sec.finance || '',
+        /* 첫 장면 상태가 비면 인트로가 장소도 일시도 없이 열린다.
+           편집 화면에서만 채워 주던 것을 여기서도 채운다 */
+        startState: '',
         living: sec.living || '', friends: sec.friends || '', dating: sec.dating || '',
         stats: seed.stats
       },
       accent: pick(PALETTE), preferredModel:'', temperature:null,
       createdAt: now(), updatedAt: now()
     };
+    /* 관계 · 직업 · 나이를 보고 그럴듯한 첫 자리를 잡는다 */
+    if (!c.profile.startState) c.profile.startState = guessStartState(c);
     await dbPut('characters', c);
     await loadAll(); renderChars(); show('vChars');
     /* 편집 화면으로 넘어가면 기기 뒤로가기가 앱을 닫아버린다. 목록에 그대로 둔다. */
@@ -11216,7 +11464,7 @@ async function exportChatJson(chatId){
 function exportChat(chatId, silent, back){
   if (silent) return exportChatJson(chatId);
   sheet('이 대화 내보내기', [
-    {label:'📖 이 내용을 소설로 재구성하기', run: () => openNovel(true)},
+    {label:'📖 이 내용을 소설로 재구성하기', run: () => { closeSheet(); openNovel(true); }},
     {label:'읽기용 (.md) — 이미지 제외', run: async () => {
       const d = await collectChat(chatId); if (!d) return toast('대화를 찾을 수 없습니다');
       download(`대화_${d.character?.name||'무명'}_${stamp(d.chat.createdAt)}.md`,
@@ -11670,8 +11918,9 @@ function charMenu(id){
   const chats = S.chats.filter(x => x.characterId === id);
   sheet(c.name, [
     {label:'대화 시작', run: () => pickPersona(id)},
-    {label:'편집', run: () => editChar(id)},
-    {label:'프로필 내보내기', run: () => { editChar(id); setTimeout(() => $('ceMenu').click(), 60); }},
+    {label:'편집', run: () => { closeSheet(); editChar(id); }},
+    {label:'프로필 내보내기',
+     run: () => { closeSheet(); editChar(id); setTimeout(() => $('ceMenu').click(), 60); }},
     ...(chats.length ? [{label:`이 대상의 대화 ${chats.length}개 내보내기`, run: () => sheet('어느 대화를', chats.map(ch => ({
       label: (ch.title || c.name) + ' · ' + (ch.messageCount||0) + '개 · ' + shortStamp(ch.lastMessageAt),
       run: () => exportChat(ch.id)
@@ -12100,12 +12349,14 @@ $('ceMenu').onclick = () => {
      }},
     {label:'복제', run: async () => {
       const cp = {...e, id: uid(), name: e.name + ' 사본', createdAt: now(), updatedAt: now()};
-      await dbPut('characters', cp); await loadAll(); renderChars(); show('vChars'); toast('복제했습니다');
+      await dbPut('characters', cp); await loadAll(); renderChars();
+      closeSheet(); show('vChars'); toast('복제했습니다');
     }},
     {label:'삭제', danger:true, run: async () => {
       const used = S.chats.filter(c => c.characterId === e.id).length;
       if (!confirm(`"${e.name}"을 삭제합니다.${used?`\n연결된 대화 ${used}개는 남습니다.`:''}`)) return;
-      await dbDel('characters', e.id); await loadAll(); renderChars(); show('vChars'); toast('삭제했습니다');
+      await dbDel('characters', e.id); await loadAll(); renderChars();
+      closeSheet(); show('vChars'); toast('삭제했습니다');
     }}
   ]);
 };
@@ -12269,7 +12520,7 @@ function personaMenu(id){
   if (!p) return;
   const chats = S.chats.filter(x => x.personaId === id);
   sheet(p.name, [
-    {label:'편집', run: () => editPersona(id)},
+    {label:'편집', run: () => { closeSheet(); editPersona(id); }},
     ...(p.isDefault ? [] : [{label:'기본으로 삼기', run: async () => {
       for (const o of S.personas){
         const want = o.id === id;
@@ -12438,7 +12689,8 @@ $('peMenu').onclick = () => sheet(S.editingPersona.name, [
   {label:'삭제', danger:true, run: async () => {
     if (!confirm('삭제합니다.')) return;
     await dbDel('personas', S.editingPersona.id);
-    await loadAll(); renderPersonas(); show('vPersonas'); toast('삭제했습니다');
+    await loadAll(); renderPersonas();
+    closeSheet(); show('vPersonas'); toast('삭제했습니다');
   }}
 ]);
 
@@ -12660,6 +12912,9 @@ function loadSettings(){
   $('sAutoSum').checked = (localStorage.getItem(LS.autoSum) ?? '1') === '1';
   $('sIntro').checked   = (localStorage.getItem(LS.intro) ?? '1') === '1';
   $('sIntroModel').value = localStorage.getItem(LS.introModel) || '';
+  { const el = $('sIntroModelHint');
+    if (el) el.textContent = '비워 두면 ' + INTRO_MODEL.split('/').pop() + ' 로 씁니다 — ' +
+      '첫 장면의 문체를 뒤가 따라가므로 여기만은 값을 아끼지 않습니다.'; }
   $('sNoReason').checked = (localStorage.getItem(LS.noReason) ?? '1') === '1';
   $('sFree').checked = (localStorage.getItem(LS.free) ?? '1') === '1';
   $('sImgKey').value = localStorage.getItem(LS.imgKey) || '';
@@ -12722,7 +12977,8 @@ $('sLen').onchange    = () => {
    상한은 목표 분량이 실제로 들어갈 만큼만 준다. 여유를 두되 두 배는 넘기지 않는다. */
 function outCap(){
   const want = turnOut();                                   /* 목표 분량 × 1.4 */
-  const set  = parseInt(cfg('maxTok', '2400'), 10);
+  /* 묶음 7 에서 상한을 1400 으로 내렸다. localStorage 가 비었을 때도 그 값을 따른다 */
+  const set  = parseInt(cfg('maxTok', '1400'), 10);
   return Math.max(300, Math.min(set || want, Math.round(want * 1.5)));
 }
 /* 최대 출력은 분량에 딸린 값이라 권장치를 함께 다시 계산해 보여 준다 */
@@ -12850,9 +13106,9 @@ async function seed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b70';
-const APP_BUILT = '2026-08-25 03:00';
-const APP_NOTE  = '사진 비율 결함 수정(넷이 안 나오던 것) · 인물 5단계 생성 · 장르 조작 안내';
+const APP_BUILD = 'b72';
+const APP_BUILT = '2026-08-25 00:25';
+const APP_NOTE  = '모델 표기 다시 · 안 접히던 창 여덟 · 한 턴 입력 실측값(17k)';
 $('sVersion').innerHTML =
   '8단계 · <b style="color:var(--acc)">빌드 ' + APP_BUILD + '</b><br>최종 수정: ' + APP_BUILT + '<br>' + APP_NOTE;
 
