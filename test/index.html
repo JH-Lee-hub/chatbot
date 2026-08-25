@@ -2032,7 +2032,7 @@ function drinkDue(){
 }
 /* 술이 나올 참인가. 한 턴 늦으면 그 턴이 어긋나므로 넉넉하게 본다 */
 const DRINK_WORD = /술|맥주|소주|와인|위스키|하이볼|막걸리|칵테일|취[했하]|취기|건배|한 ?잔|바텐더|안주|맥[주잔]|잔을/;
-const RULE_DRINK = _d('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');
+const RULE_DRINK = _d('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');
 
 /* 이름 있는 조연이 있을 때만 */
 const RULE_CAST = _d('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');
@@ -6439,7 +6439,7 @@ async function dropOne(id){
   S.messages.forEach((x, i) => { x.turnIndex = i; });
   for (const x of S.messages) await dbPut('messages', x);
   S.chat.messageCount = S.messages.length;
-  await dbPut('chats', S.chat);
+  await 마지막시각다시();
   const lost = await rebuildMemory(S.chat.id, S.messages);
   renderMsgs();
   toast(lost ? '한 개를 들어냈습니다 — 요약은 다시 만들어집니다' : '한 개를 들어냈습니다');
@@ -6453,7 +6453,7 @@ async function cutFrom(id){
   for (const d of drop) await dbDel('messages', d.id);
   S.messages = S.messages.filter(x => x.turnIndex < m.turnIndex);
   S.chat.messageCount = S.messages.length;
-  await dbPut('chats', S.chat);
+  await 마지막시각다시();
   const lost = await rebuildMemory(S.chat.id, S.messages);
   renderMsgs();
   const ec = (S.chat.echoes || []).length;
@@ -11966,6 +11966,19 @@ const CHAT_SORTS = [
   {key:'name',    label:'이름순', fn:(a,b)=>String(a.title||'').localeCompare(String(b.title||''),'ko')},
   {key:'count',   label:'분량 많은 순', fn:(a,b)=>(b.messageCount||0)-(a.messageCount||0)}
 ];
+/* 되돌리기는 메시지를 지운다. 그런데 lastMessageAt 을 그대로 두면
+   그 대화는 지워진 내용의 시각을 계속 달고 다닌다 — 실제보다 최근인 척한다.
+   남은 것에서 다시 센다. */
+async function 마지막시각다시(){
+  if (!S.chat) return;
+  const t = (S.messages || []).reduce((a, m) => Math.max(a, m.createdAt || 0), 0);
+  S.chat.lastMessageAt = t || S.chat.createdAt || now();
+  await dbPut('chats', S.chat);
+  /* 목록이 들고 있는 것도 같이 고쳐야 다시 열 때까지 어긋나지 않는다 */
+  const i = (S.chats || []).findIndex(c => c.id === S.chat.id);
+  if (i >= 0) S.chats[i] = S.chat;
+}
+
 const chatSortFn = () => (CHAT_SORTS.find(o => o.key ===
   (localStorage.getItem(LS.chatSort) || 'recent')) || CHAT_SORTS[0]).fn;
 /* 오늘 안에 일어난 일이면 시각이 더 쓸모 있다. 그 밖에는 날짜만. */
@@ -11992,13 +12005,14 @@ function sortedChars(){
   if (k === 'createdAsc')  return a.sort((x,y) => (x.createdAt||0) - (y.createdAt||0));
   return a.sort((x,y) => (y.updatedAt||0) - (x.updatedAt||0));
 }
-$('bSortChar').onclick = () => {
+function charSortSheet(reshow){
   const cur = localStorage.getItem(LS.charSort) || 'updated';
   sheet('정렬 기준', CHAR_SORTS.map(o => ({
     label: (o.key === cur ? '● ' : '○ ') + o.label,
-    run: () => { localStorage.setItem(LS.charSort, o.key); renderChars(); }
-  })));
-};
+    run: () => { localStorage.setItem(LS.charSort, o.key); renderChars(); charSortSheet(true); }
+  })), null, reshow);
+}
+$('bSortChar').onclick = () => charSortSheet();
 /* 대화 목록 검색. 이름과 장소는 즉시, 본문은 버튼을 눌렀을 때만 훑는다. */
 $('bFindChat').onclick = () => {
   const w = $('chatFind');
@@ -12063,13 +12077,16 @@ function filterChatsBy(charId){
   show('vChats'); renderChats();
 }
 
-$('bSortChat').onclick = () => {
+/* 창은 항목을 눌렀다고 닫히지 않는다. 그래서 고른 표시가 그 자리에서 바뀌어야 한다 —
+   안 바뀌면 「안 먹었나」 싶어 두 번 세 번 누르게 된다 */
+function chatSortSheet(reshow){
   const cur = localStorage.getItem(LS.chatSort) || 'recent';
   sheet('정렬 기준', CHAT_SORTS.map(o => ({
     label: (o.key === cur ? '● ' : '○ ') + o.label,
-    run: () => { localStorage.setItem(LS.chatSort, o.key); renderChats(); }
-  })));
-};
+    run: () => { localStorage.setItem(LS.chatSort, o.key); renderChats(); chatSortSheet(true); }
+  })), null, reshow);
+}
+$('bSortChat').onclick = () => chatSortSheet();
 
 function renderChars(){
   const box = $('charList');
@@ -13575,9 +13592,9 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b88';
-const APP_BUILT = '2026-08-25 21:51';
-const APP_NOTE  = '배포판 저장소 분리·신체치수 감춤·본보기 채움 / 메멘토 엔딩 완성';
+const APP_BUILD = 'b89';
+const APP_BUILT = '2026-08-25 22:03';
+const APP_NOTE  = '취기 규칙 잔 단위 · 되돌린 대화 정렬 · 정렬창 표시 / 배포판 · 메멘토 엔딩';
 $('sVersion').innerHTML =
   '8단계 · <b style="color:var(--acc)">빌드 ' + APP_BUILD + '</b><br>최종 수정: ' + APP_BUILT + '<br>' + APP_NOTE;
 
