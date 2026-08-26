@@ -411,7 +411,7 @@
      background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:5px 9px;
      white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .lvRow button:active{border-color:var(--line2)}
-  #cImgAutoWrap{flex:0 0 auto;width:42px;height:42px;border-radius:9px;border:1px solid var(--line);
+  #cImgAutoWrap{flex:0 0 auto;width:34px;height:30px;border-radius:8px;border:1px solid var(--line);
     background:var(--panel2);display:grid;place-items:center;font-size:17px;cursor:pointer;position:relative}
   #cImgAutoWrap input{position:absolute;inset:0;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
   #cImgAutoWrap:has(input:checked){background:var(--acc);border-color:var(--acc)}
@@ -431,10 +431,12 @@
   .mfind input:focus{outline:none;border-color:var(--acc)}
   .mfind .btn{padding:6px 12px;font-size:12px}
   /* 잔여와 소진을 두 줄로. 단추 하나에 담아 눌러서 다시 읽는다 */
-  #sBal{display:flex;flex-direction:column;align-items:flex-end;gap:1px;line-height:1.35;
-    height:auto;padding:3px 8px}
+  #sBal{display:flex;flex-direction:column;align-items:flex-start;gap:1px;line-height:1.35;
+    height:auto;padding:3px 8px;text-align:left}
   #sBal .bl1{font-size:11px;color:var(--tx)}
   #sBal .bl2{font-size:10.5px;color:var(--tx3)}
+  /* 이름칸에 같은 폭을 주어야 「잔」과 「소」가 세로로 맞는다 */
+  #sBal em, #cBal em{font-style:normal;display:inline-block;width:3.2em}
   #sBal .bl2 i{font-style:normal;margin-left:6px;color:var(--acc);text-decoration:underline}
   .shBack{background:none;border:none;color:var(--tx2);font-size:19px;line-height:1;
     padding:0 4px 0 0;margin-left:-4px;font-family:inherit;pointer-events:none}
@@ -661,6 +663,22 @@
   .gsec code{background:var(--panel2);border:1px solid var(--line);border-radius:5px;
              padding:1px 6px;color:var(--tx);font-size:12px}
   .gsec.dimq{color:var(--tx3);font-size:12px;border-top:1px solid var(--line);padding-top:11px}
+  /* 앱이 깔아 준 대화임을 채팅창 맨 위에 한 줄로 */
+  #chatSeedNote{flex:0 0 auto;background:var(--panel2);border-bottom:1px solid var(--line);
+    padding:7px 12px;font-size:11.5px;line-height:1.6;color:var(--tx3)}
+  /* 가리키는 말풍선 — 화면을 덮되 눌러서 넘긴다 */
+  #coach{position:fixed;inset:0;z-index:70;display:none;background:rgba(0,0,0,.55)}
+  #coach.on{display:block}
+  .cbub{position:absolute;background:var(--panel);border:1px solid var(--acc);
+    border-radius:12px;padding:13px 15px;font-size:13.5px;line-height:1.75;color:var(--tx);
+    box-shadow:0 10px 28px rgba(0,0,0,.5)}
+  .ctail{position:absolute;bottom:-7px;width:12px;height:12px;background:var(--panel);
+    border-right:1px solid var(--acc);border-bottom:1px solid var(--acc);
+    transform:rotate(45deg)}
+  /* 두 단추를 가로로. 「다음에 또 보기」가 앞이다 */
+  #sheetIn.twoRow{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+  #sheetIn.twoRow h3{flex:1 0 100%}
+  #sheetIn.twoRow .sitem{flex:1 1 0;text-align:center}
   /* 배포판 첫 실행 안내 — guideBox 와 같은 결. 아래에 쪽 넘김이 붙는다 */
   #introBox{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;
             align-items:center;justify-content:center;z-index:59;padding:16px}
@@ -782,12 +800,16 @@
   #memNote .mgo{color:var(--ok)} #memNote .mno{color:var(--err)}
   #memBar{flex:0 0 auto;display:flex;gap:6px;padding:7px 10px calc(7px + var(--safe-b))}
   #memBar .btn{flex:1}
-  #nextScene{flex:0 0 auto;align-self:center;margin:0 0 5px;padding:4px 16px;border-radius:7px;
+  #nextScene{flex:0 0 auto;align-self:center;margin:0;padding:4px 12px;border-radius:7px;
     background:transparent;border:1px solid var(--line2);color:var(--tx3);
     font-size:11px;font-weight:500;font-family:inherit}
   #nextScene.on{background:var(--ok);color:#0b1020;border-color:var(--ok);font-weight:700}
   #nextScene:active{background:var(--panel2)}
   #macro{display:flex;gap:3px;align-items:center;padding:0 10px 6px}
+  /* 배포판에서 계기판을 걷어내고 여기로 옮겨 온 모델 단추 */
+  #macro .mcModel{margin-left:auto;max-width:38vw;overflow:hidden;text-overflow:ellipsis;
+    white-space:nowrap;font-size:10.5px;color:var(--tx3);padding:0 2px;
+    text-decoration:underline;text-underline-offset:2px}
   #mcScroll{flex:1;min-width:0;display:flex;gap:3px;align-items:center;
     overflow-x:auto;scrollbar-width:none}
   #mcScroll::-webkit-scrollbar{display:none}
@@ -1299,18 +1321,20 @@
       <button id="jTop" title="맨 처음으로">⌃</button>
       <button id="jBot" title="맨 아래로">⌄</button>
     </div>
-    <!-- 장면이 닫히는 참이면 여기 뜬다. 아닐 때는 자리를 안 먹는다 -->
-    <button id="nextScene" style="display:none">다음 장면</button>
+    <!-- 장면이 닫히는 참이면 뜬다. 자리는 아래 매크로줄 맨 앞이다 -->
     <!-- 메멘토는 유저가 대사를 치지 않는다. 입력창 자리를 이 둘이 대신한다 -->
     <div id="memBar" style="display:none">
       <button class="btn pri" id="memScene">▸ 다음 장면</button>
       <button class="btn" id="memNight">☾ 밤 — 하루 닫기</button>
     </div>
-    <div id="macro"></div>
-    <div id="composer">
+    <!-- 🖼 과 「다음 장면」을 여기 앞에 둔다. 입력줄이 그만큼 넓어진다 -->
+    <div id="macro">
       <label id="cImgAutoWrap" title="전송 시 자동으로 이미지 생성">
         <input type="checkbox" id="cImgAuto"><span>🖼</span>
       </label>
+      <button id="nextScene" style="display:none">다음 장면</button>
+    </div>
+    <div id="composer">
       <button id="cStar" title="고른 곳을 별표로 감쌉니다 — 안 고르면 이 줄을">*</button>
       <textarea id="inp" rows="1" placeholder="메시지"></textarea>
       <button class="btn pri" id="cSend">전송</button>
@@ -1464,14 +1488,14 @@
       <div class="fld"><label>끌어당길 결
         <button type="button" class="btn" id="ceCharmRoll" style="float:right;padding:2px 8px;font-size:11px">🎲 뽑기</button></label>
         <input type="text" id="ceCharm" placeholder="무심한 다정, 그늘">
-        <div class="hint">
+        <div class="hint" id="ceCharmHint">
           이 인물이 <b>무엇으로 끌리는 사람인지</b>를 두셋 적습니다. <b>앞에 적은 것일수록 자주 드러납니다.</b><br>
           쉼표로 나눠 적으십시오. 아래 이름 가운데 골라 쓰면 성격 · 배경 · 말투에도 함께 반영됩니다.
           <span class="dim" id="ceCharmList"></span>
         </div></div>
       <div class="fld"><label>아직 아무에게도 말 안 한 것</label>
         <textarea id="ceSecret" rows="2" placeholder="비워 두어도 됩니다"></textarea>
-        <div class="hint">
+        <div class="hint" id="ceSecretHint">
           <b>이 칸은 앱이 채우지 않습니다.</b> 자동생성도 건드리지 않습니다.<br>
           이 사람이 속에만 두고 있는 것 하나입니다. 먼저 꺼내지 않고, 그것이 있기 때문에
           어떤 자리에서 말을 삼키거나 화제를 돌립니다. 아주 가까워진 뒤에야 스스로 꺼냅니다.<br>
@@ -1484,12 +1508,12 @@
           <code>컵을 늘 왼쪽에 둔다</code> 같은 뜻 없는 버릇은 장면에 아무것도 안 남깁니다.
         </div></div>
       <div class="fld"><label>설정 (description)</label>
-        <textarea id="ceDesc" rows="4" placeholder="가정환경 · 교우관계를 포함한 성장 배경, 연인관계, 취향, 가치관 등 — 나이 · 직업 · 신체는 위에서 이미 채웠으니 여기서 다시 쓰지 마십시오"></textarea></div>
+        <textarea id="ceDesc" rows="3" style="min-height:64px;height:64px" placeholder="가정환경 · 교우관계를 포함한 성장 배경, 연인관계, 취향, 가치관 등 — 나이 · 직업 · 신체는 위에서 이미 채웠으니 여기서 다시 쓰지 마십시오"></textarea></div>
       <div class="fld"><label>성격 (personality)</label>
-        <textarea id="cePers" rows="4" placeholder="침착하고 말수가 적다..."></textarea></div>
+        <textarea id="cePers" rows="3" style="min-height:64px;height:64px" placeholder="침착하고 말수가 적다..."></textarea></div>
       <div class="fld"><label>상황 (scenario)</label>
-        <textarea id="ceScen" rows="3" placeholder="지금 어떤 상황에서 만나는가"></textarea></div>
-      <div class="fld"><label>첫 장면 상태</label>
+        <textarea id="ceScen" rows="3" style="min-height:64px;height:64px" placeholder="지금 어떤 상황에서 만나는가"></textarea></div>
+      <div class="fld" id="fldStart"><label>첫 장면 상태</label>
         <input type="text" id="ceStart" placeholder="장소=서점 안 | 일시=8/19 화 10:40 pm | 외관=베이지 가디건 | 내면=지쳐 있음">
         <div class="hint">
           대화를 열자마자 첫 응답 아래에 붙는 상태 줄입니다. 수치는 인물 스탯에서 자동으로 채워지므로
@@ -1597,7 +1621,7 @@
       </div>
       <div class="fld"><label>이미지 시드</label>
         <input type="number" id="ceSeed" placeholder="비우면 매번 무작위">
-        <div class="hint">같은 숫자를 고정해 두면 인물의 인상이 덜 흔들립니다.</div></div>
+        <div class="hint" id="ceSeedHint">같은 숫자를 고정해 두면 인물의 인상이 덜 흔들립니다.</div></div>
 
       <!-- 전용 모델 · 온도 · 규칙은 겉모습도 대화 방식도 아니다. 이 인물을 만들 때
            쓰는 설정이라 따로 떼어 낸다. -->
@@ -1750,6 +1774,8 @@
   <label class="sw" style="margin-top:12px"><input type="checkbox" id="guideNo">
     <span>다시 보지 않기</span></label>
 </div></div>
+<!-- 가리키는 말풍선. 글 한 판 대신 그 자리를 짚어 준다 -->
+<div id="coach"></div>
 <div id="introBox"><div id="introIn">
   <h3 id="introTitle"></h3>
   <div id="introBody"></div>
@@ -2488,8 +2514,8 @@ function paintChatBal(){
                 '사진 ' + (BAL.ve?.left != null ? usd(BAL.ve.left) : '—')].join(' · ');
   const c = Number(S.chat.cost) || 0, ci = Number(S.chat.imgCost) || 0;
   const used = '글 $' + c.toFixed(c >= 0.01 ? 3 : 4) + ' · 사진 $' + ci.toFixed(ci >= 0.01 ? 3 : 4);
-  el.innerHTML = '<span class="bl1">잔여: ' + esc(left) + '</span>' +
-                 '<span class="bl2">현 채팅 소진: ' + esc(used) + '</span>';
+  el.innerHTML = '<span class="bl1"><em>잔여</em>' + esc(left) + '</span>' +
+                 '<span class="bl2"><em>소진</em>' + esc(used) + ' <span style="opacity:.6">(현 채팅)</span></span>';
   el.style.display = '';
 }
 /* 시간 칸을 원하는 단위로 묶는다. h 는 'YYYY-MM-DDTHH' 꼴이다 */
@@ -2566,8 +2592,8 @@ function showBal(){
                  '사진 ' + (BAL.ve ? usd(BAL.ve.left) : '—')].join(' · ');
   const st = spent('t'), si = spent('i');
   const line2 = ['글 ' + (st == null ? '—' : usd(st)), '사진 ' + (si == null ? '—' : usd(si))].join(' · ');
-  el.innerHTML = '<span class="bl1">잔여: ' + esc(line1) + '</span>' +
-                 '<span class="bl2">소진: ' + esc(line2) +
+  el.innerHTML = '<span class="bl1"><em>잔여</em>' + esc(line1) + '</span>' +
+                 '<span class="bl2"><em>소진</em>' + esc(line2) +
                  '<i id="balReset">리셋</i></span>';
   el.style.display = (BAL.or || BAL.ve) ? '' : 'none';
   const rb = $('balReset');
@@ -2858,12 +2884,11 @@ function paintNotes(){
 
 /* ── 매크로 ──
    버튼 크기를 고정하려면 이름도 길면 안 된다. 여섯 자로 자른다. */
-const MACRO_N = 5, MACRO_NAME = 6, MACRO_BODY = 400;
+/* 넷이면 줄이 넘쳐 가로 스크롤이 생겼다. 앞에 🖼 과 「다음 장면」이 들어오므로 둘로 줄인다 */
+const MACRO_N = 3, MACRO_NAME = 6, MACRO_BODY = 400;
 const MACRO_DEF = [
   {n:'매크로 1', v:''},
   {n:'매크로 2', v:''},
-  {n:'매크로 3', v:''},
-  {n:'매크로 4', v:''},
   /* 별다른 입력 없이 진행만 맡기고 싶을 때 쓰는 것을 미리 채워 둔다 */
   {n:'계속',     v:'*계속*'}
 ];
@@ -2951,13 +2976,23 @@ function paintMacros(){
   const box = $('macro');
   if (!box) return;
   const on = localStorage.getItem(LS.preHint) === '1';
+  /* 🖼 과 「다음 장면」은 이 줄 맨 앞에 붙박이로 있다. innerHTML 로 통째로 갈면 사라진다 */
+  const 붙박이 = [$('cImgAutoWrap'), $('nextScene'), $('mModel')].filter(Boolean)
+    .filter(el => el.parentElement === box);
+  붙박이.forEach(el => box.removeChild(el));
   box.innerHTML = '<div id="mcScroll">' + macros().map((m, i) =>
     '<button type="button" data-mc="' + i + '"' + (m.v ? '' : ' class="empty"') +
     ' title="' + esc(m.v || '길게 눌러 채우십시오') + '">' + esc(m.n) + '</button>').join('') +
     '</div>' +
     '<label class="mcChk" id="mcHintWrap"><input type="checkbox" id="mcHint"' +
-    (on ? ' checked' : '') + '><span>답변 예시</span></label>' +
+    (on ? ' checked' : '') + '><span>AI 추천 답변</span></label>' +
     '<button type="button" class="mcWhy" id="mcHintWhy">?</button>';
+  /* 다시 꽂는다 — 모델 단추만 끝이고 나머지는 맨 앞이다 */
+  const 끝 = 붙박이.filter(el => el.id === 'mModel');
+  붙박이.filter(el => el.id !== 'mModel').reverse()
+    .forEach(el => box.insertBefore(el, box.firstChild));
+  끝.forEach(el => box.appendChild(el));
+  distTrimChat();
   const h = $('mcHint');
   if (h) h.onchange = () => {
     localStorage.setItem(LS.preHint, h.checked ? '1' : '0');
@@ -3014,6 +3049,9 @@ function sheet(title, items, back, reshow){
 }
 /* 지금 창을 그린다. 한 단계 아래가 있으면 제목 줄이 뒤로 가는 단추가 된다 */
 function paintSheet(){
+  /* 가로 두 단추는 그 창에서만 쓴다. 안 지우면 다음 창까지 눕는다 */
+  const 몸 = $('sheetIn');
+  if (몸) 몸.classList.remove('twoRow');
   const top = S.shStack[S.shStack.length - 1];
   if (!top) return closeSheet();
   const {title, items} = top;
@@ -3142,8 +3180,53 @@ $('introNext').onclick = () => {
   setTimeout(() => 첫안내(), 320);
 };
 
+/* ── 가리키는 말풍선 ──────────────────────────────────
+   글 한 판을 읽히는 대신 그 자리를 짚어 준다. 두 번이면 충분하다. */
+const COACH = [
+  {가리킬: 'inp',   글: '내 대사는 그냥 작성하고(그런가요?)\n' +
+                        '내 행동·지문은 별표로 감쌉니다.(*가까이 간다*)\n' +
+                        '상대를 제어할 수는 없습니다.'},
+  {가리킬: 'cStar', 글: '커서가 있는 줄을 지문으로 감쌉니다.'}
+];
+function coachRun(i){
+  const box = $('coach');
+  if (!box) return coachDone();
+  const step = COACH[i];
+  if (!step) return coachDone();
+  const el = $(step.가리킬);
+  if (!el) return coachRun(i + 1);
+  const r = el.getBoundingClientRect();
+  box.className = 'on';
+  box.innerHTML = '<div class="cbub">' + esc(step.글).replace(/\n/g, '<br>') +
+    '<i class="ctail"></i></div>';
+  const bub = box.firstElementChild;
+  /* 가리킬 것 바로 위에 놓는다. 화면 밖으로 나가지 않게 좌우를 물린다 */
+  const bw = Math.min(300, innerWidth - 24);
+  bub.style.width = bw + 'px';
+  const left = Math.max(12, Math.min(innerWidth - bw - 12, r.left + r.width / 2 - bw / 2));
+  bub.style.left = left + 'px';
+  bub.style.top = Math.max(12, r.top - bub.offsetHeight - 14) + 'px';
+  const tail = bub.querySelector('.ctail');
+  if (tail) tail.style.left = (r.left + r.width / 2 - left - 6) + 'px';
+  box.onclick = () => coachRun(i + 1);
+}
+function coachDone(){
+  const box = $('coach');
+  if (box){ box.className = ''; box.innerHTML = ''; box.onclick = null; }
+  /* 다 본 뒤에 한 번만 물어본다 */
+  sheet('방금 안내를 다시 보시겠습니까?', [
+    {label: '다음에 또 보기', leave: true, run: () => {}},
+    {label: '다시 보지 않기', leave: true,
+     run: () => { try{ localStorage.setItem(LS.guide, '1'); }catch(_){} }}
+  ]);
+  /* paintSheet 가 그리면서 twoRow 를 지운다. 다 그린 뒤에 붙인다 */
+  setTimeout(() => { const sh = $('sheetIn'); if (sh) sh.classList.add('twoRow'); }, 0);
+}
+
 function openGuide(force, back){
   if (!force && localStorage.getItem(LS.guide) === '1') return;
+  /* 배포판은 글 한 판 대신 그 자리를 짚어 준다 */
+  if (DIST){ S.guideBack = back || null; return setTimeout(() => coachRun(0), 260); }
   $('guideNo').checked = false;
   /* 「내 지문이 어디까지 일어나는가」는 사용법에서 뺐다 —
      배포판에는 그것을 바꿀 설정이 아예 없어, 없는 자리를 가리키는 안내였다.
@@ -5515,6 +5598,9 @@ function genreHowto(g, c, un){
   return L;
 }
 function startGuide(c, p){
+  /* 배포판은 상세설정 말풍선을 안 띄운다. 열자마자 글 한 판을 읽으라는 뜻이 되고,
+     모델을 바꿀 때마다 다시 떠서 성가시다. 바로 쓰는 법만 짚어 준다 */
+  if (DIST) return openGuide(false);
   const un = p?.name || '나';
   const pf = c?.profile || {};
   const rows = [
@@ -5994,6 +6080,7 @@ async function openChat(id){
   await fillChatMeta(chat, S.messages);
   paintChatBal();
   paintBal().catch(() => {});
+  distTrimChat();
   /* 첫 장면은 천 자가 넘는다. 아래로 내려가 있으면 맨 위를 읽을 겨를이 없다.
      내가 아직 한 마디도 안 한 대화는 처음부터 보여 준다. */
   S.fresh = !S.messages.some(m => m.role === 'user');
@@ -6107,7 +6194,13 @@ function readStatus(txt){
 /* 상태 줄은 본문에서 떼어내 칩으로 따로 보여준다. 항목마다 자리가 고정돼 있어
    순서가 뒤섞이지 않는다.
      1단 장소 · 일시   2단 외관 · 내면   3단 수치(호감~취기)   4단 그 밖의 나머지 */
-const STAT_ROWS = [
+const STAT_ROWS = (typeof DIST !== 'undefined' && DIST) ? [
+  ['장소', '일시'],
+  ['외관', '내면'],
+  ['호감', '반감', '경계'],
+  ['긴장', '대담', '욕구'],
+  [], []
+] : [
   ['장소', '일시'],
   ['외관', '내면'],
   ['이성', '호감', '반감', '경계'],
@@ -6116,7 +6209,7 @@ const STAT_ROWS = [
   []
 ];
 /* 첫 출력은 열한 수치가 다 나오므로 인물 요약 팝업과 같은 짜임으로 보여준다 */
-const STAT_ROWS_FIRST = [
+const STAT_ROWS_FIRST = (typeof DIST !== 'undefined' && DIST) ? STAT_ROWS : [
   ['장소', '일시'],
   ['외관', '내면'],
   ['체력', '이성', '매력'],
@@ -6138,6 +6231,12 @@ function statusChips(spec){
     if (i <= 0) continue;
     const k = p.slice(0, i).trim(), v = p.slice(i + 1).trim();
     if (!k || !v) continue;
+    /* 배포판이 안 쓰는 수치는 화면에도 안 띄운다. 장소·일시 같은 글칸은 그대로 둔다.
+       이 함수는 검증 도구가 떼어다 따로 돌리므로 바깥 것을 쓰지 않는다 */
+    if ((typeof DIST !== 'undefined' && DIST) &&
+        typeof STAT_LABEL === 'object' &&
+        Object.values(STAT_LABEL).includes(k) &&
+        !DIST_STATS.includes(k)) continue;
     /* 앱이 계산에만 쓰는 칸은 칩으로도 그리지 않는다.
        「결」이 그대로 나와 무엇을 어떻게 보였는지가 읽는 쪽에 들켰다. */
     if (HIDDEN_KEYS.includes(k)) continue;
@@ -6247,6 +6346,19 @@ function hintBox(m){
     '<button class="hchip x" data-act="hintoff">✕</button></div>';
 }
 
+/* 추천 답변에 쓸 모델. 지금 대화의 것을 그대로 쓰되, 고성능이면 무료로 내린다.
+   곁가지에 턴당 30원짜리를 쓰면 본 대화보다 추천이 더 비싸진다. */
+const HINT_FALLBACK = 'nvidia/nemotron-3-ultra-550b-a55b:free';
+const HINT_HEAVY = /sonnet|opus|gemini-3\.[0-9]+-pro|kimi|gpt-[0-9]/i;
+function hintModel(){
+  const 지금 = chatModel();
+  if (!지금) return HINT_FALLBACK;
+  const 급 = tierOf(지금)?.t;
+  /* 시세를 아직 못 받았으면 급이 null 이다. 그때는 이름으로 어림한다 */
+  const 무겁나 = 급 ? 급 === '고성능' : HINT_HEAVY.test(지금);
+  return 무겁나 ? HINT_FALLBACK : 지금;
+}
+
 /* 지금 장면에서 「내」가 할 법한 말 세 개를 받아 온다.
    그대로 보내지 않고 입력창에 넣어만 준다 — 고쳐 쓰라는 뜻이다. */
 async function suggestReplies(id, quiet){
@@ -6281,7 +6393,7 @@ async function suggestReplies(id, quiet){
       '- ' + cn + ' 의 대사를 쓰지 않는다. ' + un + ' 가 하는 말만 쓴다.',
       '- 지금 장면과 말투에 맞아야 한다. 존대와 반말을 섞지 않는다.'
     ].filter(Boolean).join('\n');
-    const txt = await askText(p, 420, 1.0);
+    const txt = await askTextEx(p, 420, 1.0, hintModel()).then(r => r.text);
     const lines = String(txt).split('\n')
       /* 「*한 걸음 다가선다*」의 앞 별표를 글머리표로 오인해 지우고 있었다.
          별표는 뒤에 짝이 없을 때만 글머리표로 본다. */
@@ -6347,7 +6459,9 @@ function msgHTML(m, isLast){
      지금 어느 쪽인지는 글자 대신 색으로 알린다. */
   const offBtn = m.mark === '채움' ? ''
     : '<button data-act="off"' + (isOff(m) ? ' class="lit"' : '') + '>예외처리</button>';
-  const flagBtn = '<button data-act="flag"' + (m.flag ? ' class="lit"' : '') + '>신고</button>';
+  /* 배포판에는 신고를 안 붙인다. 받아 볼 곳이 없다 */
+  const flagBtn = DIST ? '' :
+    '<button data-act="flag"' + (m.flag ? ' class="lit"' : '') + '>신고</button>';
   return `<div class="msg ${m.role}${m.mark ? ' marked' : ''}" data-id="${m.id}">
     <div class="who">${mk}${tn}${esc(who)}</div>
     <div class="body">${fmt(m.content, m.role)}${pics}</div>${hints}
@@ -8034,7 +8148,7 @@ const CHAT_MENU = [
   {i:'🧠', t:'기억',    run: () => openMemory(), leave:true, hide: () => DIST},
   {i:'✍', t:'내 지문', hide: () => DIST, run: () => ownSheet(), opens:true,
    now: () => ownOn() ? '전부 그대로' : '반응은 상대가'},
-  {i:'⚙', t:'이 대화 설정', run: () => chatCfgSheet(), opens:true,
+  {i:'⚙', t:'이 대화 설정', hide: () => DIST, run: () => chatCfgSheet(), opens:true,
    /* 걸어 둔 것이 있으면 몇 가지인지 보인다 — 왜 다른 대화와 다른지 알 수 있게 */
    now: () => { const n = CFG_META.filter(m => cfgOwn(m.k)).length;
      return n ? n + '가지' : '기본값'; }},
@@ -10622,10 +10736,19 @@ const skewBoth = (base, sd) => rollStat(
 const skewLow = base => rollStat(base + (Math.random() < 0.10 ? 8 + Math.random() * 17 : 0), 3);
 /* 능력(체력·이성·매력) → 성향(욕심·대담·욕구) → 관계(호감·반감·경계) → 기타(긴장·취기) 순 */
 const STAT_KEYS = ['hp','int','cha','amb','brv','des','aff','ant','grd','ten','drk'];
+/* 배포판이 쓰는 수치. 관계가 어떻게 움직이는지가 이 앱의 핵심이고 나머지는 곁가지다.
+   화면에서만 감추면 「안 보이는데 프롬프트에는 실리는」 것이 되므로 여기서 가른다. */
+const DIST_STATS = ['호감', '반감', '경계', '긴장', '대담', '욕구'];
+/* 검증 도구가 이 코드를 떼어다 따로 돌린다. 거기엔 DIST 가 없다 */
+const 배포판인가 = () => typeof DIST !== 'undefined' && DIST;
+const 쓰는수치 = k => !배포판인가() || DIST_STATS.includes(k);
+
 const STAT_LABEL = {hp:'체력', int:'이성', cha:'매력', amb:'욕심', brv:'대담',
                     des:'욕구', aff:'호감', ant:'반감', grd:'경계', ten:'긴장', drk:'취기'};
 /* 최대치 대비 비율로 읽는 항목. 나머지는 0~100 절대값으로 읽는다. */
 const RATIO_STATS = {체력:'hp', 이성:'int', 욕심:'amb', 대담:'brv', 욕구:'des'};
+/* 수치 이름인지 글칸 이름인지 가르는 데 쓴다 */
+const STAT_LABEL_SET = new Set(Object.values(STAT_LABEL));
 /* 지금은 시험 단계라 숨겨 두었던 내부 동작까지 전부 적는다.
    나중에 지울 부분은 <red> 로 감싸 두어 한눈에 보이게 한다. */
 const RED = t => '<span style="color:var(--err)">' +
@@ -12987,10 +13110,12 @@ function editChar(id, over){
   /* 앱이 깔아 준 카드인가. 고쳐도 다음 갱신에 되돌아간다 */
   const 본보기 = c && seedMine(c);
   $('ceSeedWarn').style.display = 본보기 ? '' : 'none';
-  if (본보기) $('ceSeedWarn').innerHTML =
-    '<b>이것은 앱이 넣어 둔 본보기입니다.</b> 앱을 새로 올리면 ' +
-    '<b>여기 고친 내용이 되돌아가고</b> 이 인물로 하던 대화도 사라집니다.<br>' +
-    '계속 쓰실 것이면 <b>⋯ → 복사</b>로 내 것을 만들어 두십시오. 복사본은 갱신에 안 걸립니다.';
+  /* 배포판에는 짧게. 「앱을 새로 올리면」은 만든 사람의 사정이지 받는 사람의 것이 아니다 */
+  if (본보기) $('ceSeedWarn').innerHTML = DIST
+    ? '현재 설정창은 앱이 넣어둔 예시입니다. 새로운 상대를 직접 생성해 진행할 것을 권장합니다.'
+    : '<b>이것은 앱이 넣어 둔 본보기입니다.</b> 앱을 새로 올리면 ' +
+      '<b>여기 고친 내용이 되돌아가고</b> 이 인물로 하던 대화도 사라집니다.<br>' +
+      '계속 쓰실 것이면 <b>⋯ → 복사</b>로 내 것을 만들어 두십시오. 복사본은 갱신에 안 걸립니다.';
   buildCharTabs();          /* 아직 안 갈렸으면 여기서 가른다 */
   setCharPane(CE_PANES[0].key);
   if (over) popEdit('vCharEdit'); else show('vCharEdit');
@@ -13459,6 +13584,9 @@ function editPersona(id, over){
   $('peName').value = e.name; $('peDesc').value = e.description || '';
   for (const [el, k] of PE_FIELDS) $(el).value = e[k] || '';
   setPeGender(e.gender || '');
+  /* 앱이 깔아 준 주인공이 빈 채로 남아 있으면 채운다.
+     seed 는 첫 실행에만 도는데, 그 뒤 갱신하면 옛 것이 그대로 남는다 */
+  if (p && seedMine(p)) distFillPersona();
   $('peDef').checked = !!e.isDefault;
   $('peMenu').style.display = p ? 'grid' : 'none';
   if (over) popEdit('vPersonaEdit'); else show('vPersonaEdit');
@@ -13653,9 +13781,11 @@ const CE_PANES = [
   {key:'in',    name:'세부', sects:['세부 설정']},
   {key:'talk',  name:'대화', sects:['대화 방식']},
   {key:'look',  name:'외형', sects:['인물 외형']},
-  {key:'gen',   name:'생성', sects:['생성 설정']}
+  /* 전용 모델 · 온도 · 전용 규칙은 만든 사람의 자리다. 배포판에서는 안 내놓는다 */
+  ...(typeof DIST !== 'undefined' && DIST ? [] : [{key:'gen', name:'생성', sects:['생성 설정']}])
 ];
 function buildCharTabs(){
+  distFoldHints();
   const scroll = $('vCharEdit').querySelector('.scroll');
   if (!scroll || scroll.dataset.paned) return;
   const paneOf = title => {
@@ -13744,6 +13874,124 @@ function distSoften(){
   if (cen) cen.textContent = DIST_WORDS[1][1];
   const hint = $('imgHint');
   if (hint) hint.innerHTML = DIST_WORDS[2][1];
+}
+
+/* 설명 덩어리를 칸 이름 옆 ⓘ 뒤로 옮긴다.
+   지우지 않는다 — 필요한 사람은 봐야 하고, 본편에서는 그대로 펼쳐 둔다. */
+const DIST_INFO = [
+  ['ceCharmHint',  '끌어당길 결'],
+  ['ceSecretHint', '아직 아무에게도 말 안 한 것']
+];
+/* 앱이 깔아 준 주인공의 빈칸을 채운다.
+   seed 는 저장소가 빈 첫 실행에만 돈다. 그 뒤에 앱을 갱신하면 옛 것이 그대로 남아
+   나이도 직업도 없는 채로 시작하게 된다. 열 때 비어 있으면 채운다. */
+const DIST_ME_FILL = {age:'30', job:'회사원', look:'평범한 키에 마른 편',
+  speech:'말수가 많지 않고 존댓말을 쓴다',
+  pers:'속으로 재고 겉으로는 무던하다',
+  now:'요즘 일이 바빠 잠이 모자란다'};
+function distFillPersona(){
+  if (!DIST) return;
+  const 칸 = {age:'peAge', job:'peJob', look:'peLook', speech:'peSpeech',
+              pers:'pePers', now:'peNow'};
+  for (const [k, id] of Object.entries(칸)){
+    const e = $(id);
+    if (e && !String(e.value || '').trim()) e.value = DIST_ME_FILL[k];
+  }
+  const d = $('peDesc');
+  if (d && !String(d.value || '').trim())
+    d.value = '여기에 나에 대해 적으면 상대가 그것을 알고 굽니다. 고쳐 쓰십시오.';
+}
+
+function distFoldHints(){
+  if (!DIST) return;
+  for (const [id, 이름] of DIST_INFO){
+    const 덩어리 = $(id);
+    if (!덩어리 || 덩어리.dataset.folded) continue;
+    const 칸 = 덩어리.closest('.fld');
+    const 표 = 칸 && 칸.querySelector('label');
+    if (!표) continue;
+    덩어리.style.display = 'none';
+    덩어리.dataset.folded = '1';
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'btn';
+    b.textContent = 'ⓘ';
+    b.title = 이름 + ' 설명 보기';
+    b.style.cssText = 'float:right;padding:2px 9px;font-size:12px;margin-left:6px';
+    b.onclick = () => sheet(이름, [{info: true, html: '<span class="pguide">' + 덩어리.innerHTML + '</span>'}]);
+    표.appendChild(b);
+  }
+  /* 첫 장면 상태는 아예 안 보여 준다. 비워 두면 앱이 상황 글에서 만든다 */
+  const st = $('fldStart');
+  if (st) st.style.display = 'none';
+
+  /* 시드를 비워 두면 그릴 때마다 얼굴이 달라진다. 미리 하나 넣어 둔다 —
+     받는 사람이 「왜 사람이 계속 바뀌지」 하고 헤매지 않게 */
+  const seed = $('ceSeed');
+  if (seed && !seed.value) seed.value = String(100000 + Math.floor(Math.random() * 899999));
+  const sh = $('ceSeedHint');
+  if (sh) sh.textContent = '시드 숫자를 비워두면 인물의 인상이 흔들릴 수 있습니다.';
+
+  /* 안 쓰는 수치 칸과 그것만 든 묶음 · 머리글을 감춘다 */
+  const 칸 = {체력:'ceStHp', 이성:'ceStInt', 매력:'ceStCha', 욕심:'ceStAmb',
+              대담:'ceStBrv', 욕구:'ceStDes', 호감:'ceStAff', 반감:'ceStAnt',
+              경계:'ceStGrd', 긴장:'ceStTen', 취기:'ceStDrk'};
+  for (const [이름, id] of Object.entries(칸)){
+    if (쓰는수치(이름)) continue;
+    const cell = $(id)?.closest('.stCell');
+    if (cell) cell.style.display = 'none';
+  }
+  /* 안이 다 빈 줄과 그 앞 머리글은 자리를 안 먹게 */
+  document.querySelectorAll('#vCharEdit .stRow').forEach(row => {
+    const 산것 = [...row.querySelectorAll('.stCell')]
+      .filter(c => c.style.display !== 'none' && c.style.visibility !== 'hidden');
+    if (산것.length) return;
+    row.style.display = 'none';
+    const 앞 = row.previousElementSibling;
+    if (앞 && 앞.classList.contains('shead')) 앞.style.display = 'none';
+  });
+  /* 머리글은 배포판에서 아예 안 쓴다 — 「능력」 「성향」 같은 갈래를 설명할 자리가 없다 */
+  document.querySelectorAll('#vCharEdit .shead').forEach(h => h.style.display = 'none');
+  /* 맨 아래 「새 대화를 시작할 때…」 안내도 뺀다 */
+  const 끝말 = [...document.querySelectorAll('#vCharEdit .hint')]
+    .find(x => /새 대화를 시작할 때/.test(x.textContent || ''));
+  if (끝말) 끝말.style.display = 'none';
+}
+
+/* 계기판을 걷어내고 모델 단추만 매크로줄로 옮긴다.
+   숫자는 받는 사람에게 뜻이 없고, 모델은 막힐 때 바꿀 수 있어야 한다. */
+/* 앱이 깔아 준 대화인가 — 그 인물이 본보기면 그 대화도 본보기다 */
+function distSeedNote(){
+  if (!DIST) return;
+  const 있던것 = $('chatSeedNote');
+  const 본보기 = S.character && seedMine(S.character);
+  if (!본보기){ if (있던것) 있던것.remove(); return; }
+  if (있던것) return;
+  const 판 = document.createElement('div');
+  판.id = 'chatSeedNote';
+  판.textContent = '현재 채팅창은 앱이 넣어 둔 예시입니다. ' +
+                   '새로운 채팅을 직접 생성해 진행할 것을 권장합니다.';
+  const 앞 = $('msgs');
+  if (앞 && 앞.parentElement) 앞.parentElement.insertBefore(판, 앞);
+}
+
+function distTrimChat(){
+  if (!DIST) return;
+  distSeedNote();
+  const meter = $('meter');
+  const 단추 = $('mModel');
+  const 줄 = $('macro');
+  if (!meter || !단추 || !줄) return;
+  if (단추.dataset.moved) return;
+
+  /* 모델 단추를 매크로줄 끝으로. 그 뒤 계기판은 통째로 접는다 */
+  단추.dataset.moved = '1';
+  단추.classList.add('mcModel');
+  줄.appendChild(단추);
+  meter.style.display = 'none';
+
+  /* AI 추천 답변 체크와 ? 는 안 내놓는다 — 매 턴 값이 더 나가는 것을 모른 채 켜게 된다 */
+  ['mcHintWrap', 'mcHintWhy'].forEach(id => { const e = $(id); if (e) e.style.display = 'none'; });
 }
 
 function distHideSettings(){
@@ -15460,9 +15708,9 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b100';
-const APP_BUILT = '2026-08-26 21:31';
-const APP_NOTE  = '소설 재구성 — 구간 밀도를 재서 장을 나누고 줄임·채움을 가름';
+const APP_BUILD = 'b101';
+const APP_BUILT = '2026-08-26 21:59';
+const APP_NOTE  = '배포판 손질 열여덟 · 입력줄 재배치 · AI 추천 답변';
 /* 판 번호는 남긴다 — 다섯 번 누르면 키 칸이 열리는 자리이고, 문의할 때 필요하다.
    무엇이 바뀌었는지는 만든 사람 몫이라 배포판에서는 안 보인다 */
 $('sVersion').innerHTML = DIST
@@ -15530,6 +15778,10 @@ function plantMine(){
 
 function distPlantKeys(){
   if (!DIST) return;
+  /* 이미지 기본값 — 가성비(무검열 lustify)로 두고, 장면에 맞춰 올리는 것은 꺼 둔다.
+     받는 사람이 모르는 사이에 값이 뛰거나 수위가 오르지 않게 */
+  if (!(localStorage.getItem(LS.imgLevel) || '').trim()) localStorage.setItem(LS.imgLevel, 'eco');
+  if (localStorage.getItem(LS.imgAuto) == null) localStorage.setItem(LS.imgAuto, '0');
   const 심기 = (칸, 값) => {
     if (!값) return;
     const 지금 = (localStorage.getItem(칸) || '').trim();
