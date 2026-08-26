@@ -920,6 +920,12 @@
     <div id="setTabs"></div>
     <div class="scroll">
       <div class="sect">연결</div>
+      <div class="fld" id="fldRelay">
+        <label>중계 주소 <span style="color:var(--tx3);font-weight:400">(비워 두면 직통)</span></label>
+        <input type="text" id="sRelay" placeholder="https://rp-relay.___.workers.dev" autocomplete="off">
+        <input type="password" id="sCode" placeholder="초대 코드 (안 쓰면 비워 둠)" autocomplete="off" style="margin-top:6px">
+        <div class="hint" id="sRelayHint"></div>
+      </div>
       <div class="fld" id="fldKey">
         <label>OpenRouter API 키</label>
         <input type="password" id="sKey" placeholder="sk-or-v1-..." autocomplete="off">
@@ -1812,7 +1818,7 @@ const LS = {
   key:'rp_apikey', model:'rp_model', temp:'rp_temp', maxTok:'rp_maxtok',
   window:'rp_windowTurns', free:'rp_free', lastChat:'rp_lastChatId',
   budget:'rp_budget', autoSum:'rp_autoSummary', fallbacks:'rp_fallbacks', rules:'rp_rules',
-  preHint:'rp_prehint', seedVer:'rp_seedver', noDice:'rp_nodice', noGen:'rp_nogen', imgDice:'rp_imgdice', imgDiceN:'rp_imgdicen', imgAuto:'rp_imgauto',
+  preHint:'rp_prehint', seedVer:'rp_seedver', relay:'rp_relay', code:'rp_code', noDice:'rp_nodice', noGen:'rp_nogen', imgDice:'rp_imgdice', imgDiceN:'rp_imgdicen', imgAuto:'rp_imgauto',
   imgKey:'rp_imgkey', imgModel:'rp_imgmodel', imgSize:'rp_imgsize', imgUnc:'rp_imgunc',
   imgHi:'rp_imghi', imgNsfw:'rp_imgnsfw', imgNsfwHi:'rp_imgnsfwhi',
   imgCen:'rp_imgcen', credBase:'rp_credbase', credLog:'rp_credlog', credLast:'rp_credlast',
@@ -1850,6 +1856,57 @@ const cfgOwn = k => S.chat?.cfg?.[k] !== undefined && S.chat.cfg[k] !== '';
 /* 0 이면 끄고, 0.3 이면 같은 표현을 되풀이할수록 눈에 띄게 눌러 준다 */
 const penalty = () => Math.max(0, Math.min(1, parseFloat(cfg('penalty', '0.3')) || 0));
 const VENICE = 'https://api.venice.ai/api/v1';
+
+/* ── 중계 ────────────────────────────────────────────────
+   비워 두면 지금까지처럼 브라우저가 업체를 직접 부른다.
+   주소를 넣으면 그리로 보내고 **키를 안 붙인다** — 키는 그쪽이 갖는다.
+
+   중계가 죽어도 이 칸을 비우면 곧바로 직통으로 돌아온다.
+   그것이 없으면 남의 서버 하나에 앱 전체가 묶인다. */
+const relayAt = () => (localStorage.getItem(LS.relay) || '').trim().replace(/\/+$/, '');
+const onRelay = () => !!relayAt();
+
+/* 어디로 보낼 것인가. 중계면 업체별 앞자리를 붙인다 */
+const apiAt = (who, 길) => onRelay()
+  ? relayAt() + '/' + who + 길
+  : (who === 'or' ? API : VENICE) + 길;
+
+/* 헤더. 직통이면 키를 붙이고, 중계면 안 붙인다 */
+function apiHead(who, more){
+  const h = {'Content-Type':'application/json', 'X-Title':'RP App', ...(more || {})};
+  if (onRelay()){
+    const c = (localStorage.getItem(LS.code) || '').trim();
+    /* 머리는 바이트열이다. 한글 코드를 그대로 넣으면 부르기도 전에 터진다 */
+    if (c) h['X-Code'] = encodeURIComponent(c);
+    return h;
+  }
+  const k = who === 'or' ? localStorage.getItem(LS.key) : imgKey();
+  if (k) h['Authorization'] = 'Bearer ' + k;
+  return h;
+}
+/* 감출 수 있는 상수들. 중계를 쓰면 실제 글 대신 이 표를 보내고, 그쪽이 바꿔 끼운다.
+   직통이면 지금처럼 실제 글이 나간다 — 중계가 죽어도 앱은 그대로 돈다. */
+const RELAY_MARK = {
+  '@RULES':      () => DEFAULT_RULES,
+  '@RULE_UP':    () => RULE_UP,
+  '@RULE_DRINK': () => RULE_DRINK,
+  '@RULE_CAST':  () => RULE_CAST,
+  '@RULE_CHARM': () => RULE_CHARM,
+  '@RULE_SCENE': () => RULE_SCENE,
+  '@RULE_OWN_ON':  () => RULE_OWN_ON,
+  '@RULE_OWN_OFF': () => RULE_OWN_OFF,
+  '@TASTE':      () => DEFAULT_TASTE,
+  '@TASTE_DIST': () => DIST_TASTE
+};
+/* 중계면 표를, 직통이면 실제 글을 준다 */
+const mark = 표 => onRelay() ? 표 : (RELAY_MARK[표] || (() => 표))();
+
+/* 부르는 자리를 하나로 모은다. 열넷이 제각기 헤더를 만들면 중계를 붙일 때 열넷을 다 고쳐야 한다 */
+function apiFetch(who, 길, opt){
+  const o = {...(opt || {})};
+  o.headers = apiHead(who, o.headers);
+  return fetch(apiAt(who, 길), o);
+}
 /* SDXL 계열은 문장보다 태그를 잘 받는다. 사실감을 여기서 고정하고 장면만 갈아끼운다. */
 const IMG_STYLE = 'photorealistic, raw photo, candid, 85mm lens, shallow depth of field, ' +
   'natural skin texture, detailed eyes, film grain, cinematic lighting, high detail';
@@ -2080,10 +2137,10 @@ function whenRules(cur){
   const add = [];
   /* 손으로 고친 규칙에 이미 들어 있으면 안 붙인다. 두 벌이 실리면 서로 다툰다 */
   const has = t => cur.includes(t);
-  if (!has('[취기와 주량]') && drinkDue()) add.push(RULE_DRINK);
-  if (!has('[조연]') && (S.chat?.cast?.length || 0) > 0) add.push(RULE_CAST);
-  if (!has('[끌어당기기]') && charmDue()) add.push(RULE_CHARM);
-  if (upOf()) add.push(RULE_UP);
+  if (!has('[취기와 주량]') && drinkDue()) add.push(mark('@RULE_DRINK'));
+  if (!has('[조연]') && (S.chat?.cast?.length || 0) > 0) add.push(mark('@RULE_CAST'));
+  if (!has('[끌어당기기]') && charmDue()) add.push(mark('@RULE_CHARM'));
+  if (upOf()) add.push(mark('@RULE_UP'));
   return add.join('');
 }
 /* 술이 나올 참인가. 상태 줄에 취기가 잡혀 있으면 그 자리가 이어지는 동안 계속 싣고,
@@ -2324,7 +2381,7 @@ async function readBalOR(){
     /* **키에 걸어 둔 한도가 먼저다.**
        전에는 /credits(계정 전체)를 먼저 봤다. 그러면 키를 $1 로 묶어 두어도
        화면에는 계정에 남은 $10 이 떠서, 받은 사람은 $1 에서 끊길 때까지 모른다. */
-    const r = await fetch(API + '/auth/key', {headers:{Authorization:'Bearer ' + key}});
+    const r = await apiFetch('or', '/auth/key', {});
     if (r.ok){
       const d = (await r.json())?.data || {};
       if (d.limit != null){
@@ -2335,7 +2392,7 @@ async function readBalOR(){
         return {left: 남음, of: +d.limit, capped: true};
       }
       /* 한도가 없으면 계정 전체를 본다 */
-      const r2 = await fetch(API + '/credits', {headers:{Authorization:'Bearer ' + key}});
+      const r2 = await apiFetch('or', '/credits', {});
       if (r2.ok){
         const c = (await r2.json())?.data || {};
         if (c.total_credits != null)
@@ -2346,7 +2403,7 @@ async function readBalOR(){
       return null;
     }
     /* /auth/key 가 막히면 계정 전체로 물러난다 */
-    const r2 = await fetch(API + '/credits', {headers:{Authorization:'Bearer ' + key}});
+    const r2 = await apiFetch('or', '/credits', {});
     if (r2.ok){
       const c = (await r2.json())?.data || {};
       if (c.total_credits != null)
@@ -2359,7 +2416,7 @@ async function readBalVE(){
   const key = imgKey();
   if (!key) return null;
   try{
-    const r = await fetch(VENICE + '/api_keys/rate_limits', {headers:{Authorization:'Bearer ' + key}});
+    const r = await apiFetch('ve', '/api_keys/rate_limits', {});
     if (!r.ok) return null;
     const b = (await r.json())?.data?.balances || {};
     if (b.USD == null) return null;
@@ -3530,10 +3587,10 @@ function buildSystem(char, persona, withExample, drift){
     P.push(`\n이 인물을 부를 때는 "${persona.name}"라는 이름을 사용한다.`);
   }
 
-  const rules = localStorage.getItem(LS.rules)?.trim() || DEFAULT_RULES;
+  const rules = localStorage.getItem(LS.rules)?.trim() || mark('@RULES');
   P.push(`\n[공통 규칙]\n` + rules + whenRules(rules)
-         + (ownOn() ? RULE_OWN_ON : RULE_OWN_OFF)
-         + (S.chat?.scene ? RULE_SCENE : ''));
+         + (ownOn() ? mark('@RULE_OWN_ON') : mark('@RULE_OWN_OFF'))
+         + (S.chat?.scene ? mark('@RULE_SCENE') : ''));
   if (char.system_prompt?.trim())
     P.push(`\n[${cn} 추가 지침]\n` + char.system_prompt.trim());
   if (char.post_history_instructions) P.push(`\n${char.post_history_instructions}`);
@@ -3631,9 +3688,8 @@ async function maybeVolume(chatId, mem){
     batch.map(e => volPos(e.n) + '회 · ' + e.title + '\n  ' + e.text).join('\n');
 
   try{
-    const res = await fetch(API + '/chat/completions', {
+    const res = await apiFetch('or', '/chat/completions', {
       method:'POST',
-      headers:{'Authorization':'Bearer ' + key, 'Content-Type':'application/json', 'X-Title':'RP App'},
       body: JSON.stringify({model, messages:[{role:'user', content:prompt}],
                             temperature: 0.3, max_tokens: 900, ...reasonOff(model)})
     });
@@ -5177,9 +5233,8 @@ async function maybeSummarize(oldestKept, silent){
     '[이번 구간]\n' + batch.map(m => who(m) + ': ' + m.content).join('\n');
 
   try{
-    const res = await fetch(API + '/chat/completions', {
+    const res = await apiFetch('or', '/chat/completions', {
       method:'POST',
-      headers:{'Authorization':'Bearer ' + key, 'Content-Type':'application/json', 'X-Title':'RP App'},
       body: JSON.stringify({
         model, messages:[{role:'user', content:prompt}],
         temperature: 0.3, max_tokens: 900, ...reasonOff(model)
@@ -8721,9 +8776,8 @@ async function streamInto(target, msgs, signal){
                           (lastErr?.refused ? ' — 앞 모델이 거절했습니다' : ''));
 
     try{
-      const res = await fetch(API + '/chat/completions', {
+      const res = await apiFetch('or', '/chat/completions', {
         method:'POST', signal,
-        headers:{'Authorization':'Bearer ' + key, 'Content-Type':'application/json', 'X-Title':'RP App'},
         body: JSON.stringify({
           /* 규칙과 인물 카드는 한 대화 안에서 안 바뀐다. 캐시에 얹어 값을 줄인다.
              같은 업체로 보내야 그 캐시가 산다 — 업체는 첫 응답에서 배운다. */
@@ -8853,7 +8907,7 @@ const imgPrice = m => (m?.model_spec?.pricing?.generation?.usd)
 /* 모델 목록은 키 없이도 열람할 수 있어 비용을 미리 보여줄 수 있다 */
 async function fetchImgModels(){
   try{
-    const res = await fetch(VENICE + '/models?type=image');
+    const res = await apiFetch('ve', '/models?type=image', {});
     if (!res.ok) throw new Error('HTTP ' + res.status);
     S.imgModels = ((await res.json()).data || [])
       .filter(m => !/bg-remover|upscal/i.test(m.id))
@@ -8935,7 +8989,7 @@ function showImgCost(){
 /* 프롬프트 작성용 무검열 텍스트 모델. 거부하지 않는 모델만 추린다. */
 async function fetchTxtModels(){
   try{
-    const res = await fetch(VENICE + '/models?type=text');
+    const res = await apiFetch('ve', '/models?type=text', {});
     if (!res.ok) throw new Error('HTTP ' + res.status);
     S.txtModels = ((await res.json()).data || [])
       .filter(m => /uncensored|heretic|role.?play/i.test(m.id + " " + (m.model_spec?.name || "")))
@@ -9082,9 +9136,8 @@ async function lookFromAvatar(dataUrl){
     'Cover only what does not change: apparent age, build, hair length and colour and style, eye shape, ' +
     'skin tone, face shape, and any distinctive mark. Do not mention clothing, expression, background, or pose. ' +
     'Start with "korean woman" or "korean man". Output tags only, 25 words maximum, no sentences.';
-  const res = await fetch(VENICE + '/chat/completions', {
+  const res = await apiFetch('ve', '/chat/completions', {
     method:'POST',
-    headers:{'Authorization':'Bearer ' + imgKey(), 'Content-Type':'application/json'},
     body: JSON.stringify({
       model: vision,
       messages:[{role:'user', content:[
@@ -9106,9 +9159,8 @@ async function lookFromAvatar(dataUrl){
 async function veniceTags(ask){
   const model = localStorage.getItem(LS.imgTxt);
   if (!model || !imgKey()) throw new Error('Venice 텍스트 모델 미지정');
-  const res = await fetch(VENICE + '/chat/completions', {
+  const res = await apiFetch('ve', '/chat/completions', {
     method:'POST',
-    headers:{'Authorization':'Bearer ' + imgKey(), 'Content-Type':'application/json'},
     body: JSON.stringify({
       model,
       messages:[
@@ -9248,9 +9300,8 @@ async function veniceUpscale(dataUri, scale){
   const key = imgKey();
   const b64 = String(dataUri).split(',')[1];
   if (!b64) throw new Error('업스케일할 이미지가 없습니다');
-  const res = await fetch(VENICE + '/image/upscale', {
+  const res = await apiFetch('ve', '/image/upscale', {
     method:'POST',
-    headers:{'Authorization':'Bearer ' + key, 'Content-Type':'application/json'},
     body: JSON.stringify({image: b64, scale: scale || 2, creativity: 0.01})
   });
   if (!res.ok) throw new Error('업스케일 HTTP ' + res.status);
@@ -9402,9 +9453,8 @@ async function veniceImage(prompt, modelId, steps, seedOverride, negOverride, si
     body.width = w; body.height = h;
   }
 
-  const res = await fetch(VENICE + '/image/generate', {
+  const res = await apiFetch('ve', '/image/generate', {
     method:'POST',
-    headers:{'Authorization':'Bearer ' + key, 'Content-Type':'application/json'},
     body: JSON.stringify(body)
   });
   if (!res.ok){
@@ -11358,9 +11408,8 @@ async function askTextEx(prompt, maxTok, temp, model1){
   let last = null;
   for (const model of chain){
     try{
-      const res = await fetch(API + '/chat/completions', {
+      const res = await apiFetch('or', '/chat/completions', {
         method:'POST',
-        headers:{'Authorization':'Bearer ' + key, 'Content-Type':'application/json', 'X-Title':'RP App'},
         body: JSON.stringify({model, messages:[{role:"user", content:prompt}],
                               temperature: temp ?? 1.0, max_tokens: maxTok || 2000,
                               ...reasonOff(model)})
@@ -11384,9 +11433,8 @@ async function askText(prompt, maxTok, temp){
   let last = null;
   for (const model of chain){
     try{
-      const res = await fetch(API + '/chat/completions', {
+      const res = await apiFetch('or', '/chat/completions', {
         method:'POST',
-        headers:{'Authorization':'Bearer ' + key, 'Content-Type':'application/json', 'X-Title':'RP App'},
         body: JSON.stringify({model, messages:[{role:"user", content:prompt}],
                               temperature: temp ?? 1.0, max_tokens: maxTok || 2000,
                               ...reasonOff(model)})
@@ -11406,7 +11454,7 @@ async function askText(prompt, maxTok, temp){
 
 function cardPrompt(seed, mode, gender){
   const taste = mode === 'taste'
-    ? (localStorage.getItem(LS.taste)?.trim() || 기본취향()) : "";
+    ? (localStorage.getItem(LS.taste)?.trim() || mark(DIST ? '@TASTE_DIST' : '@TASTE')) : "";
   const genderWord = gender === 'm' ? '남성' : '여성';
   /* 관계 문자열의 {{user}} 는 그대로 남겨 둔다. 이름으로 치환하면 방향이 다시 흐려진다. */
   const lookBase = gender === 'm' ? 'korean man' : 'korean woman';
@@ -13461,7 +13509,7 @@ const price  = m => ({in:parseFloat(m.pricing?.prompt||0)*1e6, out:parseFloat(m.
 
 async function fetchModels(){
   try{
-    const res = await fetch(`${API}/models`);
+    const res = await apiFetch('or', '/models', {});
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     S.models = ((await res.json()).data||[]).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
     renderModelSelect();
@@ -13779,6 +13827,9 @@ function setPane(key){
 }
 
 function loadSettings(){
+  $('sRelay').value  = localStorage.getItem(LS.relay) || '';
+  $('sCode').value   = localStorage.getItem(LS.code) || '';
+  paintRelay();
   $('sKey').value    = localStorage.getItem(LS.key) || '';
   $('sTemp').value   = localStorage.getItem(LS.temp) || '0.9';
   $('sMaxTok').value = localStorage.getItem(LS.maxTok) || '2400';
@@ -13843,6 +13894,32 @@ $('sImgFilter').oninput = renderImgSelect;
 
 $('sImgTxt').onchange   = () => localStorage.setItem(LS.imgTxt, $('sImgTxt').value);
 $('sImgReload').onclick = () => { fetchImgModels(); fetchTxtModels(); };
+/* 중계를 쓰면 키 칸이 할 일이 없다. 지우지는 않는다 — 주소를 비우면 그대로 직통으로 돌아온다 */
+function paintRelay(){
+  const 켬 = onRelay();
+  $('sRelayHint').innerHTML = 켬
+    ? '<b>중계를 씁니다.</b> 키는 중계가 갖고 있어 아래 키 칸은 안 씁니다. '
+      + '중계가 멈추면 이 칸을 비우고 키를 넣으면 곧바로 직통으로 돌아옵니다.'
+    : '비워 두면 지금처럼 브라우저가 업체를 직접 부릅니다. '
+      + '주소를 넣으면 그리로만 보내고 <b>키를 안 붙입니다</b>.';
+  ['fldKey', 'fldImgKey'].forEach(id => {
+    const e = $(id);
+    if (e) e.style.opacity = 켬 ? '.45' : '';
+  });
+}
+$('sRelay').onchange = () => {
+  const v = $('sRelay').value.trim().replace(/\/+$/, '');
+  if (v && !/^https:\/\//.test(v)){ toast('중계 주소는 https:// 로 시작해야 합니다'); return; }
+  localStorage.setItem(LS.relay, v);
+  $('sRelay').value = v;
+  paintRelay();
+  /* 보내는 자리가 바뀌었으니 목록과 잔액을 다시 읽는다 */
+  fetchModels(); fetchImgModels(); fetchTxtModels(); showBal();
+};
+$('sCode').onchange = () => {
+  localStorage.setItem(LS.code, $('sCode').value.trim());
+  fetchModels(); showBal();
+};
 $('sKey').onchange = () => {
   localStorage.setItem(LS.key, $('sKey').value.trim());
   if ($('sKey').value.trim()) fetchModels();
@@ -15327,8 +15404,8 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b93';
-const APP_BUILT = '2026-08-26 12:05';
+const APP_BUILD = 'b94';
+const APP_BUILT = '2026-08-26 12:47';
 const APP_NOTE  = '본보기 판 갱신 · 잔액을 키 한도로 · 롤백 고지 · 본보기 복사';
 $('sVersion').innerHTML =
   '8단계 · <b style="color:var(--acc)">빌드 ' + APP_BUILD + '</b><br>최종 수정: ' + APP_BUILT + '<br>' + APP_NOTE;
