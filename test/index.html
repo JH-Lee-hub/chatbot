@@ -1729,8 +1729,6 @@
   <div class="gsec"><b>서술자에게만 주는 지시</b>는 <code>[지시]</code>로 시작합니다.
     캐릭터는 이런 지시가 있다는 것조차 모릅니다.<br>
     <code>[지시] 비가 내리기 시작한다</code></div>
-  <div class="gsec"><b>내 행동 지문</b>이 어디까지 그대로 일어나는지는 설정에서 고릅니다.
-    지금은 <b id="gOwn">—</b>. 채팅 화면의 <b>⋯ → 내 지문</b>에서 바꿉니다.</div>
   <div class="gsec"><b>이야기 밖 이야기</b>는 그냥 물어보면 됩니다.
     설정이나 줄거리를 묻거나 다음 전개를 상의하면 <b>이야기 밖</b> 표가 붙은 답이 옵니다.
     이 답은 화면에만 남고 <b>상태·기억·요약·소설 어디에도 섞이지 않습니다.</b><br>
@@ -3131,9 +3129,9 @@ $('introNext').onclick = () => {
 function openGuide(force, back){
   if (!force && localStorage.getItem(LS.guide) === '1') return;
   $('guideNo').checked = false;
-  /* 지금 어느 쪽으로 놓여 있는지는 열 때마다 다시 읽는다 */
-  $('gOwn').textContent = ownOn() ? '내가 쓴 대로 전부 일어납니다'
-                                  : '상대의 반응은 상대가 정합니다';
+  /* 「내 지문이 어디까지 일어나는가」는 사용법에서 뺐다 —
+     배포판에는 그것을 바꿀 설정이 아예 없어, 없는 자리를 가리키는 안내였다.
+     본편에서는 채팅 ⋯ → 내 지문 에서 그대로 고칠 수 있다 */
   S.guideBack = back || null;
   $('guideBox').classList.add('on');
 }
@@ -3161,6 +3159,9 @@ const 첫바퀴 = () => [
    말: '이름 옆 숫자를 누르면 <b>그 인물과 나눈 대화 목록</b>을 볼 수 있습니다.'},
   {곳: () => document.querySelector('#charList .card .t b'),
    말: '여기를 누르면 <b>인물 편집</b>이 가능합니다.'},
+  /* 꾹 누르는 것은 화면에 아무 표시가 없다. 알려 주지 않으면 영영 모른다 */
+  {곳: () => document.querySelector('#charList .card'),
+   말: '카드를 <b>꾹 누르면</b> 삭제 · 내보내기 같은 것을 할 수 있습니다.'},
   {곳: () => document.querySelector('#charList .card [data-go]'),
    말: '여기를 누르면 <b>새 대화</b>가 시작됩니다.'},
   {곳: () => document.querySelector('#nav [data-v="vChats"]'),
@@ -6676,25 +6677,48 @@ function novelLine(m, un, cn){
 
 /* 5,000자씩 앞에서부터 채우면 마지막 칸에 나머지가 몰려 분량이 널뛴다.
    장 수를 정해 주면 그 수만큼 고르게 나눈다. 안 주면 길이로 알아서 정한다. */
-function novelChunks(want){
+/* 토막마다 원문 어느 메시지에서 왔는지를 함께 들고 다닌다.
+   그래야 그 자리의 일시와 장소를 상태 줄에서 꺼내 쓸 수 있다 —
+   소설 본문에서는 상태 줄을 떼어 내므로, 안 챙기면 시간 정보가 통째로 사라진다. */
+function novelParts(want){
   const cn = S.character?.name || '상대', un = S.persona?.name || '나';
-  const lines = S.messages.map(m => novelLine(m, un, cn)).filter(Boolean);
-  if (!lines.length) return [];
-  const total = lines.reduce((a, l) => a + l.length + 1, 0);
-  let n = (want > 0) ? Math.min(Math.round(want), lines.length)
+  const 짝 = [];
+  for (const m of S.messages){
+    const l = novelLine(m, un, cn);
+    if (l) 짝.push({l, m});
+  }
+  if (!짝.length) return [];
+  const total = 짝.reduce((a, x) => a + x.l.length + 1, 0);
+  let n = (want > 0) ? Math.min(Math.round(want), 짝.length)
                      : Math.max(1, Math.ceil(total / NOVEL_CHUNK));
   /* 한 장이 그릇보다 너무 커지면 모델이 뒤를 버린다. 그때는 장을 더 쪼갠다. */
-  while (n < lines.length && total / n > NOVEL_CHUNK * 1.5) n++;
+  while (n < 짝.length && total / n > NOVEL_CHUNK * 1.5) n++;
   n = Math.max(1, n);
   const target = total / n;
-  const out = Array.from({length: n}, () => '');
+  const out = Array.from({length: n}, () => ({text:'', msgs:[]}));
   let acc = 0, k = 0;
-  for (const l of lines){
-    out[k] += l + '\n';
-    acc += l.length + 1;
+  for (const x of 짝){
+    out[k].text += x.l + '\n';
+    out[k].msgs.push(x.m);
+    acc += x.l.length + 1;
     while (k < n - 1 && acc >= target * (k + 1)) k++;
   }
-  return out.filter(x => x.trim());
+  return out.filter(x => x.text.trim());
+}
+function novelChunks(want){
+  return novelParts(want).map(x => x.text);
+}
+
+/* 그 자리의 일시와 장소. 상태 줄에서 꺼낸다 — 지어낸 값이 아니라 원문에 적힌 것이다 */
+function novelWhen(msgs, 뒤에서){
+  const 것 = 뒤에서 ? [...(msgs || [])].reverse() : (msgs || []);
+  for (const m of 것){
+    const st = readStatus(m.variants?.length ? m.variants[m.variants.length - 1] : m.content);
+    if (!st) continue;
+    const 조각 = [st['일시'], st['장소']].filter(Boolean);
+    if (조각.length) return 조각.join(' · ');
+  }
+  return '';
 }
 
 /* 설계도의 「장 구성」에서 장별 한 줄 요약을 뽑는다.
@@ -6739,6 +6763,11 @@ const NOVEL_RULES = [
   '  이 글만 읽는 사람이 「왜 갑자기 이렇게 됐지」 하고 멈추지 않을 만큼만 덧붙인다.',
   '  없던 사건을 만들지 말고, 이미 일어난 일 사이의 빈 곳만 잇는다.',
   '  메운 자리가 원문의 다른 곳과 부딪히면 안 된다. 부딪힐 것 같으면 메우지 말고 넘어간다.',
+  '- **다만 장과 장 사이의 이음매는 예외다. 그 다리는 반드시 놓는다.**',
+  '  앞 장이 끝난 자리와 이 장이 시작하는 자리 사이에 시간이나 장소가 건너뛰었으면,',
+  '  장을 열자마자 한두 문장으로 그 변화를 짚는다. 무슨 일이 있었는지 지어내라는 것이 아니라,',
+  '  「사흘이 지났다」 「그 주 금요일, 사무실에서」 처럼 **건너뛴 사실만** 알려 주라는 것이다.',
+  '  이것을 생략하면 읽는 사람에게는 장면이 통째로 잘려 나간 것처럼 보인다.',
   '- **장르와 장면에 어울리는 표현을 쓴다.** 긴박한 자리에서 늘어놓지 않고, 잔잔한 자리에서 몰아붙이지 않는다.',
   '  같은 사건이라도 어느 장르의 어느 대목인지에 따라 문장의 호흡과 낱말이 달라야 한다.',
   '- 소설 본문만 출력한다. 머리말 · 장 제목 · 설명을 붙이지 않는다.'
@@ -6755,13 +6784,29 @@ function novelSpec(){
 
 /* ── 1단계 · 설계도 ── */
 async function novelOutline(seedAsk){
-  const chunks = novelChunks();
-  if (!chunks.length) return toast('옮길 대화가 없습니다');
-  /* 전체를 다 넣을 수 없으므로 앞·중간·뒤를 고르게 뽑아 뼈대만 본다 */
-  const pick3 = [];
-  const step = Math.max(1, Math.floor(chunks.length / 6));
-  for (let i = 0; i < chunks.length; i += step) pick3.push(chunks[i].slice(0, 1400));
-  if (chunks.length > 1) pick3.push(chunks[chunks.length - 1].slice(-1400));
+  const parts = novelParts();
+  if (!parts.length) return toast('옮길 대화가 없습니다');
+  /* 전체를 다 넣을 수 없으므로 앞·중간·뒤를 고르게 뽑아 뼈대만 본다.
+     예전에는 발췌를 「…」로만 이어 붙였다. 그러면 모델은 이 조각들이 원문 어디쯤인지,
+     사이에 무엇이 있었는지, 실제로 언제인지를 알 길이 없다 —
+     「시간 순서를 지켜라」라고 적어도 지킬 근거가 없으니 순서가 꼬였다.
+     번호 · 원문에서의 자리 · 그때의 일시와 장소를 붙여 준다. */
+  const 뽑을것 = [];
+  const step = Math.max(1, Math.floor(parts.length / 6));
+  for (let i = 0; i < parts.length; i += step) 뽑을것.push(i);
+  /* 마지막 토막은 끝을 보여 준다. 이미 들어 있으면 두 번 넣지 않는다 —
+     같은 대목이 두 번 나오면 모델이 없던 장면을 하나 더 만든다 */
+  const 끝 = parts.length - 1;
+  const 끝따로 = parts.length > 1 && 뽑을것[뽑을것.length - 1] !== 끝;
+  if (끝따로) 뽑을것.push(끝);
+  const pick3 = 뽑을것.map((i, k) => {
+    const 자리 = parts.length > 1 ? Math.round(i / (parts.length - 1) * 100) : 0;
+    const 때 = novelWhen(parts[i].msgs, false);
+    const 끝인가 = (i === 끝 && (끝따로 || i === 뽑을것[뽑을것.length - 1]));
+    return '(발췌 ' + (k + 1) + ' — 원문 ' + 자리 + '% 지점' +
+           (때 ? ' · ' + 때 : '') + ')\n' +
+           (끝인가 && 끝따로 ? parts[i].text.slice(-1400) : parts[i].text.slice(0, 1400));
+  });
 
   const mem = S.chat ? (S.mems?.[S.chat.id] || await getMem(S.chat.id)) : null;
   /* 장 수를 자유롭게 두면 원문 길이와 맞지 않아 집필 단계에서 다시 쪼개진다.
@@ -6780,7 +6825,9 @@ async function novelOutline(seedAsk){
     '인물: (이름과 한 줄 소개. 등장 순서대로)',
     '장 구성: (각 장의 한 줄 요약. 「1. 」 처럼 번호를 붙여 한 줄에 하나씩 쓴다.',
     '        ' + RANGE_NOTE,
-    '        대화가 흘러간 시간 순서를 그대로 따른다. 앞뒤를 뒤섞지 않는다.',
+    '        **발췌에 붙은 번호와 % 지점이 곧 실제 시간 순서다. 그 순서를 절대 뒤집지 않는다.**',
+    '        발췌와 발췌 사이는 원문에 있으나 여기 안 실린 구간이다. 비어 있는 것이 아니라',
+    '        보여 주지 않은 것이므로, 그 사이에도 장이 놓인다고 보고 나눈다.',
     '        각 장이 비슷한 분량이 되도록 나눈다. 한 장에 몰아넣지 않는다.)',
     '관통 요소: (되풀이되는 사물 · 말버릇 · 상징. 없으면 생략)',
     '주의: (아래 두 가지를 나눠 적는다.',
@@ -6799,7 +6846,8 @@ async function novelOutline(seedAsk){
   if (seedAsk) ask.push('[사용자 요청 — 무엇보다 우선한다]\n' + seedAsk, '');
   const story = mem ? fmtEras(mem) : '';
   if (story) ask.push('[지금까지의 이야기 — 회차 순서대로]\n' + story, '');
-  ask.push('[대화 발췌]\n' + pick3.join('\n…\n'));
+  ask.push('[대화 발췌 — 번호 순서가 곧 실제 시간 순서다]\n' +
+           pick3.join('\n…(사이 구간 생략)…\n'));
 
   novelBusy('설계도를 뽑는 중', 5);
   try{
@@ -6821,7 +6869,8 @@ async function novelOutline(seedAsk){
 async function novelWriteOne(i, extra, prevTail){
   const b = novelBook();
   const plan = outlineChapters(b.outline);
-  const chunks = novelChunks(plan.length);
+  const parts = novelParts(plan.length);
+  const chunks = parts.map(x => x.text);
   if (i >= chunks.length) return null;
   const spec = novelSpec();
   const head = i === 0
@@ -6829,19 +6878,36 @@ async function novelWriteOne(i, extra, prevTail){
     : '아래는 앞 장의 끝부분과 이어지는 대화 구간이다. 자연스럽게 이어 써라. 이미 쓴 부분을 되풀이하지 않는다.';
   /* 이 장이 설계도의 몇 번째이고 무엇을 담기로 했는지 알려 준다.
      이것이 없으면 장 제목과 내용이 설계도와 어긋난다. */
+  const prev = plan[i - 1];
   const mine = plan[i];
   const next = plan[i + 1];
   const aim = Math.round(chunks[i].length * NOVEL_RATIO / 100) * 100;
+
+  /* 장 경계에서 시간이나 장소가 얼마나 건너뛰었는가 — 상태 줄에 적힌 사실이다.
+     이것을 안 주면 모델은 그저 붙여 놓고, 읽는 사람에게는 장면이 잘려 나간 것처럼 보인다. */
+  const 앞끝 = i > 0 ? novelWhen(parts[i - 1].msgs, true) : '';
+  const 이시작 = novelWhen(parts[i].msgs, false);
+  const 이음매 = (앞끝 && 이시작 && 앞끝 !== 이시작)
+    ? '\n앞 장은 「' + 앞끝 + '」 에서 끝났고, 이 장은 「' + 이시작 + '」 에서 시작한다.' +
+      '\n**그 사이가 건너뛰었으므로 장을 열자마자 한두 문장으로 그것을 짚는다.** ' +
+      '없던 사건을 지어내지 말고, 얼마가 흘렀고 자리가 어떻게 바뀌었는지만 알린다. 생략하지 않는다.'
+    : (앞끝 && 이시작 && 앞끝 === 이시작
+        ? '\n앞 장과 이 장은 같은 자리(' + 이시작 + ')에서 이어진다. 장면을 새로 열지 말고 그대로 이어 쓴다.'
+        : '');
+
   const where = plan.length
     ? '[이 장의 자리]\n' + (i + 1) + '장 / 전체 ' + plan.length + '장' +
       '\n이 장의 목표 분량: 한국어 ' + aim.toLocaleString() + '자 안팎' +
       ' (' + Math.round(aim * 0.75).toLocaleString() + '~' + Math.round(aim * 1.3).toLocaleString() + '자). ' +
       '짧다고 억지로 늘리지 말고, 길다고 사건을 빼지 않는다.' +
+      /* 바로 앞 문장만 보고 쓰면 「앞에서 무슨 일이 있었는지」를 모른 채 쓴다 */
+      (prev ? '\n앞 장이 담은 것: ' + prev : '') +
       (mine ? '\n이 장이 담기로 한 것: ' + mine : '') +
       (next ? '\n다음 장이 담을 것: ' + next +
               '\n이 장은 다음 장으로 넘어갈 수 있는 자리에서 끝낸다. 다음 장의 내용을 미리 쓰지 않는다.'
-            : '\n이 장이 마지막이다. 이야기를 닫는다.')
-    : '';
+            : '\n이 장이 마지막이다. 이야기를 닫는다.') +
+      이음매
+    : (이음매 ? '[이 장의 자리]' + 이음매 : '');
   const ask = [head, spec, where, NOVEL_RULES,
     prevTail ? '[앞 장의 끝 — 여기서 자연스럽게 이어 붙인다]\n' + prevTail : '',
     extra ? '[이번 장에만 반영할 요청]\n' + extra : '',
@@ -8704,6 +8770,10 @@ async function streamInto(target, CTX, signal){
    한국어 서술을 그대로 넣으면 품질이 무너지므로 영어 태그로 한 번 옮겨서 보낸다.   */
 
 const imgKey   = () => (localStorage.getItem(LS.imgKey) || '').trim();
+/* 중계를 쓰면 키는 그쪽이 갖는다. 이 기기에 없는 것이 정상이므로 「없다」로 막으면 안 된다.
+   막는 자리가 아홉 곳이라 하나씩 고치면 반드시 빠뜨린다 — 여기 한 곳에서 판단한다 */
+const 글쓸수있나 = () => !!localStorage.getItem(LS.key) || onRelay();
+const 그림그릴수있나 = () => !!imgKey() || onRelay();
 /* 옛 단일 모델 설정. 수위별 묶음이 생기기 전의 것이라 이제 화면 표기에 쓰지 않는다 */
 const imgSpec  = () => S.imgModels.find(m => m.id === localStorage.getItem(LS.imgModel));
 /* 가끔 나오는 이미지. 눈금에 적은 것과 실제 빈도가 같아야 한다 —
@@ -8968,7 +9038,7 @@ function tagAsk(scene, stateTxt, look, outfit, L){
 /* 프로필 사진이 있으면 그 얼굴을 글로 옮겨 외형 태그로 쓴다.
    Venice 의 비전 모델에 한 번만 물어보고 결과를 카드에 저장한다. */
 async function lookFromAvatar(dataUrl){
-  if (!imgKey()) throw new Error('Venice API 키가 필요합니다');
+  if (!그림그릴수있나()) throw new Error('Venice API 키가 필요합니다');
   const vision = (S.txtModels.find(m => /vl|vision/i.test(m.id))?.id) || 'qwen3-vl-235b-a22b';
   const ask =
     'Describe the person in this photo as a comma-separated list of English tags for an image generator. ' +
@@ -9259,8 +9329,7 @@ function nearestAR(w, h, allow){
   return best || (allow && allow[0]) || '1:1';
 }
 async function veniceImage(prompt, modelId, steps, seedOverride, negOverride, sizeOverride){
-  const key = imgKey();
-  if (!key) throw new Error('Venice API 키가 없습니다');
+  if (!그림그릴수있나()) throw new Error('Venice API 키가 없습니다');
   const model = modelId || localStorage.getItem(LS.imgModel);
   const spec = S.imgModels.find(m => m.id === model);
   if (!model) throw new Error('이미지 모델이 지정되지 않았습니다');
@@ -9374,7 +9443,7 @@ function extractImageRequest(text){
   return {want, rest: kept.join('\n').replace(/\n{3,}/g, '\n\n').trim()};
 }
 function askImage(rest){
-  if (!imgKey()){ show('vSettings'); return toast('설정에서 Venice API 키를 먼저 입력하십시오'); }
+  if (!그림그릴수있나()){ show('vSettings'); return toast('설정에서 Venice API 키를 먼저 입력하십시오'); }
   const m = liveModel();
   const cost = imgPrice(m);
   const card = document.createElement('div');
@@ -9399,7 +9468,7 @@ function askImage(rest){
    왼쪽에 수위(모델 · 단가), 오른쪽에 기본/고급을 놓아 견주면서 정한다.
    여기서 고른 수위는 이 대화에만 걸리고 설정을 건드리지 않는다. */
 function imgModelSheet(reshow){
-  if (!imgKey()){ show('vSettings'); return toast('설정에서 Venice API 키를 먼저 입력하십시오'); }
+  if (!그림그릴수있나()){ show('vSettings'); return toast('설정에서 Venice API 키를 먼저 입력하십시오'); }
   const nameOf = id => {
     const m = S.imgModels.find(x => x.id === id);
     return m ? (m.model_spec?.name || m.id) : '(미지정)';
@@ -9542,14 +9611,14 @@ async function send(opts){
   const key = localStorage.getItem(LS.key) || '';
   const fromInput = opts.text === undefined;
   const text = fromInput ? $('inp').value.trim() : String(opts.text).trim();
-  if (!key){ show('vSettings'); return toast('API 키를 먼저 입력하십시오'); }
+  if (!글쓸수있나()){ show('vSettings'); return toast('API 키를 먼저 입력하십시오'); }
   if (DIST && distDry()) return distDryNotice();
   if (!modelChain().length){ show('vSettings'); return toast('모델을 먼저 선택하십시오'); }
   if (!text) return;
 
   /* 자동 이미지 체크박스가 켜져 있으면 확인창 없이 바로 진행한다 */
   const autoImg = fromInput && $('cImgAuto').checked;
-  if (autoImg && !imgKey()){
+  if (autoImg && !그림그릴수있나()){
     show('vSettings'); return toast('설정에서 Venice API 키를 먼저 입력하십시오');
   }
   if (autoImg) opts.image = true;
@@ -11528,7 +11597,7 @@ function makeSheet(reshow){
 }
 async function generateCharacter(mode, gender, seed){
   gender = gender === 'm' ? 'm' : 'f';
-  if (!localStorage.getItem(LS.key)){ show('vSettings'); return toast('API 키를 먼저 입력하십시오'); }
+  if (!글쓸수있나()){ show('vSettings'); return toast('API 키를 먼저 입력하십시오'); }
   if (!modelChain().length){ show('vSettings'); return toast('모델을 먼저 선택하십시오'); }
   if (S.generating) return toast("이미 만드는 중입니다");
   S.generating = true;
@@ -11777,7 +11846,7 @@ function startAutofill2(key, btn){
 async function autofillSection(key, btn, mode){
   const def = SECTION_DEFS[key];
   if (!def) return;
-  if (!localStorage.getItem(LS.key)){ show('vSettings'); return toast('API 키를 먼저 입력하십시오'); }
+  if (!글쓸수있나()){ show('vSettings'); return toast('API 키를 먼저 입력하십시오'); }
   if (!modelChain().length){ show('vSettings'); return toast('모델을 먼저 선택하십시오'); }
   if (btn){ btn.disabled = true; btn.textContent = '만드는 중…'; }
   try{
@@ -12584,7 +12653,7 @@ function showCeAvatar(src){
 }
 $('ceAvGen').onclick = async () => {
   const e = S.editingChar;
-  if (!imgKey()){ show('vSettings'); return toast('설정에서 Venice API 키를 먼저 입력하십시오'); }
+  if (!그림그릴수있나()){ show('vSettings'); return toast('설정에서 Venice API 키를 먼저 입력하십시오'); }
   const btn = $('ceAvGen');
   const reset = () => { btn.disabled = false; btn.textContent = '✦ 프로필 이미지 생성'; };
   /* 이미 사진이 있는데 또 누르면 같은 태그라 비슷한 그림만 나온다. 외형부터 새로 쓴다. */
@@ -13139,7 +13208,7 @@ const PERSONA_TRAIT = [
 ];
 
 async function generatePersona(gender){
-  if (!localStorage.getItem(LS.key)){ show('vSettings'); return toast('API 키를 먼저 입력하십시오'); }
+  if (!글쓸수있나()){ show('vSettings'); return toast('API 키를 먼저 입력하십시오'); }
   if (!modelChain().length){ show('vSettings'); return toast('모델을 먼저 선택하십시오'); }
   if (S.generating) return toast('이미 만드는 중입니다');
   S.generating = true;
@@ -13839,7 +13908,7 @@ const 매력고르기 = 이름들 => 이름들
 
 /* 본보기 판. **본보기를 고쳤으면 이 수를 하나 올린다.**
    안 올리면 이미 깔린 기기에서는 영영 옛것이 보인다 — 실제로 그렇게 한 번 걸렸다. */
-const SEED_VER = 4;
+const SEED_VER = 5;
 /* 앱이 깔아 준 것에는 이 표가 붙는다. 유저가 만든 것과 가르는 유일한 자리다 */
 const SEED_TAG = '샘플';
 const seedMine = x => (x.tags || []).includes(SEED_TAG) || x.seed === true;
@@ -15183,7 +15252,16 @@ async function distSeed(){
       '말해 놓고 스스로도 우스웠는지 입가가 조금 풀렸다. ' +
       '1층 표시가 켜지고 문이 열렸지만, 그는 곧바로 내리지 않았다.' +
       상태('금요일 밤 9시 반', '입가가 조금 풀림', '멋쩍음', 28, 28)],
-    ['user', '건물 앞에 국숫집 하나 생겼던데, 아직 할 거예요. 같이 가실래요?']
+    ['user', '건물 앞에 국숫집 하나 생겼던데, 아직 할 거예요. 같이 가실래요?'],
+    /* 마지막은 상대가 맺어야 한다. 내 대사로 끝나면 답이 안 온 것처럼 보이고,
+       받은 사람은 「이어서 쓰면 되는구나」가 아니라 「고장인가」로 읽는다 */
+    ['assistant',
+      '이수경은 열린 문을 한 손으로 잡은 채 잠깐 그대로 서 있었다. ' +
+      '거절할 말을 고르는 얼굴은 아니었다.' + '\n\n' +
+      '이수경 : "…국수요."' + '\n\n' +
+      '되뇌듯 한 번 말하고는, 가방끈을 고쳐 쥐며 먼저 밖으로 한 걸음 나섰다.' + '\n\n' +
+      '이수경 : "가요. 저 오늘 삼각김밥 하나 먹었어요."' +
+      상태('금요일 밤 9시 반', '먼저 한 걸음 나섬', '가벼움', 33, 24)]
   ];
   for (let i = 0; i < 턴.length; i++){
     await dbPut('messages', {
@@ -15196,14 +15274,14 @@ async function distSeed(){
   await dbPut('chats', chat);
   await dbPut('memory', {
     chatId: chat.id, summary:'', summarizedUpTo: -1, updatedAt: now(),
-    stateCard: {장소:'엘리베이터', 일시:'금요일 밤 9시 반', 외관:'입가가 조금 풀림',
-                내면:'멋쩍음', 호감:'28', 경계:'28'}
+    stateCard: {장소:'엘리베이터', 일시:'금요일 밤 9시 반', 외관:'먼저 한 걸음 나섬',
+                내면:'가벼움', 호감:'33', 경계:'24'}
   });
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b96';
-const APP_BUILT = '2026-08-26 15:12';
+const APP_BUILD = 'b98';
+const APP_BUILT = '2026-08-26 16:05';
 const APP_NOTE  = '본보기 판 갱신 · 잔액을 키 한도로 · 롤백 고지 · 본보기 복사';
 /* 판 번호는 남긴다 — 다섯 번 누르면 키 칸이 열리는 자리이고, 문의할 때 필요하다.
    무엇이 바뀌었는지는 만든 사람 몫이라 배포판에서는 안 보인다 */
@@ -15292,7 +15370,7 @@ function distPlantKeys(){
     openIntro();
     /* 배포판은 처음 실행 안내가 끝난 뒤에 잇는다. 본편은 그 안내가 없으므로 여기서 */
     if (!DIST) setTimeout(() => 첫안내(), 500);
-  if (localStorage.getItem(LS.key)) fetchModels();
+  if (글쓸수있나()) fetchModels();
     /* 중계를 쓰면 키는 그쪽이 갖는다. 이 기기에 없는 것이 정상이다 */
     else if (DIST && !onRelay()){
       /* 배포판인데 키도 중계도 없다 — 굽기 전에 둘 다 안 채웠다는 뜻이다.
@@ -15306,8 +15384,11 @@ function distPlantKeys(){
           '설정 맨 아래 <b>판 번호를 다섯 번</b> 눌러 키 칸을 여십시오.</span></div>'}
       ]);
     }
-    else { show('vSettings'); toast('설정에서 API 키를 입력하십시오'); }
-    if (localStorage.getItem(LS.imgKey)){ fetchImgModels(); fetchTxtModels(); }
+    /* 중계를 쓰면 여기 키가 없는 것이 정상이다. 예전에는 켤 때마다 이 알림이 번쩍였다 */
+    else if (!onRelay()){ show('vSettings'); toast('설정에서 API 키를 입력하십시오'); }
+    if (그림그릴수있나()){ fetchImgModels(); fetchTxtModels(); }
+    /* 잔액은 설정 탭을 눌러야 비로소 읽으러 갔다. 그래서 늘 한참 뒤에 떴다 */
+    paintBal().catch(() => {});
   }catch(e){
     document.body.innerHTML =
       `<div style="padding:40px 20px;color:#ffc9c9;line-height:1.8">
