@@ -963,9 +963,17 @@
       <div class="fld" id="fldRelay">
         <label>중계 주소 <span style="color:var(--tx3);font-weight:400">(비워 두면 직통)</span></label>
         <input type="text" id="sRelay" placeholder="https://rp-relay.___.workers.dev" autocomplete="off">
-        <!-- 가려 봐야 제 코드를 제가 못 읽을 뿐이다. 비밀번호가 아니라 출입증에 가깝다 -->
-        <input type="text" id="sCode" placeholder="초대 코드 (안 쓰면 비워 둠)" autocomplete="off" style="margin-top:6px">
         <div class="hint" id="sRelayHint"></div>
+      </div>
+      <!-- 코드는 따로 둔다. 배포판에서는 주소를 감추고 이 칸만 내놓는다 -->
+      <div class="fld" id="fldCode">
+        <label>내 코드</label>
+        <!-- 가려 봐야 제 코드를 제가 못 읽을 뿐이다. 비밀번호가 아니라 출입증에 가깝다.
+             한글도 그대로 친다 — 앱이 감싸 보내고 중계가 푼다 -->
+        <input type="text" id="sCode" placeholder="예: 홍길동" autocomplete="off">
+        <div class="hint" id="sCodeHint">
+          배포자로부터 안내받은 테스터님의 코드를 입력하세요.
+        </div>
       </div>
       <div class="fld" id="fldKey">
         <label>OpenRouter API 키</label>
@@ -1852,7 +1860,7 @@ const DIST_IMGKEY = '';   /* 비워 둔다 — 구울 때 넣는다. node 검증
 /* 배포판은 프롬프트가 빠진 판이라 중계 없이는 못 돈다.
    구울 때 심는다 — node 검증/배포굽기.js --중계 <주소> <초대코드> */
 const DIST_RELAY = 'https://rp-relay.amuselk.workers.dev';
-const DIST_CODE = '손님';
+const DIST_CODE  = '';
 
 /* ═══════════════ 내 판 ═══════════════
    본편도 올려서 쓴다. 기기를 바꾸거나 저장소를 지우면 키를 손으로 다시 넣어야 하는데,
@@ -4304,6 +4312,31 @@ function spanText(chat){
   if (!d && !h) return '';
   return (d ? d + '일 ' : '') + (h ? h + '시간' : '');
 }
+/* 실제로 붙잡고 있던 시간. 사이가 벌어진 데서 끊어 덩어리마다 더한다.
+   30분은 「잠깐 자리를 뜬 것」과 「나중에 다시 들어온 것」을 가르는 선이다 —
+   한 턴은 보통 몇 분이고, 30분을 넘겨 이어 쓰는 일은 드물다. */
+const PLAY_GAP = 30 * 60 * 1000;
+function playMinutes(msgs){
+  const t = (msgs || []).map(m => m.createdAt).filter(Boolean).sort((a, b) => a - b);
+  if (t.length < 2) return 0;
+  let 합 = 0, 시작 = t[0], 앞 = t[0];
+  for (const x of t.slice(1)){
+    if (x - 앞 > PLAY_GAP){ 합 += 앞 - 시작; 시작 = x; }
+    앞 = x;
+  }
+  합 += 앞 - 시작;
+  return Math.round(합 / 60000);
+}
+/* 「2시간 10분」처럼. 하루를 넘으면 날로 적는다 */
+function playText(분){
+  if (!분) return '';
+  if (분 < 60) return 분 + '분';
+  const h = Math.floor(분 / 60), m = 분 % 60;
+  if (h < 24) return h + '시간' + (m ? ' ' + m + '분' : '');
+  const d = Math.floor(h / 24);
+  return d + '일' + (h % 24 ? ' ' + (h % 24) + '시간' : '');
+}
+
 /* 목록을 그릴 때는 메시지를 읽지 않는다. 대화를 열 때 한 번 채워 둔다 */
 async function fillChatMeta(chat, msgs){
   let touched = false;
@@ -4319,7 +4352,15 @@ async function fillChatMeta(chat, msgs){
     chat.cost = (msgs || []).reduce((a, m) => a + (Number(m.usage?.cost) || 0), 0);
     touched = true;
   }
-  if (touched) await dbPut('chats', chat);
+  /* 붙잡고 있던 시간. 턴이 늘 때마다 달라지므로 열 때마다 다시 잰다 */
+  const 분 = playMinutes(msgs);
+  if (분 && chat.play !== 분){ chat.play = 분; touched = true; }
+  if (touched){
+    await dbPut('chats', chat);
+    /* 목록이 든 사본도 같이 고쳐야 다시 열기 전까지 어긋나지 않는다 */
+    const i = (S.chats || []).findIndex(c => c.id === chat.id);
+    if (i >= 0) S.chats[i] = chat;
+  }
 }
 
 function daysApart(prev, next){
@@ -5248,7 +5289,11 @@ function renderChats(){
     const av = avatarOf(c);
     /* 이름 옆에는 이 대화가 무엇인지 — 장르와 이야기 속에서 흐른 시간.
        상태 줄의 날짜를 그대로 띄우면 바깥 날짜와 헷갈리므로 기간만 적는다. */
-    const at = [ch.genre?.name, spanText(ch)].filter(Boolean).join(' · ');
+    /* 이야기 속 시간 옆에 실제로 붙잡고 있던 시간을 괄호로 */
+    const 흐름 = spanText(ch);
+    const 앉은 = playText(ch.play);
+    const 때 = 흐름 && 앉은 ? 흐름 + ' (' + 앉은 + ')' : (흐름 || (앉은 ? '(' + 앉은 + ')' : ''));
+    const at = [ch.genre?.name, 때].filter(Boolean).join(' · ');
     /* 이야기가 지금 어디까지 와 있는가 — 상태 카드의 자리와 시각.
        이름 옆은 한 줄로 잘리므로 여기에 따로 한 줄을 둔다. */
     const sc = S.mems?.[ch.id]?.stateCard || {};
@@ -6775,7 +6820,9 @@ const NOVEL_CHUNK = 5000;    /* 한 장에 넣을 원문. 출력 그릇보다 �
 const NOVEL_OUT   = 3600;    /* 한 장을 받을 최대 토큰 */
 const NOVEL_KEEP  = 900;     /* 이어 쓸 때 앞 장에서 물려줄 꼬리 */
 const NOVEL_PLANS = 8;       /* 보관할 설계도 수 */
-const NOVEL_CONT  = 2;       /* 한 장에서 이어받기를 시도할 최대 횟수 */
+/* 한 장이 담는 원문이 커졌으므로 한 번에 다 못 쓴다. 이어받아 채운다.
+   둘로 두었더니 목표의 4분의 1에서 끝났다 */
+const NOVEL_CONT  = 5;       /* 한 장에서 이어받기를 시도할 최대 횟수 */
 
 /* 소설을 쓸 모델. 대표적인 것만 추린다. 값은 OpenRouter 기준. */
 const NOVEL_MODELS = [
@@ -6817,8 +6864,11 @@ function novelParts(want){
   const total = 짝.reduce((a, x) => a + x.l.length + 1, 0);
   let n = (want > 0) ? Math.min(Math.round(want), 짝.length)
                      : Math.max(1, Math.ceil(total / NOVEL_CHUNK));
-  /* 한 장이 그릇보다 너무 커지면 모델이 뒤를 버린다. 그때는 장을 더 쪼갠다. */
-  while (n < 짝.length && total / n > NOVEL_CHUNK * 1.5) n++;
+  /* 설계도가 장 수를 정했으면 그것을 지킨다.
+     예전에는 여기서 그릇에 맞춰 다시 쪼갰는데, 그러면 설계도에 8장뿐인데 21장을 쓰게 되고
+     9장부터는 담을 것이 정해지지 않은 채 쓰였다. 그게 원고가 얇아진 까닭이다.
+     한 장이 커지는 것은 아래 이어받기가 감당한다. */
+  if (!(want > 0)) while (n < 짝.length && total / n > NOVEL_CHUNK * 1.5) n++;
   n = Math.max(1, n);
   const target = total / n;
 
@@ -6961,13 +7011,16 @@ function chapterRange(원하는){
     const n = Math.max(최소, Math.round(원하는));
     return {total, lo: n, hi: n};
   }
-  /* 예전에는 한 장을 5,000자 안팎으로 잡아 장이 스무 개씩 나왔다.
-     읽는 쪽에서는 너무 잘게 쪼개진다. 한 장을 두 배로 두어 수를 줄인다 */
-  const lo = Math.max(2, Math.ceil(total / (NOVEL_CHUNK * 2.8)));
-  const hi = Math.max(lo, Math.ceil(total / (NOVEL_CHUNK * 1.6)));
+  /* 장이 많으면 장 안의 연속성이 끊긴다. 여덟 안팎이면 한 장이 한 흐름을 온전히 담는다.
+     실제로 30장을 뽑아 보니 한 장이 1,200자였다 — 담당 원문의 4분의 1만 쓰고 버렸다.
+     길면 늘리되 열둘을 넘기지 않는다. */
+  const lo = Math.max(3, Math.min(8, Math.ceil(total / (NOVEL_CHUNK * 3.5))));
+  const hi = Math.max(lo, Math.min(12, Math.ceil(total / (NOVEL_CHUNK * 2.2))));
   return {total, lo, hi};
 }
-function outlineChapters(outline){
+/* 장마다 제목과 그 아래 딸린 줄들을 함께 담는다.
+   예전에는 제목 줄만 뽑고 계기 · 사건 · 끝을 버려, 본문을 쓸 때 기댈 것이 없었다. */
+function outlineParts(outline){
   const t = String(outline || '');
   const m = t.match(/장\s*구성\s*[:：]([\s\S]*?)(?:\n\s*(?:관통\s*요소|주의|인물|시점)\s*[:：]|$)/);
   if (!m) return [];
@@ -6976,9 +7029,27 @@ function outlineChapters(outline){
     const line = raw.trim();
     if (!line) continue;
     const g = line.match(/^(?:\d{1,2}\s*[.)장]|[-•·])\s*(.+)$/);
-    if (g && g[1].trim()) out.push(g[1].trim().slice(0, 120));
+    if (g && g[1].trim()){ out.push({제목: g[1].trim().slice(0, 120), 줄: []}); continue; }
+    /* 제목 아래 딸린 줄. 「계기 = …」 꼴이면 그 장의 것이다 */
+    const k = line.match(/^([가-힣]{1,4})\s*[=:：]\s*(.+)$/);
+    if (k && out.length) out[out.length - 1].줄.push([k[1], k[2].trim().slice(0, 200)]);
   }
   return out;
+}
+/* 제목만 필요한 자리 — 장 수를 세거나 카드 이름을 붙일 때 */
+function outlineChapters(outline){
+  return outlineParts(outline).map(x => x.제목);
+}
+/* 그 장에 딸린 줄 하나를 꺼낸다 */
+function outlineOne(부분, 무엇){
+  const hit = (부분?.줄 || []).find(([k]) => k === 무엇);
+  return hit ? hit[1] : '';
+}
+/* 그 장 전체를 글로 — 본문을 쓸 때 그대로 넘긴다 */
+function outlineFull(부분){
+  if (!부분) return '';
+  return 부분.제목 + (부분.줄.length
+    ? '\n' + 부분.줄.map(([k, v]) => '  ' + k + ' = ' + v).join('\n') : '');
 }
 
 /* 원고의 뼈대. 사용자의 「계속 적용」 요청이 여기에 쌓인다. */
@@ -7097,8 +7168,19 @@ async function novelOutline(seedAsk, 원하는장수){
     '',
     '시점과 문체: (인칭 · 시제 · 문장 호흡 · 어조를 한 줄로)',
     '인물: (이름과 한 줄 소개. 등장 순서대로)',
-    '장 구성: (각 장의 한 줄 요약. 「1. 」 처럼 번호를 붙여 한 줄에 하나씩 쓴다.',
-    '        **각 줄 끝에 「[줄임]」 「[보통]」 「[채움]」 가운데 하나를 반드시 붙인다.**',
+    '장 구성: (장마다 아래 꼴로 **다섯 줄**을 쓴다. 요약 한 줄로 끝내지 않는다.',
+    '',
+    '  1. (장 제목 한 줄) [보통]',
+    '     계기 = 이 장이 시작되는 까닭. 앞 장의 무엇 때문에 여기로 오는가',
+    '     사건 = 이 장에서 실제로 일어나는 일. 벌어진 순서대로 두셋',
+    '     끝 = 이 장이 닫히는 자리. 다음 장이 여기서 이어받는다',
+    '     키워드 = 이 장에서 되풀이되거나 눈에 걸리는 것 두셋',
+    '',
+    '        **요약이 아니라 흐름이다.** 「카페에서의 은밀한 유린」 같은 줄은',
+    '        무슨 일인지는 말해도 어디서 시작해 어디서 끝나는지를 말하지 않는다.',
+    '        그런 줄로는 장이 서로 겹치고, 본문을 쓸 때 기댈 것이 없다.',
+    '',
+    '        **각 제목 줄 끝에 「[줄임]」 「[보통]」 「[채움]」 가운데 하나를 붙인다.**',
     '        아래 [구간 밀도] 에 구간마다 이미 판단해 둔 것이 있다. 그것을 따르되,',
     '        장을 다르게 묶었으면 묶은 대로 다시 판단한다.',
     '        ' + RANGE_NOTE,
@@ -7106,8 +7188,10 @@ async function novelOutline(seedAsk, 원하는장수){
     '        발췌와 발췌 사이는 원문에 있으나 여기 안 실린 구간이다. 비어 있는 것이 아니라',
     '        보여 주지 않은 것이므로, 그 사이에도 장이 놓인다고 보고 나눈다.',
     '        **글자 수로 고르게 나누지 않는다.** 장소가 바뀌는 자리, 시간이 크게 뛰는 자리에서 끊는다.',
-    '        늘어지는 구간은 여러 장으로 벌리지 말고 한 장에 묶고,',
-    '        여러 자리를 훌쩍 지나간 구간은 오히려 나눠서 각각에 자리를 준다.)',
+    '        늘어지는 구간은 여러 장으로 벌리지 말고 한 장에 묶는다.',
+    '',
+    '        **같은 일을 두 장에 나눠 적지 않는다.** 앞에 적은 장과 겹친다 싶으면',
+    '        새 장을 만들지 말고 그 장의 사건에 이어 붙인다. 장 수를 채우려고 쪼개지 않는다.)',
     '관통 요소: (되풀이되는 사물 · 말버릇 · 상징. 없으면 생략)',
     '주의: (아래 두 가지를 나눠 적는다.',
     '      (가) 원문에서 건너뛰어 독자가 의문을 가질 만한 지점과 어떻게 메울지.',
@@ -7166,9 +7250,12 @@ async function novelWriteOne(i, extra, prevTail){
     : '아래는 앞 장의 끝부분과 이어지는 대화 구간이다. 자연스럽게 이어 써라. 이미 쓴 부분을 되풀이하지 않는다.';
   /* 이 장이 설계도의 몇 번째이고 무엇을 담기로 했는지 알려 준다.
      이것이 없으면 장 제목과 내용이 설계도와 어긋난다. */
-  const prev = plan[i - 1];
-  const mine = plan[i];
-  const next = plan[i + 1];
+  /* 다섯 줄을 온전히 읽는다. 앞뒤 장은 필요한 한 줄만 가져온다 —
+     통째로 주면 길어지고, 앞 장을 다시 쓰거나 다음 장을 미리 쓴다 */
+  const 부분 = outlineParts(b.outline);
+  const prev = 부분[i - 1] ? (outlineOne(부분[i - 1], '끝') || 부분[i - 1].제목) : '';
+  const mine = outlineFull(부분[i]) || plan[i];
+  const next = 부분[i + 1] ? (outlineOne(부분[i + 1], '계기') || 부분[i + 1].제목) : '';
   /* 장마다 다른 비율을 쓴다. 설계도가 정한 것을 먼저 보고, 없으면 앱이 잰다.
      하나로 묶어 두면 늘어지는 구간과 성긴 구간이 같은 길이로 나온다 */
   const 표시 = novelMark(mine);
@@ -7205,9 +7292,9 @@ async function novelWriteOne(i, extra, prevTail){
       '짧다고 억지로 늘리지 말고, 길다고 사건을 빼지 않는다.' +
       결말 +
       /* 바로 앞 문장만 보고 쓰면 「앞에서 무슨 일이 있었는지」를 모른 채 쓴다 */
-      (prev ? '\n앞 장이 담은 것: ' + prev : '') +
-      (mine ? '\n이 장이 담기로 한 것: ' + mine : '') +
-      (next ? '\n다음 장이 담을 것: ' + next +
+      (prev ? '\n앞 장이 끝난 자리: ' + prev : '') +
+      (mine ? '\n\n[이 장이 담기로 한 것 — 설계도에서 그대로]\n' + mine + '\n' : '') +
+      (next ? '\n다음 장은 여기서 시작한다: ' + next +
               '\n이 장은 다음 장으로 넘어갈 수 있는 자리에서 끝낸다. 다음 장의 내용을 미리 쓰지 않는다.'
             : '\n이 장이 마지막이다. 이야기를 닫는다.') +
       이음매
@@ -7220,8 +7307,11 @@ async function novelWriteOne(i, extra, prevTail){
   let text = '';
   let r = await askTextEx(ask, NOVEL_OUT, 0.85, novelModel());
   text = r.text;
-  /* 잘렸으면 이어받는다. 끝 문장을 물려주어 겹치지 않게 한다. */
-  for (let k = 0; k < NOVEL_CONT && r.cut; k++){
+  /* 잘렸거나 목표에 크게 못 미치면 이어받는다. 끝 문장을 물려주어 겹치지 않게 한다.
+     예전에는 「잘렸을 때」만 봤다. 모델이 스스로 끊으면 잘린 것이 아니라서
+     목표의 4분의 1이어도 그대로 끝났다. */
+  const 모자라나 = () => text.replace(/\s/g, '').length < aim * 0.6;
+  for (let k = 0; k < NOVEL_CONT && (r.cut || 모자라나()); k++){
     novelBusy((i + 1) + '장을 이어받는 중', null, null);
     r = await askTextEx('아래 글의 바로 다음부터 이어 써라. 이미 쓴 부분을 되풀이하지 말고, 문장 도중이면 그 문장부터 이어 붙인다.\n\n' +
       spec + '\n\n[지금까지]\n' + text.slice(-NOVEL_KEEP), NOVEL_OUT, 0.85, novelModel());
@@ -7390,7 +7480,13 @@ function pushPlan(outline, 요청, 장수){
   return 목록[목록.length - 1];
 }
 
-const novelText = () => (novelBook().sections || []).map(x => x.text).join('\n\n');
+/* 장 제목을 함께 낸다. 예전에는 본문만 이어 붙여, 서른 장짜리 원고가
+   한 덩어리로 나왔다 — 화면에는 갈려 있는데 내보낸 파일에서만 사라졌다.
+   제목 없이 넘기고 싶을 때만 민글로 부른다 */
+const novelText = (민글) => (novelBook().sections || [])
+  .map((x, i) => 민글 ? x.text
+                      : '## ' + (x.title || (i + 1) + '장') + '\n\n' + x.text)
+  .join('\n\n');
 
 /* ── 화면 ── */
 function novelBusy(what, pct, eta){
@@ -13930,7 +14026,7 @@ const DIST_HIDE = {
   /* 통째로 감출 섹션 */
   sect: ['사용량', '데이터'],
   /* 이름표 붙인 덩어리 */
-  block: ['fldRelay',    /* 중계를 심으므로 만질 일이 없고, 지우면 앱이 멈춘다 */
+  block: ['fldRelay',    /* 주소는 심으므로 만질 일이 없고, 지우면 앱이 멈춘다. 코드 칸(fldCode)은 남긴다 */
           'fldImgFind',  /* 이미지 모델 검색 — 고를 목록 자체를 안 내놓는다 */
           'fldKey',      /* 키를 심으므로 쓸 일이 없고, 열려 있으면 심은 키를 지운다 */
           'fldFilter',   /* 모델 검색 */
@@ -15851,9 +15947,9 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b103';
-const APP_BUILT = '2026-08-26 22:25';
-const APP_NOTE  = '배포판 — 안내 하나로 · 스탯 두 줄 · 색상만 · 말풍선 ⓘ · 예시 안내 목록 위로';
+const APP_BUILD = 'b106';
+const APP_BUILT = '2026-08-26 23:10';
+const APP_NOTE  = '원본도 코드로 지갑을 고른다 · 비상용 계정 등록';
 /* 판 번호는 남긴다 — 다섯 번 누르면 키 칸이 열리는 자리이고, 문의할 때 필요하다.
    무엇이 바뀌었는지는 만든 사람 몫이라 배포판에서는 안 보인다 */
 $('sVersion').innerHTML = DIST
@@ -15919,6 +16015,33 @@ function plantMine(){
   심기(LS.code,   MINE_CODE);
 }
 
+/* 코드가 없으면 아무것도 못 한다. 그러니 그것부터 묻는다.
+   설정 어딘가를 찾아 헤매게 두지 않는다 — 넣으면 바로 쓸 수 있게 한다. */
+function distAskCode(){
+  sheet('코드를 입력해 주십시오', [
+    {info: true, html:
+      '<div style="line-height:1.9">' +
+      (DIST ? '배포자로부터 안내받은 <b>테스터님의 코드</b>를 입력하세요.'
+            : '쓰실 <b>코드</b>를 입력하세요. 코드마다 쓰는 몫이 따로입니다.') + '<br>' +
+      '<span style="color:var(--tx3)">한 번 넣으면 이 기기에 저장됩니다. ' +
+      '설정 → 연결 에서 언제든 바꿀 수 있습니다.</span></div>'},
+    {info: true, html: '<input type="text" id="askCode" placeholder="예: 홍길동" ' +
+      'autocomplete="off" style="width:100%;background:var(--panel2);border:1px solid var(--line);' +
+      'border-radius:9px;padding:11px 12px;color:var(--tx);font-size:15px;font-family:inherit">'},
+    {label: '넣기', leave: true, run: () => {
+      const v = ($('askCode')?.value || '').trim();
+      if (!v) return toast('코드를 넣어 주십시오');
+      localStorage.setItem(LS.code, v);
+      if ($('sCode')) $('sCode').value = v;
+      toast('코드를 넣었습니다');
+      /* 코드가 맞으면 여기서 모델과 잔액이 비로소 뜬다 */
+      fetchModels();
+      paintBal().catch(() => {});
+    }}
+  ]);
+  setTimeout(() => { try{ $('askCode')?.focus(); }catch(_){} }, 120);
+}
+
 function distPlantKeys(){
   if (!DIST) return;
   /* 이미지 기본값 — 가성비(무검열 lustify)로 두고, 장면에 맞춰 올리는 것은 꺼 둔다.
@@ -15959,7 +16082,14 @@ function distPlantKeys(){
     openIntro();
     /* 배포판은 처음 실행 안내가 끝난 뒤에 잇는다. 본편은 그 안내가 없으므로 여기서 */
     if (!DIST) setTimeout(() => 첫안내(), 500);
-  if (글쓸수있나()) fetchModels();
+  /* 중계를 쓰면 모자란 것은 키가 아니라 코드다. 그것부터 묻는다 —
+       설정 어딘가를 찾아 헤매게 두지 않는다.
+       본편도 같다. 코드를 바꿔 넣으면 그 지갑으로 나가므로,
+       평소 쓰는 코드와 비상용을 그때그때 갈아 낄 수 있다 */
+    if (onRelay() && !(localStorage.getItem(LS.code) || '').trim()){
+      show('vSettings'); distAskCode();
+    }
+    else if (글쓸수있나()) fetchModels();
     /* 중계를 쓰면 키는 그쪽이 갖는다. 이 기기에 없는 것이 정상이다 */
     else if (DIST && !onRelay()){
       /* 배포판인데 키도 중계도 없다 — 굽기 전에 둘 다 안 채웠다는 뜻이다.
@@ -15968,8 +16098,7 @@ function distPlantKeys(){
       sheet('아직 쓸 수 없습니다', [
         {info:1, html:'<div style="line-height:1.9">' +
           '이 판에는 <b>열쇠가 들어 있지 않습니다.</b> 보내 주신 분께 알려 주십시오.<br><br>' +
-          '<span style="color:var(--tx3)">만든 사람이라면 — <code>DIST_KEY</code> 를 채우고 ' +
-          '<code>node 검증/배포굽기.js</code> 를 다시 돌리거나, ' +
+          '<span style="color:var(--tx3)">만든 사람이라면 — 중계 주소를 심어 다시 굽거나, ' +
           '설정 맨 아래 <b>판 번호를 다섯 번</b> 눌러 키 칸을 여십시오.</span></div>'}
       ]);
     }
