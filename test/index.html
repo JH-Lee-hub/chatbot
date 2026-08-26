@@ -1051,10 +1051,10 @@
           <select id="sImgDiceN" style="margin-top:6px"></select>
         </div>
         <label class="sw"><input type="checkbox" id="sPreHint">
-          <span>답변 예시를 미리 만들어 두기 (기본 꺼짐)</span></label>
+          <span>AI 추천 답변을 미리 만들어 두기 (기본 꺼짐)</span></label>
         <div class="hint">
           켜면 상대의 응답이 끝날 때마다 <b>내가 할 법한 말 세 개를 미리 만들어</b> 둡니다.
-          접힌 채로 붙어 있다가 「답변 예시」를 누르면 기다리지 않고 바로 펼쳐집니다.<br>
+          접힌 채로 붙어 있다가 「AI 추천 답변」을 누르면 기다리지 않고 바로 펼쳐집니다.<br>
           <b>매 턴 요청이 한 번씩 더 나갑니다.</b> 한 번에 $0.001 안팎이지만 안 쓰는 턴에도 나갑니다.
           막힐 때만 눌러 쓰신다면 꺼 두는 편이 낫습니다.
         </div>
@@ -1695,7 +1695,7 @@
       <div class="fld"><label>그 밖에</label>
         <textarea id="peDesc" rows="3" placeholder="위 칸에 안 들어가는 것을 적습니다"></textarea>
         <div class="hint">
-          <b>말투</b>와 <b>성격</b>은 답변 예시 · 소설 재구성처럼
+          <b>말투</b>와 <b>성격</b>은 AI 추천 답변 · 소설 재구성처럼
           <b>앱이 나를 대신 말하게 되는 자리</b>에서 쓰입니다.
           수정하면 진행 중인 대화에도 즉시 반영됩니다.
         </div></div>
@@ -3011,10 +3011,10 @@ function paintMacros(){
     toast(h.checked ? '응답마다 예시를 미리 만듭니다' : '누를 때만 만듭니다');
   };
   const hw = $('mcHintWhy');
-  if (hw) hw.onclick = () => sheet('답변 예시 미리 생성', [
+  if (hw) hw.onclick = () => sheet('AI 추천 답변 미리 만들기', [
     {info: true, html: '<span class="pguide">' +
       '켜 두면 상대의 응답이 끝날 때마다 <b>내가 할 법한 말 세 개를 미리 만들어</b> 둡니다. ' +
-      '접힌 채로 붙어 있다가 「답변 예시」를 누르면 기다리지 않고 바로 펼쳐집니다.<br><br>' +
+      '접힌 채로 붙어 있다가 「AI 추천 답변」을 누르면 기다리지 않고 바로 펼쳐집니다.<br><br>' +
       '<b>매 턴 요청이 한 번씩 더 나갑니다.</b> 한 번에 $0.001 안팎이지만 안 쓰는 턴에도 나갑니다.<br><br>' +
       '막힐 때만 눌러 쓰신다면 꺼 두는 편이 낫습니다. 예시를 자주 쓰면 대화의 결이 ' +
       '모델 쪽으로 끌려가기도 합니다.</span>'}
@@ -6452,13 +6452,13 @@ function msgHTML(m, isLast){
   const pics = (m.images || []).map(u =>
     `<div class="pic${fold}"><button type="button" class="picfold" data-act="foldpic" title="접기/펴기">▾</button><img src="${u}" alt="장면" loading="lazy"></div>`
   ).join('') + (m.imgPending ? '<div class="imgwait">이미지를 만드는 중입니다…</div>' : '');
-  const mkimg = (m.role === 'assistant' && imgKey() && !m.imgPending)
+  const mkimg = (m.role === 'assistant' && 그림그릴수있나() && !m.imgPending)
     ? '<button data-act="img">이미지</button>' : '';
   /* 무슨 말을 해야 할지 막히는 순간이 있다. 마지막 응답 아래에서만 예시를 부른다. */
   const ready = S.hintMap[m.id] && S.hintMap[m.id] !== 'wait';
   const hintBtn = (m.role === 'assistant' && isLast)
     ? '<button data-act="hint">' +
-      (ready ? (S.hintFold[m.id] ? '답변 예시 ▾' : '답변 예시 ▴') : '답변 예시') +
+      (ready ? (S.hintFold[m.id] ? 'AI 추천 답변 ▾' : 'AI 추천 답변 ▴') : 'AI 추천 답변') +
       '</button>' : '';
   const hints = hintBox(m);
   /* 이야기 밖 · 앱이 채움 — 같은 자리에 값만 달리 붙인다 */
@@ -6552,7 +6552,7 @@ function renderMsgs(toBottom){
   S.messages.forEach((m, i) => {
     const isLast = i === last;
     const sig = m.content + '|' + m.activeVariant + '|' + (m.images?.length||0)
-      + '|' + (m.imgPending?1:0) + '|' + isLast + '|' + (imgKey()?1:0) + '|' + (m.imgFold?1:0)
+      + '|' + (m.imgPending?1:0) + '|' + isLast + '|' + (그림그릴수있나()?1:0) + '|' + (m.imgFold?1:0)
       + '|' + JSON.stringify(S.hintMap[m.id] || 0) + '|' + (S.hintFold[m.id] ? 1 : 0)
       + '|' + (m.mark || '') + '|' + (m.genre || '') + '|' + (m.flag || '');
     seen.add(m.id);
@@ -6841,7 +6841,7 @@ const novelModel = () => localStorage.getItem(LS.novelModel) || '';
 
 /* 다시 생성한 응답이 여럿이면 가장 마지막에 만든 것을 쓴다 */
 function novelLine(m, un, cn){
-  if (isOff(m)) return '';   /* 이야기 밖은 소설에도 답변 예시에도 안 들어간다 */
+  if (isOff(m)) return '';   /* 이야기 밖은 소설에도 추천 답변에도 안 들어간다 */
   const v = (m.variants && m.variants.length) ? m.variants[m.variants.length - 1] : m.content;
   const body = String(v).replace(/\n?[ \t]*\[상태\][^\n]*/g, '')
                         .replace(/^\s*\[지시\][^\n]*$/gm, '').trim();
@@ -8842,6 +8842,11 @@ async function setChatModel(mid){
 /* 이름을 누르면 뜨는 요약 — 세 칸씩 넉 줄. null 은 빈 칸이라 긴장·취기가 오른쪽으로 붙는다.
      체력 이성 매력 / 욕심 대담 욕구 / 호감 반감 경계 /  ·  긴장 취기 */
 const WHO_GRID = ['hp','int','cha', 'amb','brv','des', 'aff','ant','grd', null,'ten','drk'];
+/* 배포판은 여섯만 쓴다. 인물 편집과 같은 차례로 둔다 —
+   긴장 · 대담 · 욕구(그 사람의 결)와 호감 · 반감 · 경계(나를 보는 값)이다.
+   DIST_STATS 는 이 아래에서 정해지므로 부를 때 고른다 */
+const WHO_GRID_DIST = ['ten','brv','des', 'aff','ant','grd'];
+const whoGrid = () => (typeof DIST !== 'undefined' && DIST) ? WHO_GRID_DIST : WHO_GRID;
 /* 채팅 중에 이름을 누르면 인물 요약을 띄운다. 화면을 벗어나지 않는다. */
 async function openWho(){
   const c = S.character;
@@ -8870,7 +8875,7 @@ async function openWho(){
                p.job].filter(Boolean).join(' · ');
   const st = p.stats;
   const chips = st
-    ? '<div class="whoStats">' + WHO_GRID.map(k => {
+    ? '<div class="whoStats">' + whoGrid().map(k => {
         if (k === null) return '<div class="sp"></div>';
         const sv = setv(k);
         if (sv == null) return '';
@@ -9279,7 +9284,7 @@ function diceWorth(text){
 }
 /* 굴린다. 대화마다 언제 마지막으로 나왔는지를 세어 간격을 지킨다 */
 function diceRoll(text){
-  if (!diceOn() || !imgKey() || !S.chat) return false;
+  if (!diceOn() || !그림그릴수있나() || !S.chat) return false;
   const g = diceOf(localStorage.getItem(LS.imgDiceN) || 'some');
   const 지난 = S.messages.filter(m => m.role === 'assistant').length - (S.chat.diceAt ?? -99);
   /* 붙자마자 또 붙으면 성가시다. 간격의 절반은 무조건 쉰다 */
@@ -9552,7 +9557,7 @@ async function lookFromAvatar(dataUrl){
 /* 1단계 — Venice 무검열 텍스트 모델 */
 async function veniceTags(ask){
   const model = localStorage.getItem(LS.imgTxt);
-  if (!model || !imgKey()) throw new Error('Venice 텍스트 모델 미지정');
+  if (!model || !그림그릴수있나()) throw new Error('Venice 텍스트 모델 미지정');
   const res = await apiFetch('ve', '/chat/completions', {
     method:'POST',
     body: JSON.stringify({
@@ -9691,7 +9696,7 @@ async function buildImagePrompt(sceneText, stateTxt, stateCard){
 /* 계층 순서대로 시도한다. 앞 모델이 거부하거나 죽어도 그림은 나온다. */
 /* 업스케일은 base64 를 받아 PNG 바이너리를 돌려준다 */
 async function veniceUpscale(dataUri, scale){
-  const key = imgKey();
+  /* 키는 apiFetch 가 붙인다. 중계면 그쪽이 갖는다 */
   const b64 = String(dataUri).split(',')[1];
   if (!b64) throw new Error('업스케일할 이미지가 없습니다');
   const res = await apiFetch('ve', '/image/upscale', {
@@ -15947,9 +15952,9 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b106';
-const APP_BUILT = '2026-08-26 23:10';
-const APP_NOTE  = '원본도 코드로 지갑을 고른다 · 비상용 계정 등록';
+const APP_BUILD = 'b108';
+const APP_BUILT = '2026-08-26 23:59';
+const APP_NOTE  = '배포판 인물 카드에 안 쓰는 수치가 보이던 것';
 /* 판 번호는 남긴다 — 다섯 번 누르면 키 칸이 열리는 자리이고, 문의할 때 필요하다.
    무엇이 바뀌었는지는 만든 사람 몫이라 배포판에서는 안 보인다 */
 $('sVersion').innerHTML = DIST
