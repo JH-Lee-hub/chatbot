@@ -663,18 +663,12 @@
   .gsec code{background:var(--panel2);border:1px solid var(--line);border-radius:5px;
              padding:1px 6px;color:var(--tx);font-size:12px}
   .gsec.dimq{color:var(--tx3);font-size:12px;border-top:1px solid var(--line);padding-top:11px}
+  /* 목록 맨 위에 붙는 예시 안내 */
+  .distTop{background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+    margin:10px 12px 2px;padding:9px 11px;font-size:11.5px;line-height:1.6;color:var(--tx3)}
   /* 앱이 깔아 준 대화임을 채팅창 맨 위에 한 줄로 */
   #chatSeedNote{flex:0 0 auto;background:var(--panel2);border-bottom:1px solid var(--line);
     padding:7px 12px;font-size:11.5px;line-height:1.6;color:var(--tx3)}
-  /* 가리키는 말풍선 — 화면을 덮되 눌러서 넘긴다 */
-  #coach{position:fixed;inset:0;z-index:70;display:none;background:rgba(0,0,0,.55)}
-  #coach.on{display:block}
-  .cbub{position:absolute;background:var(--panel);border:1px solid var(--acc);
-    border-radius:12px;padding:13px 15px;font-size:13.5px;line-height:1.75;color:var(--tx);
-    box-shadow:0 10px 28px rgba(0,0,0,.5)}
-  .ctail{position:absolute;bottom:-7px;width:12px;height:12px;background:var(--panel);
-    border-right:1px solid var(--acc);border-bottom:1px solid var(--acc);
-    transform:rotate(45deg)}
   /* 두 단추를 가로로. 「다음에 또 보기」가 앞이다 */
   #sheetIn.twoRow{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
   #sheetIn.twoRow h3{flex:1 0 100%}
@@ -691,6 +685,16 @@
   #introDots{display:flex;gap:6px;flex:1}
   #introDots i{width:6px;height:6px;border-radius:50%;background:var(--line2)}
   #introDots i.on{background:var(--acc)}
+  /* 아이콘 밑에 두세 글자. 무엇인지 모른 채 누르게 두지 않는다 */
+  .nvIco{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:1px;height:auto;padding:3px 5px;width:auto;min-width:34px}
+  .nvIco b{font-size:15px;line-height:1;font-weight:400}
+  .nvIco i{font-style:normal;font-size:9px;line-height:1;color:var(--tx3)}
+  /* 본문을 한꺼번에 여닫는 줄 */
+  .nvAll{display:flex;gap:6px;margin:2px 0 9px}
+  .nvAll button{flex:1 1 0;padding:7px 0;font-size:12px;border-radius:9px;
+    border:1px solid var(--line);background:var(--panel2);color:var(--tx2);font-family:inherit}
+  .nvAll button:active{background:var(--panel)}
   /* 소설 화면 — 장 단위 카드로 쌓고, 긴 본문은 접어 둔다 */
   /* ── 말풍선 안내 ── */
   #tour{position:fixed;inset:0;z-index:120;display:none}
@@ -807,7 +811,7 @@
   #nextScene:active{background:var(--panel2)}
   #macro{display:flex;gap:3px;align-items:center;padding:0 10px 6px}
   /* 배포판에서 계기판을 걷어내고 여기로 옮겨 온 모델 단추 */
-  #macro .mcModel{margin-left:auto;max-width:38vw;overflow:hidden;text-overflow:ellipsis;
+  #macro .mcModel{margin-left:auto;max-width:25vw;overflow:hidden;text-overflow:ellipsis;
     white-space:nowrap;font-size:10.5px;color:var(--tx3);padding:0 2px;
     text-decoration:underline;text-underline-offset:2px}
   #mcScroll{flex:1;min-width:0;display:flex;gap:3px;align-items:center;
@@ -1183,7 +1187,7 @@
         </div>
 
       </div>
-      <div class="fld">
+      <div class="fld" id="fldImgFind">
         <input type="text" id="sImgFilter" placeholder="모델 검색 — lustify, seedream, qwen ...">
         <div class="row" style="margin-top:8px">
           <div class="sp"></div>
@@ -1346,10 +1350,11 @@
     <div class="bar">
       <button class="ico" id="novelBack">‹</button>
       <h2>소설<span class="sub" id="novelInfo"></span></h2>
-      <button class="ico" id="novelCopy" title="복사">⧉</button>
-      <button class="ico" id="novelSave" title="파일로">⇩</button>
-      <button class="ico" id="novelVerBtn" title="판본 내역" style="display:none">🗂</button>
-      <button class="ico" id="novelRuleBtn" title="기본 규칙 보기">📋</button>
+      <!-- 아이콘만으로는 무엇인지 알 수 없다. 두세 글자씩 붙인다 -->
+      <button class="ico nvIco" id="novelCopy" title="원고를 복사"><b>⧉</b><i>복사</i></button>
+      <button class="ico nvIco" id="novelSave" title="파일로 내려받기"><b>⇩</b><i>저장</i></button>
+      <button class="ico nvIco" id="novelVerBtn" title="보관한 설계도 고르기" style="display:none"><b>🗂</b><i>설계도</i></button>
+      <button class="ico nvIco" id="novelRuleBtn" title="기본 지침 보기"><b>📋</b><i>지침</i></button>
     </div>
     <div id="novelBar"><i></i></div>
     <div class="scroll" id="novelBody"></div>
@@ -1626,17 +1631,17 @@
       <!-- 전용 모델 · 온도 · 규칙은 겉모습도 대화 방식도 아니다. 이 인물을 만들 때
            쓰는 설정이라 따로 떼어 낸다. -->
       <div class="sect-h"><b>생성 설정</b></div>
-      <div class="fld"><label>전용 시스템 규칙
+      <div class="fld" id="fldSys"><label>전용 시스템 규칙
         <button class="btn" id="ceSeeRules" style="float:right;padding:2px 8px;font-size:11px">앱 기본규칙 보기</button></label>
         <textarea id="ceSys" rows="4" placeholder="비우면 앱 기본 규칙을 사용합니다"></textarea></div>
-      <div class="fld"><label>전용 모델 <span id="ceModelCount" style="color:var(--tx3);font-weight:400"></span></label>
+      <div class="fld" id="fldOwnModel"><label>전용 모델 <span id="ceModelCount" style="color:var(--tx3);font-weight:400"></span></label>
         <input type="text" id="ceFilter" placeholder="모델 검색 — glm, nemotron, gemma ..." style="margin-bottom:7px">
         <select id="ceModel"><option value="">기본 모델 사용</option></select>
         <div class="hint">
           검증된 모델을 캐릭터에 묶어두면, 기본 모델이 바뀌어도 말투가 유지됩니다.
           설정의 <b>무료만</b>이 함께 적용됩니다.
         </div></div>
-      <div class="fld"><label>전용 온도</label>
+      <div class="fld" id="fldOwnTemp"><label>전용 온도</label>
         <input type="number" id="ceTemp" step="0.05" min="0" max="2" placeholder="비우면 기본값"></div>
       <div class="fld"><label>색상</label>
         <div class="row" id="ceColors"></div></div>
@@ -1774,8 +1779,6 @@
   <label class="sw" style="margin-top:12px"><input type="checkbox" id="guideNo">
     <span>다시 보지 않기</span></label>
 </div></div>
-<!-- 가리키는 말풍선. 글 한 판 대신 그 자리를 짚어 준다 -->
-<div id="coach"></div>
 <div id="introBox"><div id="introIn">
   <h3 id="introTitle"></h3>
   <div id="introBody"></div>
@@ -3180,53 +3183,8 @@ $('introNext').onclick = () => {
   setTimeout(() => 첫안내(), 320);
 };
 
-/* ── 가리키는 말풍선 ──────────────────────────────────
-   글 한 판을 읽히는 대신 그 자리를 짚어 준다. 두 번이면 충분하다. */
-const COACH = [
-  {가리킬: 'inp',   글: '내 대사는 그냥 작성하고(그런가요?)\n' +
-                        '내 행동·지문은 별표로 감쌉니다.(*가까이 간다*)\n' +
-                        '상대를 제어할 수는 없습니다.'},
-  {가리킬: 'cStar', 글: '커서가 있는 줄을 지문으로 감쌉니다.'}
-];
-function coachRun(i){
-  const box = $('coach');
-  if (!box) return coachDone();
-  const step = COACH[i];
-  if (!step) return coachDone();
-  const el = $(step.가리킬);
-  if (!el) return coachRun(i + 1);
-  const r = el.getBoundingClientRect();
-  box.className = 'on';
-  box.innerHTML = '<div class="cbub">' + esc(step.글).replace(/\n/g, '<br>') +
-    '<i class="ctail"></i></div>';
-  const bub = box.firstElementChild;
-  /* 가리킬 것 바로 위에 놓는다. 화면 밖으로 나가지 않게 좌우를 물린다 */
-  const bw = Math.min(300, innerWidth - 24);
-  bub.style.width = bw + 'px';
-  const left = Math.max(12, Math.min(innerWidth - bw - 12, r.left + r.width / 2 - bw / 2));
-  bub.style.left = left + 'px';
-  bub.style.top = Math.max(12, r.top - bub.offsetHeight - 14) + 'px';
-  const tail = bub.querySelector('.ctail');
-  if (tail) tail.style.left = (r.left + r.width / 2 - left - 6) + 'px';
-  box.onclick = () => coachRun(i + 1);
-}
-function coachDone(){
-  const box = $('coach');
-  if (box){ box.className = ''; box.innerHTML = ''; box.onclick = null; }
-  /* 다 본 뒤에 한 번만 물어본다 */
-  sheet('방금 안내를 다시 보시겠습니까?', [
-    {label: '다음에 또 보기', leave: true, run: () => {}},
-    {label: '다시 보지 않기', leave: true,
-     run: () => { try{ localStorage.setItem(LS.guide, '1'); }catch(_){} }}
-  ]);
-  /* paintSheet 가 그리면서 twoRow 를 지운다. 다 그린 뒤에 붙인다 */
-  setTimeout(() => { const sh = $('sheetIn'); if (sh) sh.classList.add('twoRow'); }, 0);
-}
-
 function openGuide(force, back){
   if (!force && localStorage.getItem(LS.guide) === '1') return;
-  /* 배포판은 글 한 판 대신 그 자리를 짚어 준다 */
-  if (DIST){ S.guideBack = back || null; return setTimeout(() => coachRun(0), 260); }
   $('guideNo').checked = false;
   /* 「내 지문이 어디까지 일어나는가」는 사용법에서 뺐다 —
      배포판에는 그것을 바꿀 설정이 아예 없어, 없는 자리를 가리키는 안내였다.
@@ -3278,13 +3236,22 @@ function 첫안내(force){
 
 /* 채팅을 처음 열었을 때 */
 const 채팅바퀴 = () => [
+  /* 배포판은 글 한 판을 먼저 읽히지 않는다. 여기서 바로 쓰는 법을 짚는다 */
+  ...(DIST ? [{곳: () => $('inp'),
+    말: '내 대사는 그냥 작성하고(그런가요?)<br>' +
+        '내 행동·지문은 별표로 감쌉니다.(*가까이 간다*)<br>' +
+        '상대를 제어할 수는 없습니다.'}] : []),
   {곳: () => $('cStar'),
-   말: '커서가 있는 줄을 <b>지문으로 감쌉니다.</b> 골라 둔 자리가 있으면 그 자리를 감쌉니다.'},
-  {곳: () => $('cMenu'),
-   말: '<b>상세 설정</b>은 이곳에서 할 수 있습니다.'}
+   말: '커서가 있는 줄을 <b>지문으로 감쌉니다.</b>' +
+       (DIST ? '' : ' 골라 둔 자리가 있으면 그 자리를 감쌉니다.')},
+  /* 배포판에는 상세 설정이 잠겨 있다. 없는 자리를 가리키지 않는다 */
+  ...(DIST ? [] : [{곳: () => $('cMenu'),
+   말: '<b>상세 설정</b>은 이곳에서 할 수 있습니다.'}])
 ];
 function 채팅안내(force){
   if (!force && localStorage.getItem(LS.chatTour) === '1') return;
+  /* 배포판은 글 한 판을 건너뛰고 자리만 짚는다 */
+  if (DIST) return setTimeout(() => 안내시작(채팅바퀴(), () => 다시볼까(LS.chatTour)), 300);
   /* 먼저 입력하는 법을 글로 한 번 보여 주고, 그 뒤에 자리를 짚는다 */
   openGuide(true);
   S.tourAfterGuide = true;
@@ -3350,13 +3317,14 @@ function 안내끝(){
 }
 /* 「다시 보지 않겠습니까」 — 예를 고르면 그 안내는 그것으로 끝이다 */
 function 다시볼까(칸){
-  sheet('방금 안내를 다시 보지 않겠습니까?', [
-    {info: 1, html: '<div style="line-height:1.8">다시 보지 않겠다고 하시면 이 안내는 다시 안 뜹니다.<br>' +
-                    '나중에 <b>설정</b>에서 다시 켤 수 있습니다.</div>'},
+  /* 설명 줄을 뺐다 — 단추 두 개면 무엇을 고르는지 이미 안다 */
+  sheet('방금 안내를 다시 보시겠습니까?', [
+    {label: '다음에 또 보기', run: () => closeSheet()},
     {label: '다시 보지 않기',
-     run: () => { try{ localStorage.setItem(칸, '1'); }catch(_){} closeSheet(); }},
-    {label: '다음에 또 보기', run: () => closeSheet()}
+     run: () => { try{ localStorage.setItem(칸, '1'); }catch(_){} closeSheet(); }}
   ]);
+  /* paintSheet 가 그리면서 twoRow 를 지운다. 다 그린 뒤에 붙인다 */
+  setTimeout(() => { const sh = $('sheetIn'); if (sh) sh.classList.add('twoRow'); }, 0);
 }
 
 /* 삼성 브라우저를 비롯한 모바일 브라우저에서 기기 뒤로가기를 누르면 페이지를 떠난다.
@@ -5599,8 +5567,8 @@ function genreHowto(g, c, un){
 }
 function startGuide(c, p){
   /* 배포판은 상세설정 말풍선을 안 띄운다. 열자마자 글 한 판을 읽으라는 뜻이 되고,
-     모델을 바꿀 때마다 다시 떠서 성가시다. 바로 쓰는 법만 짚어 준다 */
-  if (DIST) return openGuide(false);
+     모델을 바꿀 때마다 다시 떠서 성가시다. 채팅안내가 자리만 짚어 준다 */
+  if (DIST) return 채팅안내(false);
   const un = p?.name || '나';
   const pf = c?.profile || {};
   const rows = [
@@ -6462,15 +6430,43 @@ function msgHTML(m, isLast){
   /* 배포판에는 신고를 안 붙인다. 받아 볼 곳이 없다 */
   const flagBtn = DIST ? '' :
     '<button data-act="flag"' + (m.flag ? ' class="lit"' : '') + '>신고</button>';
+  /* 「예외처리」 「빼기」 「롤백」만 보고는 무엇인지 알 수 없다.
+     배포판에만 붙인다 — 본편은 이미 아는 사람이 쓴다 */
+  const actHelp = DIST ? '<button data-act="acthelp" title="이 단추들이 무엇인가">ⓘ</button>' : '';
   return `<div class="msg ${m.role}${m.mark ? ' marked' : ''}" data-id="${m.id}">
     <div class="who">${mk}${tn}${esc(who)}</div>
     <div class="body">${fmt(m.content, m.role)}${pics}</div>${hints}
-    <div class="act">${nav}${regen}${mkimg}${hintBtn}<button data-act="edit">편집</button>${offBtn}${flagBtn}<button data-act="drop">빼기</button><button data-act="cut">롤백</button></div>
+    <div class="act">${nav}${regen}${mkimg}${hintBtn}<button data-act="edit">편집</button>${offBtn}${flagBtn}<button data-act="drop">빼기</button><button data-act="cut">롤백</button>${actHelp}</div>
   </div>`;
 }
+/* 말풍선 아래 단추들이 무엇인지. 한 줄씩만 적는다 */
+function actHelpSheet(){
+  const L = [
+    ['글 쓰는 법', ''],
+    ['내 대사',   '그냥 쓰면 됩니다. — 오늘 늦었네요.'],
+    ['내 행동',   '별표로 감쌉니다. — *문을 닫고 다가선다*'],
+    ['입력창 옆 *', '커서가 있는 줄을 별표로 감싸 줍니다.'],
+    ['단추', ''],
+    ['재생성',    '같은 자리에서 다시 씁니다. 마음에 안 들 때.'],
+    ['AI 추천 답변', '지금 할 법한 말 세 개를 받습니다. 막힐 때만.'],
+    ['이미지',    '이 장면을 그림으로 뽑습니다.'],
+    ['편집',      '이 글을 직접 고칩니다. 이후 맥락에 그대로 쓰입니다.'],
+    ['예외처리',  '이 턴을 이야기 밖으로 둡니다. 상태와 기억에 안 섞입니다.'],
+    ['빼기',      '이것 하나만 들어냅니다. 앞뒤는 그대로 남습니다.'],
+    ['롤백',      '여기부터 뒤를 전부 지웁니다. 되돌릴 수 없습니다.']
+  ];
+  sheet('이 단추들이 무엇인가', [{info: true, html:
+    '<div class="pguide" style="line-height:1.9">' +
+    L.map(([k, v]) => v
+      ? '<b>' + esc(k) + '</b> — ' + esc(v)
+      : '<div style="margin-top:9px;color:var(--tx3);font-size:11.5px">' + esc(k) + '</div>')
+     .join('<br>') + '</div>'}]);
+}
+
 const MSG_ACT = {
   copy: copyMsg, cut: cutFrom, drop: dropOne, edit: editMsg, regen: () => regenerate(),
   off: toggleOff,
+  acthelp: actHelpSheet,
   flag: flagSheet,
   prev: id => swipe(id, -1), next: id => swipe(id, +1),
   img: id => { const m = S.messages.find(x => x.id === id); if (m) askImageFor(m); },
@@ -6778,7 +6774,7 @@ function showMsgFind(){
 const NOVEL_CHUNK = 5000;    /* 한 장에 넣을 원문. 출력 그릇보다 작아야 한다 */
 const NOVEL_OUT   = 3600;    /* 한 장을 받을 최대 토큰 */
 const NOVEL_KEEP  = 900;     /* 이어 쓸 때 앞 장에서 물려줄 꼬리 */
-const NOVEL_VERS  = 10;      /* 보관할 판본 수 */
+const NOVEL_PLANS = 8;       /* 보관할 설계도 수 */
 const NOVEL_CONT  = 2;       /* 한 장에서 이어받기를 시도할 최대 횟수 */
 
 /* 소설을 쓸 모델. 대표적인 것만 추린다. 값은 OpenRouter 기준. */
@@ -6956,10 +6952,19 @@ function novelWhen(msgs, 뒤에서){
    이것이 집필의 계약이 된다 — 장 수도 내용도 여기서 정해진다. */
 /* 한 장에 들어갈 수 있는 원문은 NOVEL_CHUNK 안팎이다.
    너무 잘게 쪼개면 장마다 사건이 없고, 너무 뭉치면 모델이 뒤를 버린다. */
-function chapterRange(){
+function chapterRange(원하는){
   const total = novelChunks().reduce((a, c) => a + c.length, 0);
-  const lo = Math.max(2, Math.ceil(total / (NOVEL_CHUNK * 1.4)));
-  const hi = Math.max(lo, Math.ceil(total / (NOVEL_CHUNK * 0.7)));
+  /* 유저가 수를 정했으면 그것을 쓴다. 다만 한 장이 그릇보다 커지면 모델이 뒤를 버리므로
+     최소치만은 지킨다 — 그 아래로는 애초에 못 담는다 */
+  if (원하는 > 0){
+    const 최소 = Math.max(1, Math.ceil(total / (NOVEL_CHUNK * 1.6)));
+    const n = Math.max(최소, Math.round(원하는));
+    return {total, lo: n, hi: n};
+  }
+  /* 예전에는 한 장을 5,000자 안팎으로 잡아 장이 스무 개씩 나왔다.
+     읽는 쪽에서는 너무 잘게 쪼개진다. 한 장을 두 배로 두어 수를 줄인다 */
+  const lo = Math.max(2, Math.ceil(total / (NOVEL_CHUNK * 2.8)));
+  const hi = Math.max(lo, Math.ceil(total / (NOVEL_CHUNK * 1.6)));
   return {total, lo, hi};
 }
 function outlineChapters(outline){
@@ -7049,7 +7054,7 @@ function novelDensityTable(parts){
 }
 
 /* ── 1단계 · 설계도 ── */
-async function novelOutline(seedAsk){
+async function novelOutline(seedAsk, 원하는장수){
   const parts = novelParts();
   if (!parts.length) return toast('옮길 대화가 없습니다');
   /* 전체를 다 넣을 수 없으므로 앞·중간·뒤를 고르게 뽑아 뼈대만 본다.
@@ -7077,10 +7082,13 @@ async function novelOutline(seedAsk){
   const mem = S.chat ? (S.mems?.[S.chat.id] || await getMem(S.chat.id)) : null;
   /* 장 수를 자유롭게 두면 원문 길이와 맞지 않아 집필 단계에서 다시 쪼개진다.
      여기서 범위를 못박아 설계도와 집필이 처음부터 같은 수를 보게 한다. */
-  const RG = chapterRange();
-  const RANGE_NOTE = '원문이 약 ' + Math.round(RG.total / 1000) + '천 자다. ' +
-    '반드시 ' + RG.lo + '장 이상 ' + RG.hi + '장 이하로 나눈다.' +
-    (RG.lo === RG.hi ? '' : ' 이 범위를 벗어나면 안 된다.');
+  const RG = chapterRange(원하는장수);
+  const RANGE_NOTE = 원하는장수
+    ? '원문이 약 ' + Math.round(RG.total / 1000) + '천 자다. ' +
+      '**' + 원하는장수 + '장으로 나눈다.** 유저가 정한 수이므로 이 수를 지킨다.'
+    : '원문이 약 ' + Math.round(RG.total / 1000) + '천 자다. ' +
+      '반드시 ' + RG.lo + '장 이상 ' + RG.hi + '장 이하로 나눈다.' +
+      (RG.lo === RG.hi ? '' : ' 이 범위를 벗어나면 안 된다.');
   const ask = [
     '아래 롤플레잉 대화를 소설로 옮기려 한다. 본문을 쓰기 전에 **설계도**를 먼저 만든다.',
     '설계도는 이후 모든 장이 참조하는 기준이며, 전체를 관통하는 것만 담는다.',
@@ -7134,6 +7142,8 @@ async function novelOutline(seedAsk){
     b.outline = r.text.trim();
     if (seedAsk) b.standing = [...(b.standing || []), seedAsk];
     b.at = now();
+    /* 보관함에 이름을 붙여 남긴다 — 무엇을 시켜 뽑은 것인지가 이름에 있어야 나중에 고른다 */
+    pushPlan(b.outline, seedAsk, 원하는장수 || outlineChapters(b.outline).length);
     await dbPut('chats', S.chat);
     novelBusy(null); paintNovel();
     return true;
@@ -7221,7 +7231,7 @@ async function novelWriteOne(i, extra, prevTail){
 }
 
 /* ── 전체 집필 ── */
-async function novelWriteAll(from){
+async function novelWriteAll(from, 이번요청){
   if (!novelChunks().length) return toast('옮길 대화가 없습니다');
   const b = novelBook();
   if (!b.outline){ if (!await novelOutline(null)) return; }
@@ -7255,7 +7265,7 @@ async function novelWriteAll(from){
               Math.round(i / chunks.length * 100), eta(i - start));
     try{
       const tail = sections.length ? sections[sections.length - 1].text.slice(-NOVEL_KEEP) : '';
-      const text = await novelWriteOne(i, null, tail);
+      const text = await novelWriteOne(i, 이번요청 || null, tail);
       sections.push({i, title: (i + 1) + '장' + (plan[i] ? ' · ' + plan[i].slice(0, 24) : ''),
                      text, at: now()});
       if (!text || text.length < 200) say('warn', (i + 1) + '장이 유난히 짧습니다 — 다시 써 보십시오');
@@ -7287,7 +7297,7 @@ async function novelWriteAll(from){
   noteDone('소설 재구성' + (S.novelStop ? ' (중단)' : ''),
     sections.length + '장 · ' + sections.reduce((a, x) => a + x.text.length, 0).toLocaleString() + '자',
     t0, !S.novelStop);
-  pushNovelVer(S.novelStop ? '중단됨' : '처음부터 · ' + sections.length + '장');
+
   await dbPut('chats', S.chat);
   novelBusy(null); paintNovel();
 }
@@ -7306,7 +7316,7 @@ async function novelRedoOne(i, extra){
     const ln = (b.report?.lines || []).filter(x => !/^\d+장을 다시/.test(x.t));
     ln.push({k:'ok', t: (i + 1) + '장을 다시 썼습니다' + (extra ? ' — ' + extra : '')});
     b.report = {at: now(), lines: ln};
-    pushNovelVer((i + 1) + '장 · ' + (extra || '다시 쓰기'));
+
     await dbPut('chats', S.chat);
   }catch(e){ $('novelInfo').textContent = '실패: ' + e.message; }
   novelBusy(null); paintNovel();
@@ -7328,13 +7338,56 @@ async function novelStanding(extra){
   novelWriteAll();
 }
 
-/* 판본 — 장 배열을 통째로 스냅샷 */
-function pushNovelVer(note){
-  const b = novelBook();
-  const vers = [...(S.chat.novelVers || [])];
-  vers.push({at: now(), note: note || '', outline: b.outline,
-             sections: (b.sections || []).map(x => ({title: x.title, text: x.text}))});
-  S.chat.novelVers = vers.slice(-NOVEL_VERS);
+/* 한 줄을 받아 온다. 비워 두고 확인해도 된다 — 그때는 빈 문자열이다.
+   취소하면 null 이라 「안 하겠다」와 「비워 둔다」를 가릴 수 있다. */
+function askLine(제목, 안내, 예시){
+  return new Promise(resolve => {
+    $('editWho').textContent = 제목;
+    $('editTa').value = '';
+    $('editTa').placeholder = 예시 || '';
+    const tip = $('editHint');
+    const 옛안내 = tip ? tip.textContent : '';
+    if (tip) tip.textContent = 안내 || '';
+    /* 「저장」이 아니라 물음에 답하는 자리다 */
+    const 확인 = $('editOk'), 옛글 = 확인.textContent;
+    확인.textContent = '확인';
+    openEdit(false);
+    let 끝났나 = false;
+    const 끝 = v => { if (끝났나) return; 끝났나 = true;
+                      if (tip) tip.textContent = 옛안내;
+                      확인.textContent = 옛글;
+                      $('editTa').placeholder = '';
+                      resolve(v); };
+    $('editOk').onclick = () => { const v = $('editTa').value.trim(); closeEdit(); 끝(v); };
+    $('editCancel').onclick = () => { closeEdit(); 끝(null); };
+  });
+}
+
+/* ── 설계도 보관함 ────────────────────────────────────
+   예전에는 원고를 통째로 스냅샷하는 「판본」이 있었다. 그런데 되돌릴 길이 없어
+   내려받는 것 말고는 할 수 있는 일이 없었다 — 만져지지 않는 기록이었다.
+
+   대신 설계도를 여러 벌 둔다. 설계도가 원고의 성격을 정하므로
+   여러 결로 뽑아 두고 골라 쓰는 편이 뜻이 있다. 원고는 늘 하나다.
+
+   이름은 「완료일시 + 요청 앞머리」로 붙인다 — 무엇을 시켜 뽑은 것인지가 이름에 남아야
+   나중에 고를 수 있다. */
+function novelPlans(){
+  if (!S.chat) return [];
+  return S.chat.novelPlans || (S.chat.novelPlans = []);
+}
+function planLabel(요청, 장수){
+  const t = new Date().toLocaleString('ko-KR',
+    {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'});
+  const 앞 = String(요청 || '').replace(/\s+/g, ' ').trim().slice(0, 5);
+  return t + (장수 ? ' · ' + 장수 + '장' : '') + (앞 ? ' · ' + 앞 : '');
+}
+function pushPlan(outline, 요청, 장수){
+  const 목록 = novelPlans();
+  목록.push({at: now(), name: planLabel(요청, 장수), ask: 요청 || '', want: 장수 || 0, outline});
+  /* 너무 쌓이면 고르기 어렵다. 최근 것부터 여덟만 둔다 */
+  if (목록.length > NOVEL_PLANS) 목록.splice(0, 목록.length - NOVEL_PLANS);
+  return 목록[목록.length - 1];
 }
 
 const novelText = () => (novelBook().sections || []).map(x => x.text).join('\n\n');
@@ -7374,7 +7427,7 @@ function foldText(t, key){
 
 function paintNovel(){
   const b = novelBook();
-  const vers = S.chat?.novelVers || [];
+  const 목록 = novelPlans();
   const chunks = novelChunks();
   const total = (b.sections || []).reduce((a, x) => a + x.text.length, 0);
 
@@ -7393,8 +7446,13 @@ function paintNovel(){
         foldText(b.standing.map(x => '· ' + x).join('\n'), 'stand') + '</div>' : '') +
     '</div>';
 
+  /* 장이 열이면 하나씩 접는 것은 열 번 누르는 일이다 */
+  const 여닫이 = (b.sections || []).length > 1
+    ? '<div class="nvAll"><button id="nvFoldAll">본문 모두 접기</button>' +
+      '<button id="nvOpenAll">본문 모두 펴기</button></div>' : '';
+
   const list = (b.sections || []).length
-    ? b.sections.map((sec, i) =>
+    ? 여닫이 + b.sections.map((sec, i) =>
         '<div class="nvCard"><div class="nvTop"><b>' + esc(sec.title) + '</b>' +
         '<span>' + sec.text.length.toLocaleString() + '자</span>' +
         '<div class="sp"></div>' +
@@ -7427,6 +7485,15 @@ function paintNovel(){
   $('novelBody').innerHTML = resume + head + list + tail;
   const rs = $('novelResume');
   if (rs) rs.onclick = () => novelWriteAll((b.sections || []).length);
+  /* 본문을 한꺼번에 여닫는다. 장마다 누르지 않아도 되게 */
+  const 모두 = 열까 => {
+    S.novelOpen = S.novelOpen || {};
+    (b.sections || []).forEach((_, i) => { S.novelOpen['sec' + i] = 열까; });
+    paintNovel();
+  };
+  const fa = $('nvFoldAll'), oa = $('nvOpenAll');
+  if (fa) fa.onclick = () => 모두(false);
+  if (oa) oa.onclick = () => 모두(true);
   $('novelBody').querySelectorAll('[data-fold]').forEach(el => el.onclick = () => {
     S.novelOpen = S.novelOpen || {};
     const k = el.dataset.fold;
@@ -7454,12 +7521,13 @@ function paintNovel(){
   };
 
   $('novelInfo').textContent = (b.sections || []).length
-    ? b.sections.length + '장  ·  원고 ' + total.toLocaleString() + '자  ·  되돌릴 판본 ' + vers.length + '개'
+    ? b.sections.length + '장  ·  원고 ' + total.toLocaleString() + '자' +
+      (목록.length ? '  ·  설계도 ' + 목록.length + '벌' : '')
     : turnsOf(S.chat, S.messages) + '턴 · 원문 ' +
       chunks.reduce((a, c) => a + c.length, 0).toLocaleString() + '자 · ' +
       chunks.length + '장 예정 · 예상 ' +
       (chunks.length * 14 >= 60 ? Math.round(chunks.length * 14 / 60) + '분' : chunks.length * 14 + '초');
-  $('novelVerBtn').style.display = vers.length ? 'inline-block' : 'none';
+  $('novelVerBtn').style.display = 목록.length ? 'flex' : 'none';
 }
 
 function editOutline(){
@@ -7517,7 +7585,17 @@ $('novelGrip').onclick = () => {
   paintNovelFold();
 };
 $('novelBack').onclick = () => { S.novelStop = true; show('vChat'); };
-$('novelPlan').onclick = () => novelOutline($('novelOnceIn').value.trim() || null);
+$('novelPlan').onclick = async () => {
+  const 요청 = await askLine('설계도에 따로 요청할 게 있나요?',
+    '비워 두셔도 됩니다. 적으시면 이 설계도 전체에 반영됩니다.',
+    '예: 1인칭 현재시제로 · 대사를 줄이고 지문을 길게 · 마지막을 열어 두고');
+  if (요청 === null) return;
+  const 장답 = await askLine('몇 장 정도의 구성으로 할까요?',
+    '숫자만 적으십시오. 비워 두면 원문 길이에 맞춰 앱이 정합니다.', '예: 8');
+  if (장답 === null) return;
+  const 장수 = Math.max(0, parseInt(String(장답).replace(/[^0-9]/g, ''), 10) || 0);
+  await novelOutline(요청 || null, 장수);
+};
 /* 소설이 마음에 안 들 때 무엇을 고칠지 알려면 지금 무엇을 시키는지부터 보여야 한다.
    인물 카드의 「앱 기본규칙 보기」와 같은 방식이다. */
 $('novelSeeRules').onclick = () => {
@@ -7532,10 +7610,20 @@ $('novelSeeRules').onclick = () => {
   openEdit(true);
   $('editOk').onclick = closeEdit;
 };
-$('novelFull').onclick = () => {
+$('novelFull').onclick = async () => {
   if ((S.chat?.novel?.sections || []).length &&
-      !confirm('원고를 처음부터 다시 씁니다. 지금 것은 판본에 남습니다.')) return;
-  novelWriteAll();
+      !confirm('기존 결과에 덮어씌워집니다. 정말 진행할까요?')) return;
+  /* 설계도가 여럿이면 고르게 한다. 하나뿐이거나 없으면 그냥 간다 */
+  const 목록 = novelPlans();
+  const 이어서 = async () => {
+    const 요청 = await askLine('작성에 따로 요청할 게 있나요?',
+      '비워 두셔도 됩니다. 적으시면 이번 원고 전체에 반영됩니다.',
+      '예: 문장을 짧게 · 회상 장면을 줄여서 · 대사 위주로');
+    if (요청 === null) return;
+    novelWriteAll(0, 요청 || null);
+  };
+  if (목록.length > 1) planPick(이어서);
+  else 이어서();
 };
 $('novelOnce').onclick = () => {
   const v = $('novelOnceIn').value.trim();
@@ -7591,20 +7679,27 @@ $('novelSave').onclick = () => {
     (b.outline ? '> ' + b.outline.replace(/\n/g, '\n> ') + '\n\n---\n\n' : '') + t,
     'text/markdown');
 };
-$('novelVerBtn').onclick = () => {
-  const vers = S.chat?.novelVers || [];
-  if (!vers.length) return toast('판본이 없습니다');
-  const L = ['# 소설 판본 내역 — ' + (S.chat.title || S.character?.name || ''), ''];
-  vers.forEach((v, i) => {
-    L.push('## 판본 ' + (i + 1) + '  ·  ' + new Date(v.at).toLocaleString('ko-KR'));
-    L.push('- 요청: ' + (v.note || '(없음)'));
-    if (v.outline) L.push('', '### 설계도', v.outline);
-    (v.sections || []).forEach(sec => L.push('', '### ' + sec.title, sec.text));
-    L.push('');
-  });
-  download('소설판본_' + (S.character?.name || '무명') + '_' + stamp(now()) + '.md',
-           L.join('\n'), 'text/markdown');
-};
+/* 보관해 둔 설계도 가운데 하나를 지금 것으로 삼는다 */
+$('novelVerBtn').onclick = () => planPick(null);
+function planPick(뒤에할것){
+  const 목록 = novelPlans();
+  if (!목록.length) return toast('보관된 설계도가 없습니다 — 먼저 뽑으십시오');
+  const b = novelBook();
+  sheet('설계도 고르기', [...목록].reverse().map(p => ({
+    label: p.name,
+    html: '<b>' + esc(p.name) + (p.outline === b.outline ? '  ·  지금 것' : '') + '</b>' +
+      '<div class="shint">' + esc(String(p.outline || '').replace(/\s+/g, ' ').slice(0, 70)) + '…</div>',
+    leave: !!뒤에할것,
+    run: async () => {
+      b.outline = p.outline;
+      b.at = now();
+      await dbPut('chats', S.chat);
+      paintNovel();
+      if (뒤에할것) 뒤에할것();
+      else toast('이 설계도를 씁니다');
+    }
+  })));
+}
 
 function castSheet(){
   const cast = S.chat?.cast || [];
@@ -12749,6 +12844,7 @@ function chatSortSheet(reshow){
 $('bSortChat').onclick = () => chatSortSheet();
 
 function renderChars(){
+  distTopNote('charList', (S.characters || []).some(seedMine));
   const box = $('charList');
   if (!S.characters.length){
     box.innerHTML = `<div class="empty">대상이 없습니다.<br>우측 상단 <b>＋</b>로 만드십시오.</div>`;
@@ -13110,10 +13206,10 @@ function editChar(id, over){
   /* 앱이 깔아 준 카드인가. 고쳐도 다음 갱신에 되돌아간다 */
   const 본보기 = c && seedMine(c);
   $('ceSeedWarn').style.display = 본보기 ? '' : 'none';
-  /* 배포판에는 짧게. 「앱을 새로 올리면」은 만든 사람의 사정이지 받는 사람의 것이 아니다 */
-  if (본보기) $('ceSeedWarn').innerHTML = DIST
-    ? '현재 설정창은 앱이 넣어둔 예시입니다. 새로운 상대를 직접 생성해 진행할 것을 권장합니다.'
-    : '<b>이것은 앱이 넣어 둔 본보기입니다.</b> 앱을 새로 올리면 ' +
+  /* 배포판에서는 목록 맨 위에 한 번만 띄운다 — 편집창 안은 열어야 보인다 */
+  if (DIST) $('ceSeedWarn').style.display = 'none';
+  else if (본보기) $('ceSeedWarn').innerHTML =
+    '<b>이것은 앱이 넣어 둔 본보기입니다.</b> 앱을 새로 올리면 ' +
       '<b>여기 고친 내용이 되돌아가고</b> 이 인물로 하던 대화도 사라집니다.<br>' +
       '계속 쓰실 것이면 <b>⋯ → 복사</b>로 내 것을 만들어 두십시오. 복사본은 갱신에 안 걸립니다.';
   buildCharTabs();          /* 아직 안 갈렸으면 여기서 가른다 */
@@ -13355,6 +13451,7 @@ $('bImportChar').onclick = () => pickFiles(async texts => {
 
 /* ═══════════════ 페르소나 ═══════════════ */
 function renderPersonas(){
+  distTopNote('personaList', (S.personas || []).some(seedMine));
   const box = $('personaList');
   if (!S.personas.length){
     box.innerHTML = `<div class="empty">주인공이 없습니다.<br>대상이 나를 어떻게 인식할지 정합니다.</div>`;
@@ -13781,8 +13878,9 @@ const CE_PANES = [
   {key:'in',    name:'세부', sects:['세부 설정']},
   {key:'talk',  name:'대화', sects:['대화 방식']},
   {key:'look',  name:'외형', sects:['인물 외형']},
-  /* 전용 모델 · 온도 · 전용 규칙은 만든 사람의 자리다. 배포판에서는 안 내놓는다 */
-  ...(typeof DIST !== 'undefined' && DIST ? [] : [{key:'gen', name:'생성', sects:['생성 설정']}])
+  /* 「생성 설정」 안에 색상이 함께 있다. 묶음째 빼면 색상까지 사라지므로
+     탭은 남기고 안의 셋(규칙 · 모델 · 온도)만 감춘다. 이름은 색상에 맞춘다 */
+  {key:'gen', name:'생성', sects:['생성 설정']}
 ];
 function buildCharTabs(){
   distFoldHints();
@@ -13833,6 +13931,7 @@ const DIST_HIDE = {
   sect: ['사용량', '데이터'],
   /* 이름표 붙인 덩어리 */
   block: ['fldRelay',    /* 중계를 심으므로 만질 일이 없고, 지우면 앱이 멈춘다 */
+          'fldImgFind',  /* 이미지 모델 검색 — 고를 목록 자체를 안 내놓는다 */
           'fldKey',      /* 키를 심으므로 쓸 일이 없고, 열려 있으면 심은 키를 지운다 */
           'fldFilter',   /* 모델 검색 */
           'fldModelSel', /* 전체 목록 — 「추천 중에서 고르기」는 남긴다 */
@@ -13889,6 +13988,23 @@ const DIST_ME_FILL = {age:'30', job:'회사원', look:'평범한 키에 마른 �
   speech:'말수가 많지 않고 존댓말을 쓴다',
   pers:'속으로 재고 겉으로는 무던하다',
   now:'요즘 일이 바빠 잠이 모자란다'};
+/* 앱이 깔아 준 것들이 섞여 있다는 것을 목록 맨 위에서 한 번만 알린다.
+   편집창 안에 두면 열어야 보이고, 카드마다 붙이면 시끄럽다 */
+const 예시안내 = '제공된 인물은 앱의 예시입니다. 직접 생성을 권장합니다. ' +
+                 '기존 인물들은 패치때 사라질 수 있습니다.';
+function distTopNote(붙일곳, 있나){
+  if (!DIST) return;
+  const box = $(붙일곳);
+  if (!box) return;
+  const 있던것 = box.parentElement?.querySelector('.distTop');
+  if (!있나){ if (있던것) 있던것.remove(); return; }
+  if (있던것) return;
+  const d = document.createElement('div');
+  d.className = 'distTop';
+  d.textContent = 예시안내;
+  box.parentElement.insertBefore(d, box);
+}
+
 function distFillPersona(){
   if (!DIST) return;
   const 칸 = {age:'peAge', job:'peJob', look:'peLook', speech:'peSpeech',
@@ -13925,6 +14041,14 @@ function distFoldHints(){
   const st = $('fldStart');
   if (st) st.style.display = 'none';
 
+  /* 「생성 설정」 안에서 만든 사람의 자리 셋만 감춘다. 색상은 남긴다 */
+  ['fldSys', 'fldOwnModel', 'fldOwnTemp'].forEach(id => {
+    const e = $(id); if (e) e.style.display = 'none';
+  });
+  /* 안에 색상만 남으므로 탭 이름도 그에 맞춘다 */
+  const 탭 = document.querySelector('#ceTabs [data-cpane="gen"]');
+  if (탭) 탭.textContent = '색상';
+
   /* 시드를 비워 두면 그릴 때마다 얼굴이 달라진다. 미리 하나 넣어 둔다 —
      받는 사람이 「왜 사람이 계속 바뀌지」 하고 헤매지 않게 */
   const seed = $('ceSeed');
@@ -13941,6 +14065,25 @@ function distFoldHints(){
     const cell = $(id)?.closest('.stCell');
     if (cell) cell.style.display = 'none';
   }
+  /* 남은 여섯이 세 줄에 흩어져 있다. 두 줄로 모은다 —
+     긴장·대담·욕구(그 사람의 결)와 호감·반감·경계(나에 대한 값)는 성격이 다르다 */
+  const 줄짜기 = [['ceStTen','ceStBrv','ceStDes'], ['ceStAff','ceStAnt','ceStGrd']];
+  const 첫줄 = $('ceStTen')?.closest('.stRow');
+  if (첫줄 && 첫줄.parentElement){
+    const 판 = 첫줄.parentElement;
+    줄짜기.forEach((칸들, i) => {
+      const row = i === 0 ? 첫줄 : document.createElement('div');
+      if (i > 0){ row.className = 'stRow'; 판.insertBefore(row, 첫줄.nextSibling); }
+      row.style.display = '';
+      /* 사이 칸막이는 두 줄로 모으면 뜻이 없어진다 */
+      [...row.querySelectorAll('.stSep')].forEach(x => x.remove());
+      칸들.forEach(id => {
+        const cell = $(id)?.closest('.stCell');
+        if (cell){ cell.style.display = ''; row.appendChild(cell); }
+      });
+    });
+  }
+
   /* 안이 다 빈 줄과 그 앞 머리글은 자리를 안 먹게 */
   document.querySelectorAll('#vCharEdit .stRow').forEach(row => {
     const 산것 = [...row.querySelectorAll('.stCell')]
@@ -15708,9 +15851,9 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b101';
-const APP_BUILT = '2026-08-26 21:59';
-const APP_NOTE  = '배포판 손질 열여덟 · 입력줄 재배치 · AI 추천 답변';
+const APP_BUILD = 'b103';
+const APP_BUILT = '2026-08-26 22:25';
+const APP_NOTE  = '배포판 — 안내 하나로 · 스탯 두 줄 · 색상만 · 말풍선 ⓘ · 예시 안내 목록 위로';
 /* 판 번호는 남긴다 — 다섯 번 누르면 키 칸이 열리는 자리이고, 문의할 때 필요하다.
    무엇이 바뀌었는지는 만든 사람 몫이라 배포판에서는 안 보인다 */
 $('sVersion').innerHTML = DIST
