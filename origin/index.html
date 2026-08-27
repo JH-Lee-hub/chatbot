@@ -1999,8 +1999,12 @@ function 구글로돌리기(who, 길, o){
   try{ j = JSON.parse(o.body); }catch(_){ return null; }
   if (!isGG(j.model)) return null;
   j.model = ggBare(j.model);
-  /* 구글은 OpenRouter 전용 칸을 모르고 400 을 낸다. 걷어낸다 */
+  /* 구글은 OpenRouter 전용 칸을 모르고 400 을 낸다. 걷어낸다.
+     frequency_penalty · presence_penalty 도 OpenAI 표준이지만 구글의
+     OpenAI 호환 계층은 이 둘을 모른다 — 몸통에 실려 있으면 그대로 400. */
   delete j.provider; delete j.reasoning; delete j.transforms;
+  delete j.frequency_penalty; delete j.presence_penalty;
+  delete j.stream_options;
   return {...o, body: JSON.stringify(j)};
 }
 
