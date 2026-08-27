@@ -1050,6 +1050,15 @@
           <b>붙을 때마다 값이 나갑니다.</b> 장당 $0.01 안팎입니다.
           <select id="sImgDiceN" style="margin-top:6px"></select>
         </div>
+        <label class="sw"><input type="checkbox" id="sJolt">
+          <span>이따금 일이 하나 벌어지게 하기 (기본 꺼짐)</span></label>
+        <div class="hint">
+          켜 두면 <b>이미 걸려 있던 일 하나가 이따금 커집니다.</b>
+          갚기로 한 돈, 하기로 해 놓고 안 한 것, 들킬 뻔한 것 같은 것들입니다.<br>
+          <b>새 사건을 만들지는 않습니다.</b> 오래 조용했던 것일수록 크게 터집니다.<br>
+          값은 따로 나가지 않습니다.
+          <select id="sJoltN" style="margin-top:6px"></select>
+        </div>
         <label class="sw"><input type="checkbox" id="sPreHint">
           <span>AI 추천 답변을 미리 만들어 두기 (기본 꺼짐)</span></label>
         <div class="hint">
@@ -1891,7 +1900,7 @@ const LS = {
   window:'rp_windowTurns', free:'rp_free', lastChat:'rp_lastChatId',
   budget:'rp_budget', autoSum:'rp_autoSummary', fallbacks:'rp_fallbacks', rules:'rp_rules',
   preHint:'rp_prehint', seedVer:'rp_seedver', relay:'rp_relay', code:'rp_code',
-  nvWarn:'rp_nvwarn', tourDone:'rp_tourdone', chatTour:'rp_chattour', noDice:'rp_nodice', noGen:'rp_nogen', imgDice:'rp_imgdice', imgDiceN:'rp_imgdicen', imgAuto:'rp_imgauto',
+  nvWarn:'rp_nvwarn', tourDone:'rp_tourdone', chatTour:'rp_chattour', noDice:'rp_nodice', noGen:'rp_nogen', imgDice:'rp_imgdice', imgDiceN:'rp_imgdicen', jolt:'rp_jolt', joltN:'rp_joltn', imgAuto:'rp_imgauto',
   imgKey:'rp_imgkey', imgModel:'rp_imgmodel', imgSize:'rp_imgsize', imgUnc:'rp_imgunc',
   imgHi:'rp_imghi', imgNsfw:'rp_imgnsfw', imgNsfwHi:'rp_imgnsfwhi',
   imgCen:'rp_imgcen', credBase:'rp_credbase', credLog:'rp_credlog', credLast:'rp_credlast',
@@ -1929,6 +1938,8 @@ const cfgOwn = k => S.chat?.cfg?.[k] !== undefined && S.chat.cfg[k] !== '';
 /* 0 이면 끄고, 0.3 이면 같은 표현을 되풀이할수록 눈에 띄게 눌러 준다 */
 const penalty = () => Math.max(0, Math.min(1, parseFloat(cfg('penalty', '0.3')) || 0));
 const VENICE = 'https://api.venice.ai/api/v1';
+/* 구글이 OpenAI 와 같은 모양의 창구를 따로 열어 두었다. 몸통이 그대로 나간다 */
+const GOOGLE = 'https://generativelanguage.googleapis.com/v1beta/openai';
 
 /* ── 중계 ────────────────────────────────────────────────
    비워 두면 지금까지처럼 브라우저가 업체를 직접 부른다.
@@ -1943,7 +1954,7 @@ const onRelay = () => !!relayAt();
 /* 어디로 보낼 것인가. 중계면 업체별 앞자리를 붙인다 */
 const apiAt = (who, 길) => onRelay()
   ? relayAt() + '/' + who + 길
-  : (who === 'or' ? API : VENICE) + 길;
+  : (who === 'or' ? API : who === 'gg' ? GOOGLE : VENICE) + 길;
 
 /* 헤더. 직통이면 키를 붙이고, 중계면 안 붙인다 */
 function apiHead(who, more){
@@ -1954,7 +1965,8 @@ function apiHead(who, more){
     if (c) h['X-Code'] = encodeURIComponent(c);
     return h;
   }
-  const k = who === 'or' ? localStorage.getItem(LS.key) : imgKey();
+  /* 구글 키는 앱에 없다. 중계만 쓴다 — 원본 빌드도 public 저장소에 올라간다 */
+  const k = who === 'gg' ? '' : who === 'or' ? localStorage.getItem(LS.key) : imgKey();
   if (k) h['Authorization'] = 'Bearer ' + k;
   return h;
 }
@@ -1963,6 +1975,7 @@ function apiHead(who, more){
 const RELAY_MARK = {
   '@RULES':      () => DEFAULT_RULES,
   '@RULE_UP':    () => RULE_UP,
+  '@RULE_TOUCH':    () => RULE_TOUCH,
   '@RULE_DRINK': () => RULE_DRINK,
   '@RULE_CAST':  () => RULE_CAST,
   '@RULE_CHARM': () => RULE_CHARM,
@@ -1976,8 +1989,28 @@ const RELAY_MARK = {
 const mark = 표 => onRelay() ? 표 : (RELAY_MARK[표] || (() => 표))();
 
 /* 부르는 자리를 하나로 모은다. 열넷이 제각기 헤더를 만들면 중계를 붙일 때 열넷을 다 고쳐야 한다 */
+/* 몸통에 실린 모델이 구글 것이면 길을 바꾸고 접두사를 뗀다.
+   열 군데를 하나씩 고치지 않고 여기서만 판단한다 */
+function 구글로돌리기(who, 길, o){
+  if (who !== 'or' || !o.body) return null;
+  /* 중계가 프롬프트를 짜는 /turn 은 아직 구글을 안 받는다 */
+  if (길 === '/turn') return null;
+  let j;
+  try{ j = JSON.parse(o.body); }catch(_){ return null; }
+  if (!isGG(j.model)) return null;
+  j.model = ggBare(j.model);
+  /* 구글은 OpenRouter 전용 칸을 모르고 400 을 낸다. 걷어낸다 */
+  delete j.provider; delete j.reasoning; delete j.transforms;
+  return {...o, body: JSON.stringify(j)};
+}
+
 function apiFetch(who, 길, opt){
   const o = {...(opt || {})};
+  const 구글 = 구글로돌리기(who, 길, o);
+  if (구글){
+    구글.headers = apiHead('gg', 구글.headers);
+    return fetch(apiAt('gg', 길), 구글);
+  }
   o.headers = apiHead(who, o.headers);
   return fetch(apiAt(who, 길), o);
 }
@@ -2358,6 +2391,13 @@ function relNudge(){ throw new Error("중계가 짭니다 — " + "relNudge"); }
 function drinkDue(){ throw new Error("중계가 짭니다 — " + "drinkDue"); }
 /* 술이 나올 참인가. 한 턴 늦으면 그 턴이 어긋나므로 넉넉하게 본다 */
 const DRINK_WORD = '';
+const TOUCH_WORD = '';
+/* 닿고 나서 켜면 늦다. **닿으려 할 때**부터 켠다.
+   한 번 켜지면 자리가 바뀔 때까지 안 꺼진다 — 켜고 끄는 조건이 같으면 문턱에서 깜빡인다.
+   drinkDue 와 같은 꼴이되, 켜지는 쪽은 넉넉하고 꺼지는 쪽은 좁다 */
+const TOUCH_OFF = '';
+function touchDue(){ throw new Error("중계가 짭니다 — " + "touchDue"); }
+const RULE_TOUCH = '';
 const RULE_DRINK = '';
 
 /* 이름 있는 조연이 있을 때만 */
@@ -3647,6 +3687,71 @@ const eraLabel = e => volNo(e.n) + '권 ' + volPos(e.n) + '회';
 const ERA_FULL   = 2;    /* 본문까지 싣는 최근 회차 수 */
 const ERA_TITLES = 15;   /* 제목만 싣는 최대 회차 수 */
 
+/* ── 장르 뼈대가 어디까지 왔나 ──
+
+   뼈대의 빈칸(계기 · 틈 · 장애 · 분기 …)이 이미 나왔는지 아직인지를 잰다.
+   재 두면 둘이 달라진다 —
+     · 밀지 않는 턴에도 방향이 살아 있다
+     · 미는 턴에 모델이 무엇을 꺼낼지 짐작하지 않아도 된다 */
+const 뼈대칸 = () => Object.keys(S.chat?.genre?.slots || {});
+const 뼈대값 = ['아직', '중', '지남'];
+
+/* 회차를 접을 때 함께 묻는다. 장르가 없으면 빈 문자열이라 아무것도 안 붙는다 */
+function genreSlotAsk(){
+  const 칸 = 뼈대칸();
+  if (!칸.length) return '';
+  const g = S.chat.genre;
+  return '- 아래 이야기 뼈대의 각 대목이 **이 구간까지 실제로 이야기에 나왔는지** 재서 "뼈대"에 담는다.\n' +
+    '  값은 셋 중 하나다 — "아직"(안 나옴) · "중"(나오는 중이거나 걸려 있음) · "지남"(이미 지나감).\n' +
+    '  **본문에 실제로 있었던 것만 "지남"이다.** 그럴듯하다고 앞질러 넘기지 않는다.\n' +
+    '  한 번 "지남"이 된 것은 되돌리지 않는다.\n' +
+    칸.map(k => '  · ' + k + ' — ' + (g.slots[k] || '')).join('\n') + '\n';
+}
+
+/* 받은 것을 얹는다. 모르는 칸과 이상한 값은 버리고, 지난 것은 안 되돌린다 */
+function 뼈대받기(온것, g){
+  if (!온것 || typeof 온것 !== 'object' || !g) return null;
+  const 낸것 = {...(g.done || {})};
+  let 바뀜 = false;
+  for (const k of Object.keys(g.slots || {})){
+    const v = String(온것[k] || '').trim();
+    if (!뼈대값.includes(v)) continue;
+    if (낸것[k] === '지남' && v !== '지남') continue;
+    if (낸것[k] !== v){ 낸것[k] = v; 바뀜 = true; }
+  }
+  return 바뀜 ? 낸것 : null;
+}
+
+/* 이 결이 할 일을 다 했는가. 빈칸이 전부 「지남」이면 다한 것이다 */
+function 결다했나(g){
+  const 칸 = Object.keys(g?.slots || {});
+  if (!칸.length || !g.vein) return false;
+  return 칸.every(k => (g.done || {})[k] === '지남');
+}
+
+/* 다음 결을 뽑는다. 지나온 것은 후보에서 뺀다 */
+async function 결갈아타기(){
+  const g = S.chat?.genre;
+  if (!결다했나(g)) return false;
+  const g0 = GENRES.find(x => x.key === g.key);
+  if (!g0 || !(g0.veins || []).length) return false;
+  const 인물 = S.character;
+  const 지나온 = [...지난결(인물?.id), g.vein];
+  const 다음 = veinPick(g0, 인물, 지나온);
+  /* 다 써 버렸으면 그냥 둔다. 억지로 되풀이하지 않는다 */
+  if (!다음 || 다음.k === g.vein) return false;
+  지난결적기(인물?.id, 다음.k);
+  const 새것 = rollGenre(g.key, null,
+    {...g, vein: 다음.k, veinT: 다음.t, done: {}, act: g.act, target: g.target, pace: g.pace, lock: {}});
+  if (!새것) return false;
+  await saveGenre({...새것, vein: 다음.k, veinT: 다음.t, done: {}});
+  return true;
+}
+
+/* 매 턴 프롬프트에 실을 표. 이것이 밀지 않는 턴의 방향이 된다 */
+const 뼈대말 = {아직: '아직 안 나왔다', 중: '지금 걸려 있다', 지남: '이미 지났다'};
+function genreDoneText(){ throw new Error("중계가 짭니다 — " + "genreDoneText"); }
+
 /* 회차를 프롬프트 한 덩이로 만든다. 오래된 것은 제목만 남기고 최근 것은 본문까지 싣는다. */
 function fmtEras(mem){
   const eras = mem?.eras || [];
@@ -4038,7 +4143,7 @@ const STATUS_ORDER = ['장소','일시','외관','내면',
 /* 대화를 여는 첫 출력에는 이 차례로 열한 수치를 전부 보여준다 */
 const FIRST_ORDER = ['체력','이성','매력','욕심','대담','욕구','호감','반감','경계','긴장','취기'];
 /* 「사유」는 맨 끝이다. 수치가 왜 움직였는지를 적는 칸이라 수치보다 뒤에 와야 읽힌다 */
-const STATUS_TAIL  = ['소지품','동석','미해결','씬','막','사유'];
+const STATUS_TAIL  = ['소지품','동석','미해결','미해결+','미해결-','씬','막','사유'];
 /* 앱이 계산에만 쓰는 칸. 상태 줄에도 프롬프트에도 안 실린다. */
 const HIDDEN_KEYS = ['취기대기','대담배짱','컨디션','결'];
 /* 모델이 빠뜨려도 직전 값을 그대로 이어 쓰는 항목 */
@@ -4882,6 +4987,18 @@ const SUMMARY_FIELDS = ['관계','분위기'];
    중요도는 모델이 붙인 ! 와, 실제로 몇 번이나 다시 나왔는지로 가른다.
    여러 턴에 걸쳐 되풀이 언급된다는 것 자체가 그 장면에서 중요하다는 뜻이다. */
 const KEEP_LIFE = e => e.pin ? Infinity : e.n >= 4 ? Infinity : e.n >= 2 ? 20 : 6;
+/* 새 문법(속내와 끝나는 조건)이 없는 것은 옛 대화에서 넘어온 것이다.
+   편집하지 않기로 했으므로 짧은 수명을 줘서 자연히 빠지게 한다 */
+const OLD_LIFE = 8;
+/* 무거운 미해결이 이만큼 조용하면 프롬프트에서 빼고 묻어 둔다.
+   지우지는 않는다 — 돌발 사건이 노려야 할 것이 바로 오래 조용한 것이다 */
+const BURY_AFTER = 40;
+const 묻을때인가 = (e, turn) =>
+  e.k === '미해결' && e.pin && turn - e.last > BURY_AFTER;
+/* 무거운 것(!)은 속내가 빠져 있어도 짧게 두지 않는다 —
+   모델이 새 문법을 한 턴 빠뜨렸다고 중요한 것이 여덟 턴 만에 사라지면 안 된다 */
+const 옛것인가 = e => e.k === '미해결' && !e.속 && !e.pin;
+const 살아있나 = (e, turn) => turn - e.last <= (옛것인가(e) ? OLD_LIFE : KEEP_LIFE(e));
 /* 「맥주 캔 1개(한지안 소유, 절반 남음)」처럼 괄호 안에 쉼표가 들어간다.
    괄호 밖의 쉼표에서만 자른다. */
 function splitItems(v){
@@ -4913,6 +5030,30 @@ function fmtKeeps(){ throw new Error("중계가 짭니다 — " + "fmtKeeps"); }
 function updateKeeps(keeps, stt, turn){
   const out = Array.isArray(keeps) ? keeps.map(e => ({...e})) : [];
   for (const kind of EPHEMERAL_STATS){
+    /* 미해결은 새로 생김(+) · 끝남(-) 이 따로 온다. 그 둘을 먼저 처리한다 */
+    if (kind === '미해결'){
+      for (const raw of splitItems(stt['미해결-'] || '')){
+        const t = raw.replace(/[!！]\s*$/, '').trim();
+        if (!keepCore(t)) continue;
+        /* 이뤄졌든 없던 일이 되었든 여기서는 같다. 목록에서 뺀다 */
+        const i = out.findIndex(x => x.k === '미해결' && sameKeep(x.t, t));
+        if (i >= 0) out.splice(i, 1);
+      }
+      for (const raw of splitItems(stt['미해결+'] || '')){
+        if (!raw) continue;
+        /* 「짧은 이름 :: 속내 / 끝나는 조건」 을 가른다 */
+        const [앞, 뒤] = String(raw).split(/\s*::\s*/);
+        const pin = /[!！]\s*$/.test(앞 || '');
+        const t = String(앞 || '').replace(/[!！]\s*$/, '').trim();
+        if (!keepCore(t)) continue;
+        const [속, 끝] = String(뒤 || '').split(/\s*\/\s*/);
+        const e = out.find(x => x.k === '미해결' && sameKeep(x.t, t));
+        const 새것 = {k: '미해결', t, n: 1, last: turn, first: turn, pin,
+                      속: (속 || '').trim(), 끝: (끝 || '').trim()};
+        if (e) Object.assign(e, 새것, {n: e.n + 1, first: e.first});
+        else out.push(새것);
+      }
+    }
     if (stt[kind] === undefined) continue;
     for (const raw of splitItems(stt[kind])){
       if (!raw) continue;
@@ -4924,7 +5065,15 @@ function updateKeeps(keeps, stt, turn){
       else out.push({k: kind, t, n: 1, last: turn, first: turn, pin});
     }
   }
-  return out.filter(e => turn - e.last <= KEEP_LIFE(e));
+  /* 수명이 다한 것을 걷어낸다. 다만 **무거운 미해결은 지우지 않고 묻어 둔다** —
+     돌발 사건이 노려야 할 것이 바로 오래 조용한 것이다.
+     묻힌 것은 화면과 매 턴 프롬프트에서 빠지고 보관함에만 남는다 */
+  return out.filter(e => {
+    /* 다시 나왔으면 묻힌 것도 되살아난다 */
+    if (묻을때인가(e, turn)){ e.묻힘 = true; return true; }
+    if (살아있나(e, turn)){ if (e.묻힘) delete e.묻힘; return true; }
+    return false;
+  });
 }
 /* 기준 수치는 원칙적으로 고정이지만 아주 드물게 1씩 움직인다.
    인물 카드를 건드리면 다른 대화까지 영향을 받으므로, 대화별로 따로 누적한다. */
@@ -5157,9 +5306,12 @@ async function maybeSummarize(oldestKept, silent){
     '- **앞선 회차의 내용을 다시 쓰지 않는다.** 이번 구간에 없는 일을 넣지 않는다.\n' +
     '- 나중에 다시 언급될 만한 것(약속 · 받은 것 · 처음 있었던 일 · 틀어진 지점)을 빠뜨리지 않는다.\n' +
     '- state 는 지금 시점의 사실만. 과거형으로 쓰지 않는다.\n' +
+    /* 뼈대가 어디까지 왔는지를 여기서 함께 잰다. 콜이 안 는다 */
+    genreSlotAsk() +
     '- 오직 JSON만 출력한다. 설명이나 인사를 덧붙이지 않는다.\n\n' +
     '출력 형식:\n' +
-    '{"title":"...","text":"...","state":{"관계":"","분위기":""}}\n\n' +
+    '{"title":"...","text":"...","state":{"관계":"","분위기":""}' +
+    (genreSlotAsk() ? ',"뼈대":{}' : '') + '}\n\n' +
     '[앞선 회차 — 참고만 한다. 다시 쓰지 않는다]\n' +
     ((mem.eras || []).slice(-VOL_ERAS).map(e => eraLabel(e) + ' · ' + e.title).join('\n') || '(없음)') + '\n\n' +
     '[기존 상태]\n' + (fmtState(mem.stateCard) || '(없음)') + '\n\n' +
@@ -5187,6 +5339,13 @@ async function maybeSummarize(oldestKept, silent){
       text:  String(j.text || j.summary || '').trim().slice(0, ERA_CHARS + 40),
       at: now()
     };
+    /* 뼈대가 어디까지 왔는지를 함께 받아 얹는다. 스무 턴에 한 번 움직인다 */
+    const 뼈대 = 뼈대받기(j.뼈대, S.chat?.genre);
+    if (뼈대) {
+      try{ await saveGenre({...S.chat.genre, done: 뼈대}); }catch(_){}
+      /* 다 지났으면 다음 결로 갈아탄다. 안 그러면 오백 턴이 한 결에 묶인다 */
+      try{ await 결갈아타기(); }catch(_){}
+    }
     /* {...mem} 으로 열어야 한다. 새로 지으면 vols · keeps · drift 가 통째로 사라진다.
        회차 요약이 돌 때마다 권과 보관함이 지워지고 있었다. */
     const next = {
@@ -6105,6 +6264,15 @@ async function openChat(id){
   $('cSub').textContent = S.persona ? '- ' + S.persona.name : '';
   paintModel();
   renderMsgs();
+  /* 돌발이 실제로 나갔으면 그 턴을 적어 둔다. 같은 것을 연달아 키우지 않게 한다 */
+  if (S.joltNow && S.chat){
+    S.joltNow = false;
+    const turn = (S.messages || []).filter(m => m.role === 'assistant').length;
+    S.chat.joltAt = turn;
+    const p = joltPick(turn);
+    if (p && p.꼴 === '미해결' && p.것) p.것.커진적 = turn;
+    try{ await dbPut('chats', S.chat); }catch(_){}
+  }
   paintMem();   /* 메멘토 판이면 패널과 단추를, 아니면 입력창을 되살린다 */
   show('vChat');
   /* 사본이 있고 아직 답을 안 했으면 한 번 물어본다 */
@@ -9092,10 +9260,13 @@ async function noteFallback(used){
 }
 const short = id => String(id || '').split('/').pop();
 
+/* 구글이 막히면 어디로 갈지. 유저가 한 번도 안 정했을 때만 쓴다.
+   구글은 성행위 묘사에서 거절하고, 몰아치면 429 를 낸다. 그때 뒤로 넘어간다.
+   **수위가 올랐다고 미리 바꾸지는 않는다** — 막혔을 때만 돌아간다 */
+const GG_FALLBACK = ['google-ai/gemini-3.5-flash-lite'];
 function modelChain(){
   const primary = chatModel();
-  let fb = [];
-  try{ fb = JSON.parse(localStorage.getItem(LS.fallbacks) || '[]'); }catch(_){}
+  const fb = getFallbacks();
   return [primary, ...fb].filter((m, i, a) => m && a.indexOf(m) === i);
 }
 
@@ -9268,6 +9439,42 @@ const 그림그릴수있나 = () => !!imgKey() || onRelay();
 const imgSpec  = () => S.imgModels.find(m => m.id === localStorage.getItem(LS.imgModel));
 /* 가끔 나오는 이미지. 눈금에 적은 것과 실제 빈도가 같아야 한다 —
    장르 빈도에서 한 번 어긋난 적이 있어 여기서는 turns 를 그대로 쓴다. */
+/* ── 돌발 사건 ──
+
+   대화가 길어지면 아무 일도 안 일어난 채 흘러간다. 이따금 하나가 커져야 한다.
+   다만 **새 사건을 만들지 않는다** — 이미 걸려 있던 것이 커지는 것이라야
+   무작위가 이야기를 흩지 않고 오히려 모아 준다.
+
+   diceRoll 과 같은 얼개다. 걸린 턴에 프롬프트에 지시를 얹을 뿐이라 콜이 안 는다 */
+const JOLT_GAP = [
+  {k:'rare',   t:'아주 드물게', turns:100, d:'백 턴에 한 번쯤'},
+  {k:'some',   t:'드물게',     turns:70,  d:'일흔 턴에 한 번쯤'},
+  {k:'often',  t:'가끔',       turns:50,  d:'쉰 턴에 한 번쯤'}
+];
+const joltOf = k => JOLT_GAP.find(x => x.k === k) || JOLT_GAP[1];
+const joltOn = () => localStorage.getItem(LS.jolt) === '1';
+
+/* 무엇을 키울지 고른다. **무거운 미해결 중 오래 조용한 쪽**이 먼저다.
+   가벼운 것은 안 고른다 — 「함께 카페 가기」가 돌발로 커지면 우스꽝스럽다 */
+function joltPick(turn){
+  const keeps = S.lastCtx?.mem?.keeps || [];
+  const 것들 = keeps.filter(e => e.k === "미해결" && e.pin)
+    .filter(e => !e.커진적 || turn - e.커진적 > 60)
+    .sort((a, b) => a.last - b.last);
+  if (것들.length) return {꼴: "미해결", 것: 것들[0], 잠긴턴: turn - 것들[0].last};
+  /* 미해결이 없으면 장르 뼈대에서 아직 안 지난 것을 고른다 */
+  const g = S.chat?.genre;
+  const 남은 = Object.keys(g?.slots || {}).filter(k => (g.done || {})[k] !== "지남");
+  if (남은.length) return {꼴: "뼈대", 것: {t: g.slots[남은[0]]}, 잠긴턴: 0};
+  return null;
+}
+
+/* 걸릴 차례인가. 간격의 절반은 무조건 쉰다 — 붙자마자 또 붙으면 성가시다 */
+function joltDue(){ throw new Error("중계가 짭니다 — " + "joltDue"); }
+
+/* 앱이 주체·대상·크기를 정해 내려보낸다. 모델에게 따로 묻지 않는다 */
+function joltText(){ throw new Error("중계가 짭니다 — " + "joltText"); }
+
 const IMG_DICE = [
   {k:'rare',   t:'드물게',   turns:20, d:'스무 턴에 한 번쯤'},
   {k:'some',   t:'가끔',     turns:10, d:'열 턴에 한 번쯤'},
@@ -11012,7 +11219,13 @@ const GENRES = [
   },
   {
     key:'romance', name:'연애', desc:'서로가 가까워질 수 있는 계기가 은연중에 제공됩니다',
-    /* 연애는 밀고 당기는 리듬이 뼈대다. 사건보다 거리의 변화가 중심이다. */
+    /* 연애는 밀고 당기는 리듬이 뼈대다. 사건보다 거리의 변화가 중심이다.
+
+       종류가 하나뿐이라 어느 인물과 해도 같은 연애가 됐다. 여럿으로 나눈다.
+       **관계 상태에 안 매달리는 것을 주력**으로 둔다 — 카드가 대개 솔로라,
+       「이미 사귀는 사이」 같은 것만 두면 통째로 안 열린다.
+
+       plot 과 slots 는 결이 없을 때 쓰는 기본값이다. 「천천히」와 같다 */
     plot:'두 사람은 이미 서로를 알고 있으나 아직 선을 넘지 않았다. ' +
          '{계기}로 예정에 없던 시간을 함께 보내게 되기도 한다. ' +
          '{틈}이 드러나 상대를 다시 보게 되기도 한다. ' +
@@ -11025,7 +11238,131 @@ const GENRES = [
       장애:['한쪽의 오래된 미련','직장에서의 위아래','주변의 시선','곧 떠나야 하는 일정','서로 다른 속도','아직 정리되지 않은 관계','상대가 숨기고 있는 사정','스스로 정해 둔 규칙'],
       버릇:['말끝을 흐리는 것','괜히 다른 곳을 보는 것','손끝으로 무언가를 만지작거리는 것','필요 없는 말을 덧붙이는 것','한 박자 늦게 웃는 것'],
       분기:['둘 중 하나가 먼저 말을 꺼내는 순간','더 미룰 수 없게 만드는 소식','다른 사람이 끼어드는 자리','같이 있을 이유가 사라지는 날']
-    }
+    },
+
+    /* ── 결 ──
+       t 는 사람이 읽을 이름 · 문 은 카드를 보고 열리는지 · 무게는 열린 것끼리 겨루는 값.
+       **열린 것끼리 차이를 작게 둔다** — 크게 벌리면 사실상 하나로 정해져 도로 뻔해진다 */
+    veins:[
+      {k:'천천히', t:'천천히 가까워짐', 무게:3,
+       plot:'두 사람은 이미 서로를 알고 있으나 아직 선을 넘지 않았다. ' +
+            '{계기}로 예정에 없던 시간을 함께 보내게 되기도 한다. ' +
+            '{틈}이 드러나 상대를 다시 보게 되기도 한다. ' +
+            '다만 {장애}가 있어, 한 걸음 나아가다가도 가끔은 반 걸음을 물린다. ' +
+            '{분기}가 오면 미루던 것을 정해야 한다.',
+       slots:{
+         계기:['갑작스러운 비','끊긴 막차','정전','두고 간 물건','대신 받은 전화','엘리베이터 고장','맡아 준 택배'],
+         틈:['평소와 다른 목소리','지친 얼굴을 숨기지 못한 순간','아무에게도 안 하던 이야기','혼자 있을 때의 습관','서툰 손끝','오래된 흉터'],
+         장애:['한쪽의 오래된 미련','직장에서의 위아래','주변의 시선','곧 떠나야 하는 일정','서로 다른 속도','스스로 정해 둔 규칙'],
+         분기:['둘 중 하나가 먼저 말을 꺼내는 순간','더 미룰 수 없게 만드는 소식','같이 있을 이유가 사라지는 날']
+       }},
+
+      {k:'첫눈', t:'첫눈에 반함', 무게:3,
+       plot:'처음 마주친 순간에 둘 다 알아 버렸다. 누가 먼저랄 것이 없다. ' +
+            '{첫자리}에서 시작해, 다음에 또 만날 핑계를 서로 찾기도 한다. ' +
+            '{현실}이 끼어들어 이 마음이 진짜인지 스스로 묻게 되기도 한다. ' +
+            '{시험}이 오면 그것이 판가름 난다.',
+       slots:{
+         첫자리:['비를 피해 들어간 처마 밑','늦은 밤 편의점','잘못 탄 버스','친구의 결혼식','병원 복도','이사 온 날의 계단참','같은 자리를 예약한 식당'],
+         현실:['둘 다 바쁜 일정','주변의 말','한쪽의 이사 계획','너무 빠르다는 스스로의 의심','서로에 대해 아는 것이 거의 없다는 사실'],
+         시험:['서로에 대해 몰랐던 것이 드러나는 자리','한쪽이 멀어져야 하는 사정','오래 알던 사람과 견주게 되는 순간']
+       }},
+
+      {k:'하룻밤', t:'하룻밤으로 시작', 무게:2,
+       plot:'그날 밤이 있었고, 이야기는 그 뒤에서 시작한다. ' +
+            '{다음날}로 하루가 열리기도 하는데, 둘 다 이것을 뭐라고 불러야 할지 모른다. ' +
+            '{핑계}로 다시 마주치기도 하는데, 아무도 그날 이야기를 먼저 꺼내지 않는다. ' +
+            '{부르기}가 정해지는 자리가 오면 미루던 것이 드러난다.',
+       slots:{
+         다음날:['먼저 깬 쪽이 옷을 찾는 아침','말없이 나눠 마시는 물 한 잔','서로 눈을 못 맞추는 현관','한쪽이 이미 나가고 없는 방'],
+         핑계:['두고 간 물건','같은 자리에서 다시 마주침','일 때문에 어쩔 수 없이','누군가의 부탁'],
+         부르기:['누가 먼저 이름을 부르는 순간','남들 앞에서 소개해야 하는 자리','한쪽이 선을 긋는 말']
+       }},
+
+      {k:'부탁', t:'부탁과 거래로 시작', 무게:2,
+       plot:'처음은 마음이 아니라 필요였다. {부탁}으로 엮인 사이다. ' +
+            '{조건}이 있어 서로 선을 지키기로 했는데, 그것이 흔들리기도 한다. ' +
+            '{어긋남}이 생겨 그 선이 흐려지기도 한다. ' +
+            '{끝날때}가 오면 이유가 사라지고, 그때 남는 것이 무엇인지 알게 된다.',
+       slots:{
+         부탁:['하루만 애인인 척해 달라는 것','급하게 돈을 빌려준 일','대신 맡아 준 무언가','아무에게도 말 못 할 일을 도와준 것','같이 살 사람이 필요했던 사정'],
+         조건:['서로 마음은 두지 않기로 한 약속','정해 둔 기한','아무에게도 말하지 않기','일과 사이를 섞지 않기'],
+         어긋남:['한쪽이 약속을 잊는 순간','남들 앞에서 진짜처럼 굴어야 하는 자리','질투가 나 버린 일','조건을 어기고 싶어지는 순간'],
+         끝날때:['기한이 다가오는 날','부탁의 이유가 사라지는 순간','누가 먼저 그만두자고 하는 자리']
+       }},
+
+      {k:'짝사랑', t:'한쪽만 마음이 있음', 무게:2,
+       plot:'한쪽만 마음이 있고 다른 쪽은 아직 모른다. ' +
+            '{숨김}으로 그 마음을 덮어 두기도 한다. ' +
+            '{들킬뻔}이 지나가기도 하는데 그때마다 넘어간다. ' +
+            '{돌아봄}이 오면 몰랐던 쪽이 처음으로 그 사람을 다시 본다.',
+       slots:{
+         숨김:['농담으로 넘기는 것','일부러 거리를 두는 것','친구인 척하는 것','챙기면서도 티를 안 내는 것'],
+         들킬뻔:['누가 대신 말해 버릴 뻔한 자리','술이 오른 밤','다른 사람과 있는 것을 본 날','물어 오는 질문'],
+         돌아봄:['그 사람이 없어진 자리를 느끼는 순간','남이 그 마음을 알려 주는 날','한쪽이 그만두기로 하는 자리']
+       }},
+
+      {k:'티격태격', t:'티격태격에서 시작', 무게:2,
+       plot:'처음의 온도는 낮았다. {부딪힘}으로 서로를 안 좋게 봤다. ' +
+            '{엮임} 때문에 계속 마주치기도 한다. ' +
+            '{뜻밖}을 보게 되어 처음의 판단이 흔들리기도 한다. ' +
+            '{인정}이 오면 서로 말을 바꾼다.',
+       slots:{
+         부딪힘:['일에서 부딪힌 일','오해로 시작된 다툼','누가 먼저 무례했던 자리','서로 정반대인 방식'],
+         엮임:['같은 일을 맡게 된 사정','같은 공간을 써야 하는 처지','서로의 사람이 겹치는 것'],
+         뜻밖:['혼자 있을 때의 모습','남에게 하는 태도','약한 자리','묵묵히 해 온 것'],
+         인정:['도움을 받아야 하는 자리','한쪽이 먼저 사과하는 날','남 앞에서 편들어 준 순간']
+       }},
+
+      {k:'돌봄', t:'돌보다 정드는 것', 무게:2,
+       plot:'한쪽이 다른 쪽을 돌보게 되면서 시작한다. {까닭}이 그 자리를 만들었다. ' +
+            '{익숙함}이 쌓여 그것이 당연해지기도 한다. ' +
+            '{역전}이 일어나 돌보던 쪽이 기대게 되기도 한다. ' +
+            '{홀로서기}가 오면 이 관계가 무엇이었는지 물어야 한다.',
+       slots:{
+         까닭:['다친 일','앓고 난 뒤','일이 겹쳐 무너진 때','혼자 감당 못 할 사정','갈 곳이 없어진 것'],
+         익숙함:['챙겨 주는 끼니','묻지 않고 아는 것','정해진 시간에 오는 사람','말없이 놓고 가는 것'],
+         역전:['돌보던 쪽이 무너지는 날','도움을 청해야 하는 자리','약한 데를 보이는 순간'],
+         홀로서기:['돌볼 이유가 사라지는 날','한쪽이 괜찮아지는 자리','더 이상 필요 없다는 말']
+       }},
+
+      /* 아래 셋은 카드가 그런 상태로 만들어졌을 때만 열린다. 드문 자리다 */
+      {k:'연인', t:'이미 사귀는 사이', 무게:3, 문:'연인',
+       plot:'두 사람은 이미 사귀는 사이다. 이야기는 시작이 아니라 한복판에서 연다. ' +
+            '{일상}이 쌓여 있고 그것이 편하기도 답답하기도 하다. ' +
+            '{균열}이 조금씩 벌어지기도 한다. ' +
+            '{다음}이 오면 이대로 갈지 한 걸음 갈지 정해야 한다.',
+       slots:{
+         일상:['정해진 요일의 저녁','서로의 집에 있는 물건','말 안 해도 아는 순서','오래된 농담'],
+         균열:['달라진 연락의 간격','말하지 않게 된 것','한쪽만 하는 양보','같은 일로 되풀이되는 다툼'],
+         다음:['함께 살자는 이야기','한쪽의 일 때문에 갈리는 자리','가족을 만나야 하는 날','헤어지자는 말이 나오는 순간']
+       }},
+
+      {k:'재회', t:'헤어졌다 다시', 무게:3, 문:'재회',
+       plot:'한때 사귀었고 헤어진 사이다. {다시만남}으로 마주치기도 한다. ' +
+            '{그때그것}이 아직 그대로 남아 걸리기도 한다. ' +
+            '{달라진것}도 있어 예전 같지 않다. ' +
+            '{정하기}가 오면 다시 갈지 이대로 둘지 골라야 한다.',
+       slots:{
+         다시만남:['우연히 같은 자리에서','누군가의 결혼식','일 때문에 어쩔 수 없이','두고 간 것을 돌려주러'],
+         그때그것:['헤어진 까닭','못다 한 말','상처를 준 쪽과 받은 쪽','아직 안 돌려준 물건'],
+         달라진것:['다른 사람이 있었던 시간','달라진 처지','전보다 조심스러워진 태도'],
+         정하기:['다시 시작하자는 말','그때 왜 그랬는지 묻는 자리','또 헤어질 것을 아는 순간']
+       }},
+
+      {k:'임자', t:'임자가 있는 사람', 무게:3, 문:'임자',
+       plot:'둘 중 한쪽에게는 이미 곁에 있는 사람이 있다. ' +
+            '{시작}으로 선을 하나 넘었다. ' +
+            '{숨김}이 일상이 되기도 한다. ' +
+            '{들킬뻔}이 지나가기도 하는데, 그때마다 그만두어야 한다는 것을 안다. ' +
+            '{갈림}이 오면 어느 쪽이든 잃는다.',
+       slots:{
+         시작:['오래 참았다가 넘어간 밤','같이 일하다 남은 시간','한쪽이 무너진 자리','아무도 없던 며칠'],
+         숨김:['따로 나가는 시간','지우는 기록','거짓말이 되어 버린 사소한 말','만나는 자리를 고르는 일'],
+         들킬뻔:['아는 사람과 마주친 자리','잘못 간 연락','곁에 있는 사람의 물음','남긴 흔적'],
+         갈림:['곁에 있는 사람이 알게 되는 날','한쪽이 그만두자고 하는 자리','고르라는 말을 듣는 순간']
+       }}
+    ]
   },
   {
     key:'thriller', name:'스릴러', desc:'쫓기거나 쫓습니다. 시간이 늘 모자랍니다',
@@ -11335,9 +11672,105 @@ function dropSentence(text, mark){
     .filter(x => !x.includes(mark));
   return out.join(' ').replace(/\s{2,}/g, ' ').trim();
 }
+/* ── 연애의 결을 뽑는다 ──
+
+   유저가 고르면 뻔해진다. 카드를 읽어 앱이 정하고 **유저에게는 안 보여 준다.**
+   카드가 문을 열고(0점이냐 아니냐), 열린 것끼리 점수로 겨룬다 */
+
+/* 카드 글에서 지금 곁에 누가 있는지 읽는다. **모르면 문을 안 연다** — 안전한 쪽이다 */
+function 카드사정(c){
+  const t = [c?.profile?.dating, c?.description, c?.profile?.relation]
+    .filter(Boolean).join(String.fromCharCode(10));
+  const 관계 = String(c?.profile?.relation || "");
+  return {
+    임자: /사귀는 사람이 있|애인이 있|결혼했|배우자|남편|아내|약혼|동거 중|썸/.test(t) &&
+          !/지금은 혼자|헤어졌고 지금은|그 뒤로 누구도|년째 혼자/.test(t),
+    연인: /연인|사귀는 사이|사귄 지|우리는 사귀/.test(관계),
+    재회: /헤어진 (뒤|후|사이)|전 (연인|남자친구|여자친구)|다시 만난/.test(관계),
+    아는사이: !!관계.trim() && !/처음|초면|모르는/.test(관계)
+  };
+}
+
+/* 취향에서 유추한다. **「이건 빼기」 같은 칸을 두면 어떤 결들이 있는지 알려 주는 꼴**이다.
+   취향은 이미 자유 서술이라 목록이 안 드러난다. 그리고 굽히는 폭을 작게 둔다 —
+   취향은 유저 것이라 어느 인물에게나 똑같이 걸리기 때문이다 */
+function 취향굽힘(k){
+  if (typeof localStorage === 'undefined') return 0;
+  const t = (localStorage.getItem(LS.taste) || "");
+  if (!t.trim()) return 0;
+  const 싫다 = /싫|안 좋아|불편|피하고|원하지 않/;
+  const 좋다 = /좋아|끌리|선호|원한다/;
+  const 결말 = {
+    하룻밤: /하룻밤|원나잇|몸부터/, 임자: /불륜|바람|유부|기혼/,
+    천천히: /천천히|느린|쌓이는/, 첫눈: /첫눈|단숨|빠른/,
+    티격태격: /티격|다투|앙숙/, 짝사랑: /짝사랑|일방/
+  }[k];
+  if (!결말) return 0;
+  /* 한 줄 안에서 함께 나온 것만 본다. 글 전체를 보면 엉뚱한 데 걸린다 */
+  for (const 줄 of t.split(/[\n.·]/)){
+    if (!결말.test(줄)) continue;
+    if (싫다.test(줄)) return -2;
+    if (좋다.test(줄)) return 1;
+  }
+  return 0;
+}
+
+/* 결마다 점수를 매긴다. 0 이면 후보에서 빠진다 */
+function veinScores(g, c, 지난것){
+  const 사정 = 카드사정(c);
+  return (g.veins || []).map(v => {
+    let 점 = v.무게 || 2;
+    /* 문이 있는 것은 카드가 그 상태여야만 열린다 */
+    if (v.문 && !사정[v.문]) 점 = 0;
+    if (점){
+      /* 열린 것끼리는 조금만 굽힌다. 크게 벌리면 사실상 하나로 정해진다 */
+      if (v.k === "천천히" && 사정.아는사이) 점 += 1;
+      if (v.k === "첫눈" && 사정.아는사이) 점 -= 1;
+      점 += 취향굽힘(v.k);
+      /* 같은 인물과 다시 시작하면 지난번 것을 낮춘다. 유저가 눈치채도 손해가 없다 */
+      if ((지난것 || []).includes(v.k)) 점 = Math.max(1, 점 - 3);
+      점 = Math.max(1, 점);
+    }
+    return {v, 점};
+  });
+}
+
+function veinPick(g, c, 지난것){
+  const 것들 = veinScores(g, c, 지난것).filter(x => x.점 > 0);
+  if (!것들.length) return null;
+  const 합 = 것들.reduce((a, x) => a + x.점, 0);
+  let n = Math.random() * 합;
+  for (const x of 것들){ n -= x.점; if (n <= 0) return x.v; }
+  return 것들[것들.length - 1].v;
+}
+
+/* 이 인물과 앞서 어떤 결로 해 봤는지. 같은 사람과 다시 해도 다른 이야기가 나오게 한다 */
+const 지난결키 = id => "rp_vein_" + id;
+function 지난결(id){
+  if (typeof localStorage === 'undefined') return [];
+  try{ return JSON.parse(localStorage.getItem(지난결키(id)) || "[]"); }catch(_){ return []; }
+}
+function 지난결적기(id, k){
+  if (!id || !k || typeof localStorage === 'undefined') return;
+  const 것 = 지난결(id).filter(x => x !== k);
+  것.push(k);
+  try{ localStorage.setItem(지난결키(id), JSON.stringify(것.slice(-4))); }catch(_){}
+}
+
 function rollGenre(key, manual, keep){
-  const g = GENRES.find(x => x.key === key);
-  if (!g || !g.plot) return null;
+  const g0 = GENRES.find(x => x.key === key);
+  if (!g0 || !g0.plot) return null;
+  /* 결이 있는 장르는 먼저 결을 뽑는다. 뽑힌 결의 뼈대와 빈칸으로 나머지가 굴러간다.
+     다시 굴려도 앞서 정한 결은 지킨다 — 결까지 바뀌면 이야기가 통째로 갈린다 */
+  let vein = null;
+  if (g0.veins && g0.veins.length){
+    /* 검증 도구가 이 함수를 떼어다 따로 돌린다. 거기엔 S 가 없다 */
+    const 인물 = typeof S !== 'undefined' ? S.character : null;
+    const 이미 = keep && keep.vein && g0.veins.find(v => v.k === keep.vein);
+    vein = 이미 || veinPick(g0, 인물, 지난결(인물?.id));
+    if (vein && !이미) 지난결적기(인물?.id, vein.k);
+  }
+  const g = vein ? {...g0, plot: vein.plot, slots: vein.slots} : g0;
   const picked = {};
   const def = genreSlotDefaults()[key] || {};
   let text = g.plot, goal = g.goal || '', finale = g.finale || '';
@@ -11360,6 +11793,10 @@ function rollGenre(key, manual, keep){
   }
   return {
     key: g.key, name: g.name, text, slots: picked,
+    /* 뽑힌 결. 유저에게는 안 보여 주고 설정 깊은 데서만 확인된다 */
+    vein: vein ? vein.k : (keep?.vein || null),
+    veinT: vein ? vein.t : (keep?.veinT || null),
+    done: keep?.done || {},
     /* 끝이 있는 장르인가. 있으면 목표와 막이 함께 온다 */
     closed: !!g.closed, goal, acts, finale,
     /* 메멘토는 조작이 붙는 장르다. 규칙함을 따로 둔다 */
@@ -11892,6 +12329,86 @@ async function askText(prompt, maxTok, temp, 짐){
   throw last;
 }
 
+/* ── 인물을 만들 때 굴리는 것들 ──
+
+   모델에게 「몇 % 확률로」 라고 적어 봐야 안 굴린다. 실제로 카드 다섯 장이 전부 솔로였다.
+   앱이 굴려서 **결과만 못 박는다.** 그러면 15% 가 진짜 15% 가 된다.
+
+   넷을 따로 굴린다. 한 번에 굴리면 「외국인이면서 기혼」 같은 조합이 빠진다 */
+function 굴리기(표){
+  const 합 = 표.reduce((a, x) => a + x[1], 0);
+  let n = Math.random() * 합;
+  for (const [것, 몫] of 표){ n -= 몫; if (n <= 0) return 것; }
+  return 표[표.length - 1][0];
+}
+
+/* 지금 곁에 누가 있는가. 「나와 사귀었던 사이」(10) 는 대화를 시작할 때 따로 굴린다 —
+   인물을 만드는 시점에는 상대가 누구인지 모른다 */
+const 연애상태표 = [
+  ['솔로',   70],   /* 과거 연애 경험은 있다 */
+  ['모솔',   10],
+  ['사귐',   15],
+  ['썸',      3],
+  ['기혼',    2]
+];
+const 연애상태말 = {
+  솔로: '지금은 혼자다. 과거에 연애 경험이 있다.',
+  모솔: '지금까지 한 번도 연애를 해 본 적이 없다. 그것을 부끄러워하거나, 아무렇지 않게 여기거나, 그 사람다운 방식으로 안고 있다.',
+  사귐: '지금 사귀는 사람이 있다. 그 사람과의 사이가 좋을 수도 있고 식어 있을 수도 있다.',
+  썸:   '지금 누군가와 애매한 사이다. 사귀는 것은 아니지만 그렇다고 아무것도 아닌 것도 아니다.',
+  기혼: '결혼했다. 배우자가 있다. 그 결혼이 어떤 상태인지는 이 인물의 사정에 맞게 정한다.'
+};
+
+/* 한국어에 능통한 외국인. **말솜씨가 아니라 살아온 자리가 다르다** */
+const 국적표 = [["한국", 95], ["외국", 5]];
+const 외국인말 = [
+  '이 인물은 한국에서 오래 산 외국인이다. 어느 나라 사람인지는 인물에 맞게 정한다.',
+  '**한국어가 능통하다.** 더듬거나 조사를 틀리지 않는다. 말투 칸은 한국인과 똑같이 쓴다.',
+  '달라지는 것은 말솜씨가 아니라 **살아온 자리**다 — 어릴 때 먹던 것, 명절에 하는 일,',
+  '가족이 있는 곳, 여기 온 까닭, 서류와 체류 사정.',
+  '성장배경과 가족·교우관계에 그것이 배어 있게 쓴다.',
+  '그리고 이따금 관용구나 속담을 글자 그대로 알아듣거나, 존댓말의 결이 한 칸 어긋난다 —',
+  '문법은 맞는데 자리에 안 맞는 식이다. 자주 있는 일은 아니다.'
+].join(String.fromCharCode(10));
+
+/* 누구에게 끌리는가. 이야기 갈래가 아니라 사람의 속성이다 */
+const 지향표 = [["이성", 84], ["동성", 7], ["양성", 6], ["모름", 3]];
+const 지향말 = {
+  이성: '',
+  동성: '이 인물은 동성에게 끌린다. 그 사실을 어떻게 안고 사는지는 인물에 맞게 정한다.',
+  양성: '이 인물은 성별과 무관하게 사람에게 끌린다.',
+  모름: '이 인물은 자기가 누구에게 끌리는지 아직 잘 모른다. 그것을 궁금해하거나 애써 안 보려 한다.'
+};
+
+/* 얼마나 쉽게 넘어가는가. **모든 인물이 똑같이 쉬운 것**이 문제였다.
+   카드에 「거부하지 못한다」고 적힌 사람은 쉬운 게 맞다. 다만 다 그러면 카드가 무의미하다 */
+const 넘어감표 = [["쉬움", 30], ["보통", 45], ["어려움", 25]];
+const 넘어감말 = {
+  쉬움:   '상대가 다정하게 이끌면 잘 거부하지 못한다. 먼저 다가가지는 못하면서도 그렇다.',
+  보통:   '마음이 가면 가되, 자기 속도가 있다. 서두르면 물러선다.',
+  어려움: '가까워지는 데 오래 걸린다. 마음이 있어도 그것을 내보이는 일은 또 다른 문제다.'
+};
+
+/* 카드 하나를 만들 때 한 번 굴린다 */
+function 카드주사위(){
+  return {
+    연애: 굴리기(연애상태표),
+    국적: 굴리기(국적표),
+    지향: 굴리기(지향표),
+    넘어감: 굴리기(넘어감표)
+  };
+}
+
+/* 굴린 것을 프롬프트에 못 박는다. 「몇 % 확률로」 라고 적지 않는다 */
+function 주사위글(d){
+  const L = ["[이 인물에 대해 이미 정해진 것 — 그대로 따른다]"];
+  L.push("- " + 연애상태말[d.연애]);
+  if (지향말[d.지향]) L.push("- " + 지향말[d.지향]);
+  L.push("- " + 넘어감말[d.넘어감]);
+  if (d.국적 === "외국") L.push("- " + 외국인말);
+  return L.join(String.fromCharCode(10));
+}
+
 function cardPrompt(){ throw new Error("중계가 짭니다 — " + "cardPrompt"); }
 
 
@@ -12203,7 +12720,7 @@ const SECTION_DEFS = {
     'FINANCE 재정수준.',
     'LIVING 거주환경.',
     'FRIENDS 교우관계 — 친구 관계의 폭과 깊이.',
-    'DATING 연애이력과 지금 싱글인지. 85% 확률로 지금은 솔로로 설정한다(과거 연애 경험은 있을 수 있음).',
+    'DATING 연애이력과 지금 싱글인지. **맨 위에 정해 둔 것을 그대로 따른다.**',
     'TRAITS 성격을 12자 이내 한 줄로.'
   ]},
   detail: { label:'세부 설정', fields:['desc','pers','scen','rel','habit'], instr:[
@@ -13842,6 +14359,42 @@ $('peMenu').onclick = () => sheet(S.editingPersona.name, [
 ]);
 
 /* ═══════════════ 모델 목록 ═══════════════ */
+/* ── 구글 AI 스튜디오 ──
+
+   무료 티어다. OpenRouter 지출을 아끼려고 둔다.
+   키는 중계가 갖는다 — 원본 빌드도 public 저장소에 올라가므로 앱에 못 박는다.
+
+   실측 (검증/구글재기.js · 260827)
+     · 1분에 열 번은 안 걸린다. 한 모델을 몰아치면 열일곱 번째에 429
+     · **모델마다 한도를 따로 센다** — 하나가 막혀도 다른 것은 돈다
+     · 옷을 벗기는 데까지 되고 **성행위 묘사만 거절**한다
+
+   배포판에는 안 넣는다. 테스터에게 내 무료 한도를 나눠 줄 까닭이 없다 */
+const GG_PREFIX = 'google-ai/';
+const GG_MODELS = [
+  {id:'gemini-3.1-flash-lite', name:'Gemini 3.1 Flash Lite', ctx:1048576,
+   note:'가장 빠르고 한도가 넉넉하다. 평상시 대화에 쓴다'},
+  {id:'gemini-3.5-flash-lite', name:'Gemini 3.5 Flash Lite', ctx:1048576,
+   note:'3.1 과 한도를 따로 센다. 하나가 막히면 이쪽으로'},
+  {id:'gemini-3.6-flash',      name:'Gemini 3.6 Flash',      ctx:1048576,
+   note:'Lite 보다 낫지만 생각하는 데 토큰을 쓴다'},
+  {id:'gemini-3.7-flash',      name:'Gemini 3.7 Flash',      ctx:1048576,
+   note:'가장 최신 Flash'},
+  {id:'gemini-3.1-pro-preview', name:'Gemini 3.1 Pro',       ctx:1048576,
+   note:'품질은 가장 좋으나 하루 한도가 아주 작다'}
+];
+/* 목록에 섞어 넣을 때 OpenRouter 모델과 같은 모양으로 만든다 */
+const 구글모델들 = () => GG_MODELS.map(m => ({
+  id: GG_PREFIX + m.id,
+  name: '[구글] ' + m.name,
+  context_length: m.ctx,
+  gg: true,
+  구글메모: m.note,
+  /* 무료라 시세가 없다. 값 계산이 0 으로 나오게 둔다 */
+  pricing: {prompt: '0', completion: '0'}
+}));
+const isGG = id => String(id || '').startsWith(GG_PREFIX);
+const ggBare = id => String(id || '').slice(GG_PREFIX.length);
 const isFree = m => parseFloat(m.pricing?.prompt||0)===0 && parseFloat(m.pricing?.completion||0)===0;
 const price  = m => ({in:parseFloat(m.pricing?.prompt||0)*1e6, out:parseFloat(m.pricing?.completion||0)*1e6});
 
@@ -13849,7 +14402,10 @@ async function fetchModels(){
   try{
     const res = await apiFetch('or', '/models', {});
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    S.models = ((await res.json()).data||[]).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+    const 온것 = ((await res.json()).data||[]).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+    /* 구글은 목록을 안 물어보고 앱이 들고 있는 것을 앞에 붙인다.
+       배포판에는 안 넣는다 — 내 무료 한도를 나눠 줄 까닭이 없다 */
+    S.models = DIST ? 온것 : [...구글모델들(), ...온것];
     renderModelSelect();
     renderCharModel();
     renderFallbacks();
@@ -13859,6 +14415,8 @@ async function fetchModels(){
 }
 function modelLabel(m){
   const ctx = m.context_length ? `${Math.round(m.context_length/1000)}k` : '?';
+  /* 구글은 무료지만 하루 한도가 있다. 「무료」라고만 적으면 무제한으로 읽힌다 */
+  if (m.gg) return `${m.name||m.id} · ${ctx} · 무료(한도 있음)`;
   if (isFree(m)) return `${m.name||m.id} · ${ctx} · 무료`;
   const p = price(m);
   const one = (TURN_IN * p.in + turnOut() * p.out) / 1e6;
@@ -13909,7 +14467,13 @@ function showModelInfo(){
     : '캐릭터별로 다른 모델을 지정할 수도 있습니다.';
 }
 function getFallbacks(){
-  try{ return JSON.parse(localStorage.getItem(LS.fallbacks) || '[]'); }catch(_){ return []; }
+  try{
+    const 것 = localStorage.getItem(LS.fallbacks);
+    /* null 이면 아직 한 번도 안 정한 것이다. 그때만 기본값을 쓴다.
+       빈 배열([])은 유저가 손으로 지운 것이라 그대로 존중한다 */
+    if (것 === null) return DIST ? [] : [...GG_FALLBACK];
+    return JSON.parse(것) || [];
+  }catch(_){ return []; }
 }
 function renderFallbacks(){
   const fb = getFallbacks();
@@ -14381,6 +14945,10 @@ function loadSettings(){
   $('sImgDiceN').innerHTML = IMG_DICE.map(g =>
     '<option value="' + g.k + '">' + g.t + ' — ' + g.d + '</option>').join('');
   $('sImgDiceN').value = localStorage.getItem(LS.imgDiceN) || 'some';
+  $('sJolt').checked = joltOn();
+  $('sJoltN').innerHTML = JOLT_GAP.map(g =>
+    '<option value="' + g.k + '">' + g.t + ' — ' + g.d + '</option>').join('');
+  $('sJoltN').value = localStorage.getItem(LS.joltN) || 'some';
   $('sPreHint').checked = localStorage.getItem(LS.preHint) === '1';
   $('sTaste').value  = localStorage.getItem(LS.taste) || 기본취향();
   $('sAgeMin').value = localStorage.getItem(LS.ageMin) || '20';
@@ -14487,6 +15055,15 @@ $('sImgDiceN').onchange = () => {
   localStorage.setItem(LS.imgDiceN, $('sImgDiceN').value);
   paintMacros();
   toast(diceOf($('sImgDiceN').value).d + ' 붙습니다');
+};
+$('sJolt').onchange = () => {
+  const on = $('sJolt').checked;
+  localStorage.setItem(LS.jolt, on ? '1' : '0');
+  toast(on ? joltOf($('sJoltN').value).d + ' 일이 벌어집니다' : '저절로 벌어지지 않습니다');
+};
+$('sJoltN').onchange = () => {
+  localStorage.setItem(LS.joltN, $('sJoltN').value);
+  toast(joltOf($('sJoltN').value).d + ' 벌어집니다');
 };
 $('sPreHint').onchange = () => {
   const on = $('sPreHint').checked;
@@ -14829,6 +15406,19 @@ const MEM = (() => {
   셋 이상을 만든다. 역할을 갈라 둔다 — 기준점(매일 만난다) · 운반자(가끔 일을 들고 온다) · 위험(주인공이 기억 못 해 위험해지는 사람).
   조연은 기억한다. 주인공만 잊는다.
 
+  **그리고 저마다 주인공에게서 얻으려는 것이 있다.** 이것을 한 사람마다 한 줄로 적는다.
+  선한 사람과 악한 사람으로 가르지 않는다 — 다들 제 사정이 있을 뿐이다.
+  이런 결이다 : 제 대신 위험한 곳에 보내려 한다 · 잊는 사이 무언가를 가져간다 ·
+  제 잘못을 주인공 것으로 옮겨 둔다 · 주인공을 붙들어 놓아야 제 일이 된다.
+
+  **셋은 서로를 모른다.** 한통속이면 세계가 한 덩이가 되고, 주인공은 끌려다니기만 한다.
+  각자 따로 기회를 본다.
+
+  **이 사람들은 주인공이 잊는다는 것을 안다.** 그것이 이용의 밑동이다 —
+  같은 부탁을 날마다 새것처럼 다시 하고, 어제 준 것을 안 준 척하고,
+  제 말을 주인공이 못 짚는다는 것을 알고 말을 바꾼다.
+  다만 **그것을 입 밖에 내어 설명하지 않는다.** 하는 짓으로만 드러난다.
+
   ## 쓰지 않는 것
   - 주인공이 진실을 알아내는 과정을 미리 정하지 않는다
   - 대사를 미리 쓰지 않는다. 상태와 동기만 적는다
@@ -15085,6 +15675,10 @@ const MEM = (() => {
   무엇을 말할지 정하지 않는다. 무엇을 알고 무엇을 바라는지만 적는다.
   틀림 : 박씨는 오늘 먼저 돈 얘기를 꺼낸다
   맞음 : 박씨는 어제 못 받은 돈을 기억하고 있다. 꺼내고 싶지만 먼저 말 꺼내기를 껄끄러워한다
+  - **바라는 것은 주인공과 이어져야 한다.** 「돈이 필요하다」가 아니라
+    「주인공을 시켜 그 돈을 받아 오게 하려 한다」로 적는다.
+    주인공과 상관없는 바람만 적으면 조연이 배경이 된다
+  - **대장에 적힌 그 사람의 잇속을 여기서 꺼내 쓴다.** 새로 지어내지 않는다
   - 그 장면에 있는 사람만 적는다. 없으면 「없음」
   - 사람이 있으면 그 사람은 무엇이든 한다. 다만 매번 말을 걸 필요는 없다
   - **대장의 조연 셋은 오늘 안에 적어도 한 번씩 나온다.** 세 사람이 다 안 나온 채 하루가 끝나면 안 된다
@@ -15115,8 +15709,12 @@ const MEM = (() => {
 
   몸에 문장이 새겨져 있다. 그 문장들이 당신에게 당신이 무엇인지 알려 주는 전부다. 왜 새겼는지는 모르지만 자기 글씨이니 믿는다.
 
-  ── 몸에 새겨진 문장 ──
+  ── 몸에 새겨진 문장 (당신만 안다) ──
   ${M.문신.length ? M.문신.map(t => '· ' + t).join('\n') : '· (읽을 수 있는 것은 여기까지다)'}
+
+  **이것은 옷 안에 있다. 다른 사람은 무엇이 적혔는지 모른다.**
+  조연이 그 문장을 입에 올리거나, 그 내용을 아는 듯이 굴지 않는다.
+  당신이 소매를 걷어 보여 준 그 자리에서만, 그 자리에 있던 사람이 안다.
 
   ── 오늘 적어 둔 쪽지 ──
   ${M.오늘메모.length ? M.오늘메모.map(t => '· ' + t).join('\n') : '· (쪽지는 비어 있다)'}
@@ -15952,13 +16550,36 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b108';
-const APP_BUILT = '2026-08-26 23:59';
-const APP_NOTE  = '배포판 인물 카드에 안 쓰는 수치가 보이던 것';
+const APP_BUILD = 'b113';
+const APP_BUILT = '2026-08-27 23:34';
+const APP_NOTE  = '구글 AI 스튜디오 무료 모델을 [구글] 딱지로 · 중계에 gg 길 · 폴백 기본값';
+
+/* ── 배포판 표시 ──
+   번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
+   배포판은 **테스터에게 나눠 준 그 판**이다. 원본 번호를 그대로 쓰면
+   테스터가 받은 적 없는 번호가 화면에 뜬다.
+   배포판을 새로 나눠 줄 때만 아래 셋을 손으로 고친다.
+
+   **19금 요소는 여기 안 적는다.** 테스터가 설정 화면에서 보는 글이고
+   옆 사람이 볼 수도 있다. 무엇을 만들고 있는지 그 한 줄로 짐작하게 된다.
+   검증/_배포판.js 가 낱말로 막는다 */
+const DIST_BUILD = 'b108';
+const DIST_BUILT = '2026-08-27 23:39';
+const DIST_NOTE = [
+  '· 서술 시점과 호칭을 고정했습니다',
+  '· 하기로 해 놓고 안 한 일을 더 정확히 기억합니다',
+  '· 이야기가 어디까지 왔는지 재서 방향을 잡습니다',
+  '· 이따금 걸려 있던 일 하나가 커집니다 (설정에서 끌 수 있습니다)',
+  '· 인물이 더 다양하게 만들어집니다',
+  '· 연애 전개가 여러 갈래로 갈립니다'
+].join('<br>');
 /* 판 번호는 남긴다 — 다섯 번 누르면 키 칸이 열리는 자리이고, 문의할 때 필요하다.
    무엇이 바뀌었는지는 만든 사람 몫이라 배포판에서는 안 보인다 */
 $('sVersion').innerHTML = DIST
-  ? '<b style="color:var(--acc)">빌드 ' + APP_BUILD + '</b>'
+  ? '<b style="color:var(--wrn,#c93)">자료는 오직 브라우저에만 저장됩니다.<br>캐시 삭제에 유의하십시오.</b>' +
+    '<br><br><b style="color:var(--acc)">빌드 ' + DIST_BUILD + '</b>' +
+    '<br>최종 수정: ' + DIST_BUILT +
+    '<br><br><span style="text-align:left;display:inline-block">' + DIST_NOTE + '</span>'
   : '8단계 · <b style="color:var(--acc)">빌드 ' + APP_BUILD + '</b><br>최종 수정: ' + APP_BUILT + '<br>' + APP_NOTE;
 
 /* ═══════════════ 시작 ═══════════════ */
