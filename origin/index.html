@@ -5557,38 +5557,17 @@ async function buildContext(userText){
   /* 중계를 쓰면 짜는 일은 그쪽 몫이다. 여기서는 재료만 담는다.
      tokens · hits · oldestKept 는 응답의 X-Ctx 쪽지로 뒤늦게 채워진다.
 
-     **다만 구글은 중계로 못 간다.** 구글이 클라우드플레어의 자리를 막아
-     「User location is not supported」 가 온다 (results/260828_002).
-     그래서 구글이면 중계를 켜 두었더라도 **앱이 직접 짜고 직접 부른다.**
-     짜는 글은 같다 — 중계의 build.js 가 이 파일에서 뽑아 온 것이기 때문이다. */
-  if (onRelay() && !isGG(모델이름())){
+     **구글도 여기로 간다.** 한때 중계를 거치면 「User location is not supported」 가
+     와서 구글만 앱이 직접 불렀는데(results/260828_002), 그 길이 다시 열렸다.
+     그리고 앱이 직접 부르는 길은 **브라우저에서 CORS 에 막힌다** —
+     손안의 검사 도구는 CORS 가 없어 그것을 못 봤다 (results/260830_002).
+
+     중계로 보내면 얻는 것이 하나 더 있다. **구글 키를 앱에 안 넣어도 된다.**
+     중계가 GG_KEY 를 들고 있다. */
+  if (onRelay()){
     const 재료 = 재료모으기(userText);
     재료.mem = await getMem(S.chat.id);
     return {중계: true, 재료, msgs: null, hits: [], oldestKept: S.messages.length, tokens: 0};
-  }
-
-  /* **구운 판에는 아래 짜는 코드가 없다.** 굽기가 통째로 지운다 —
-     프롬프트가 그 안에 다 들어 있기 때문이다.
-     그러면 구글을 고른 순간 「이 판은 중계로만 돕니다」에서 죽는다.
-
-     그래서 구운 판에서는 **짜는 것만 중계에 맡기고 부르는 것은 여기서** 한다.
-     구글로 나가는 길은 그대로 앱이라 「User location」에 안 걸린다.
-     APP_BAKED 는 굽기가 심는 표다 — 굽지 않은 원본에는 없다 */
-  if (onRelay() && isGG(모델이름()) && typeof APP_BAKED !== 'undefined'){
-    const 재료 = 재료모으기(userText);
-    재료.mem = await getMem(S.chat.id);
-    const r = await apiFetch('or', '/turn', {method: 'POST',
-      body: JSON.stringify({재료, 짜줘: 1})});
-    if (!r.ok){
-      let 왜 = 'HTTP ' + r.status;
-      try{ const j = await r.json(); if (j?.error?.message) 왜 = j.error.message; }catch(_){}
-      throw new Error('중계가 프롬프트를 안 짜 줬습니다 — ' + 왜);
-    }
-    const j = await r.json();
-    if (!Array.isArray(j.msgs) || !j.msgs.length)
-      throw new Error('중계가 빈 프롬프트를 줬습니다');
-    return {msgs: j.msgs, hits: new Array(j.hits || 0),
-            oldestKept: j.oldestKept ?? S.messages.length, tokens: j.tokens || 0};
   }
   throw new Error("이 판은 중계로만 돕니다");
 }
@@ -18040,11 +18019,11 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b126';
-const APP_BUILT = '2026-08-30 11:18';
+const APP_BUILD = 'b127';
+const APP_BUILT = '2026-08-30 12:25';
 const APP_BAKED = true;   /* 이 파일은 구운 것입니다. 손으로 고치지 마십시오 —
                              app/index.html 을 고치고 node 검증/본편굽기.js 를 다시 돌리십시오 */
-const APP_NOTE  = '구운 판에서 구글 모델이 매 턴 죽던 것 — 짜는 것은 중계가, 부르는 것은 앱이';
+const APP_NOTE  = '구글도 중계로 — 앱이 직접 부르면 브라우저 CORS 에 막힌다';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
