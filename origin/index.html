@@ -762,17 +762,27 @@
     box-shadow:0 10px 40px rgba(0,0,0,.6)}
   #overBox>.view{position:static;display:none;flex:1 1 auto;min-height:0}
   #overBox>.view.on{display:flex}
-  #busy{position:fixed;left:50%;transform:translateX(-50%);z-index:75;
-    top:calc(6px + var(--safe-t));background:rgba(30,34,43,.82);
+  /* 화면 맨 위에 붙어 있으면 제목 줄을 가린다. **중상단**으로 내린다.
+     투명도를 높여(.82 → .62) 뒤가 비치게 두었다 — 무엇이 가려졌는지는 알아야 한다.
+     끌어서 옮길 수 있고, 옮긴 자리는 기억한다(--busy-x · --busy-y) */
+  #busy{position:fixed;z-index:75;
+    left:var(--busy-x, 50%); top:var(--busy-y, calc(18vh + var(--safe-t)));
+    transform:translateX(var(--busy-tx, -50%));
+    background:rgba(30,34,43,.62);
     backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
     border:1px solid var(--line2);
     border-radius:9px;padding:5px 11px;font-size:12px;color:var(--tx2);
     display:none;gap:4px;align-items:center;max-width:80vw;
-    box-shadow:0 2px 10px rgba(0,0,0,.45)}
+    box-shadow:0 2px 10px rgba(0,0,0,.45);
+    touch-action:none;cursor:grab}
+  #busy.dragging{cursor:grabbing;opacity:.9;transition:none}
   #busy.on{display:flex}
   /* 안내 문구가 길어졌다. 폭이 모자라면 아래로 접어 넣는다 */
   #busy{flex-wrap:wrap;justify-content:center;text-align:center}
-  #busy b{font-weight:600;color:var(--tx);white-space:nowrap}
+  /* 제목은 접혀야 한다. nowrap 은 남은 굵은 글씨(안내 문구)에만 걸어 둔다 —
+     여기서 통째로 걸면 .busyTop b 의 줄바꿈을 덮어 제목이 … 으로 잘린다 */
+  #busy b{font-weight:600;color:var(--tx)}
+  #busy #busyCan, #busy #busyWhy{white-space:normal}
   #busy span{font-size:10.5px;line-height:1.35}
   /* 할 일과 그 이유를 각각 한 줄씩. 온점으로 이으면 어느 쪽이 조건인지 안 보인다 */
   #busyCan{flex:1 0 100%;font-weight:600;color:var(--tx)}
@@ -870,10 +880,15 @@
   .nvRep .warn::before{content:'!';color:#e0a94a;font-weight:700}
   .nvRep .bad{color:var(--tx)}
   .nvRep .bad::before{content:'×';color:#e06b6b;font-weight:700}
-  .busyTop{display:flex;align-items:center;gap:8px}
-  .busyTop b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* 중지 단추가 늘 뜨게 되면서 제목이 그 폭을 뺏겨 … 으로 잘렸다.
+     **줄을 갈라** 제목에 온 폭을 준다. 두 줄까지는 접어 보인다 */
+  .busyTop{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;justify-content:center}
+  .busyTop b{flex:1 0 100%;min-width:0;white-space:normal;word-break:keep-all;
+    line-height:1.35;text-align:center;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   #busyStop{flex:0 0 auto;background:none;border:1px solid var(--line2);color:var(--tx2);
-    border-radius:7px;padding:2px 9px;font-size:11px;font-family:inherit;display:none}
+    border-radius:7px;padding:2px 11px;font-size:11px;font-family:inherit;display:none;
+    margin-top:2px}
   #busyStop.on{display:block}
   #busyBar{height:3px;border-radius:2px;background:var(--line);margin:4px 0 3px;overflow:hidden;display:none}
   #busyBar.on{display:block}
@@ -2907,6 +2922,66 @@ function busy(kind, what, opt){
   /* 오래 도는 작업에서만 화면 켜기를 묻는다. 한 턴짜리 요청에는 필요 없다 */
   paintWake(kind === 'resume' || kind === 'steps' || !!o.stop);
 }
+/* 배너를 끌어서 옮긴다. 말풍선의 어느 자리를 가리는지가 사람마다 달라
+   한 자리에 못 박아 둘 수가 없다. 옮긴 자리는 기억한다 */
+(function 배너끌기(){
+  const el = document.getElementById('busy');
+  if (!el) return;
+  const 저장키 = 'rp_busy_pos';
+  /* 지난번 자리를 되살린다. 화면 밖으로 나갔으면 버린다 */
+  try{
+    const p = JSON.parse(localStorage.getItem(저장키) || 'null');
+    if (p && p.x > 0 && p.x < innerWidth - 40 && p.y > 0 && p.y < innerHeight - 30) 놓기(p.x, p.y);
+  }catch(_){}
+
+  function 놓기(x, y){
+    const R = document.documentElement.style;
+    R.setProperty('--busy-x', x + 'px');
+    R.setProperty('--busy-y', y + 'px');
+    R.setProperty('--busy-tx', '0px');   /* 가운데 맞춤을 끈다 */
+  }
+
+  let 잡음 = null;
+  const 시작 = (cx, cy) => {
+    /* 중지 단추를 누르는 것과 끄는 것을 가른다 */
+    const r = el.getBoundingClientRect();
+    잡음 = {dx: cx - r.left, dy: cy - r.top, 움직임: 0};
+    el.classList.add('dragging');
+  };
+  const 옮김 = (cx, cy) => {
+    if (!잡음) return;
+    잡음.움직임++;
+    const x = Math.max(4, Math.min(innerWidth - 40, cx - 잡음.dx));
+    const y = Math.max(4, Math.min(innerHeight - 30, cy - 잡음.dy));
+    놓기(x, y);
+    잡음.끝 = {x, y};
+  };
+  const 놓음 = () => {
+    if (!잡음) return;
+    el.classList.remove('dragging');
+    if (잡음.끝 && 잡음.움직임 > 2)
+      try{ localStorage.setItem(저장키, JSON.stringify(잡음.끝)); }catch(_){}
+    잡음 = null;
+  };
+
+  el.addEventListener('pointerdown', e => {
+    if (e.target.id === 'busyStop' || e.target.id === 'busyWake') return;
+    시작(e.clientX, e.clientY);
+    try{ el.setPointerCapture(e.pointerId); }catch(_){}
+  });
+  el.addEventListener('pointermove', e => { if (잡음) 옮김(e.clientX, e.clientY); });
+  el.addEventListener('pointerup', 놓음);
+  el.addEventListener('pointercancel', 놓음);
+  /* 두 번 누르면 처음 자리로 돌아온다 — 끌다가 이상한 데 두었을 때 되돌릴 길이 있어야 한다 */
+  el.addEventListener('dblclick', e => {
+    if (e.target.id === 'busyStop') return;
+    const R = document.documentElement.style;
+    R.removeProperty('--busy-x'); R.removeProperty('--busy-y'); R.removeProperty('--busy-tx');
+    try{ localStorage.removeItem(저장키); }catch(_){}
+    toast('배너를 제자리로 돌렸습니다');
+  });
+})();
+
 function paintWake(show){
   const b = $('busyWake');
   if (!b) return;
@@ -17922,9 +17997,9 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b123';
-const APP_BUILT = '2026-08-30 10:53';
-const APP_NOTE  = '구글 키만 있어도 글을 쓸 수 있게 — 글쓸수있나 가 구글을 안 보던 것';
+const APP_BUILD = 'b124';
+const APP_BUILT = '2026-08-30 10:58';
+const APP_NOTE  = '진행중 배너 — 제목 잘림 · 투명도 · 중상단 · 끌어서 옮기기';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
