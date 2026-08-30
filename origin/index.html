@@ -1631,24 +1631,18 @@
       <div class="sect-h"><b>인물 외형</b><button type="button" class="btn autogen" data-sec="look">✦ 자동생성</button></div>
       <div class="fld"><label>외형 태그 (이미지 생성용, 영문)
         <button class="btn" id="ceLookFromPic" style="float:right;padding:2px 8px;font-size:11px">사진에서 뽑기</button></label>
-        <textarea id="ceLook" rows="1" style="min-height:38px;height:38px" placeholder="korean woman, 27yo, slim build, long straight black hair"></textarea>
+        <textarea id="ceLook" rows="2" style="min-height:57px;height:57px" placeholder="korean woman, 27yo, slim build, long straight black hair"></textarea>
         <div class="hint">
           이미지를 생성할 때 <b>매번 앞에 붙습니다.</b> 얼굴 · 머리 · 체형처럼 <b>변하지 않는 것만</b> 적으십시오. 복장과 표정은 넣지 마십시오.
         </div></div>
       <div class="fld"><label>기본 복장 태그 (영문) <span class="dim" style="font-weight:400">— 평소 차림입니다</span></label>
-        <textarea id="ceOutfit" rows="1" style="min-height:38px;height:38px" placeholder="oversized knit cardigan, plain shirt and slacks"></textarea></div>
-      <div class="fld"><label>프로필 이미지 (목록 썸네일)</label>
+        <textarea id="ceOutfit" rows="2" style="min-height:57px;height:57px" placeholder="oversized knit cardigan, plain shirt and slacks"></textarea></div>
+      <div class="fld"><label>프로필 이미지 (목록 썸네일)<i class="ihelp" data-help="avatar">i</i></label>
         <div class="row" style="align-items:flex-start">
           <img id="ceAvatar" alt="" style="flex:0 0 auto">
           <div style="flex:1">
             <button type="button" class="btn" id="ceAvGen" style="width:100%">✦ 프로필 이미지 생성</button>
             <button type="button" class="btn" id="ceAvClear" style="width:100%;margin-top:7px">지우기</button>
-            <div class="hint" style="margin-top:7px">
-              아래 <b>외형 · 복장 태그</b>로 인물 사진을 한 장 뽑아 목록 썸네일로 씁니다.
-              정사각 512px, <b>장당 $0.01</b>입니다. 없으면 이름 첫 글자가 대신 표시됩니다.<br>
-              <b>이미 사진이 있는 상태에서 다시 누르면</b> 외형 태그부터 새로 쓴 뒤 뽑습니다.
-              어느 경우든 <b>저장을 눌러야</b> 반영됩니다.
-            </div>
           </div>
         </div>
       </div>
@@ -3041,23 +3035,35 @@ function paintNotes(){
     /* 꾹 누르기 */
     const 시작 = () => { 꾹 = setTimeout(() => { 꾹 = null; 지우기(); }, 550); };
     const 그만 = () => { if (꾹){ clearTimeout(꾹); 꾹 = null; } };
-    el.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; 시작(); }, {passive: true});
+    el.addEventListener('touchstart', e => {
+      x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; 시작();
+    }, {passive: true});
     el.addEventListener('mousedown', 시작);
     el.addEventListener('mouseup', 그만);
     el.addEventListener('mouseleave', 그만);
-    /* 옆으로 밀기 — 반쯤 넘기면 지운다 */
+    /* 옆으로 밀기. **무디게 둔다** — 목록을 세로로 훑다가 손가락이 조금만 비껴도
+       칸이 따라 움직이면 성가시다.
+         · 서른 픽셀까지는 아예 안 따라 움직인다 (세로로 훑는 중일 수 있다)
+         · 세로로 더 많이 움직였으면 미는 것이 아니다
+         · 절반 가까이(180) 밀어야 지운다 */
+    let 세로 = 0, y0 = null, 밀까 = false;
     el.addEventListener('touchmove', e => {
       if (x0 == null) return;
-      밀린 = e.touches[0].clientX - x0;
-      if (Math.abs(밀린) > 8) 그만();
+      const dx = e.touches[0].clientX - x0;
+      세로 = Math.abs(e.touches[0].clientY - (y0 ?? e.touches[0].clientY));
+      /* 세로로 훑는 중이면 손대지 않는다 */
+      if (!밀까 && (세로 > 12 || Math.abs(dx) < 30)) return;
+      밀까 = true;
+      그만();
+      밀린 = dx > 0 ? dx - 30 : dx + 30;   /* 문턱만큼 빼서 갑자기 튀지 않게 */
       el.style.transform = 'translateX(' + 밀린 + 'px)';
-      el.style.opacity = String(Math.max(0.25, 1 - Math.abs(밀린) / 220));
+      el.style.opacity = String(Math.max(0.35, 1 - Math.abs(밀린) / 320));
     }, {passive: true});
     el.addEventListener('touchend', () => {
       그만();
-      const 넘겼나 = Math.abs(밀린) > 110;
+      const 넘겼나 = 밀까 && Math.abs(밀린) > 180;
       el.style.transform = ''; el.style.opacity = '';
-      x0 = null; 밀린 = 0;
+      x0 = null; y0 = null; 밀린 = 0; 세로 = 0; 밀까 = false;
       if (넘겼나) 지우기();
     });
   });
@@ -5764,7 +5770,8 @@ function fillGenre(g, characterId, personaId){
       if (k && v) manual[k] = v;
     }
     closeEdit();
-    S.pendingGenre = rollGenre(g.key, manual);
+    S.pendingGenre = rollGenre(g.key, manual, null,
+                               S.characters.find(x => x.id === characterId));
     newChat(characterId, personaId);
   };
 }
@@ -5826,7 +5833,9 @@ function pickGenre(characterId, personaId){
       /* 빈칸을 직접 채우는 갈래는 다른 창으로 이어지므로 그대로 둔다 */
       if (ask && g.key && Object.keys(g.slots || {}).length)
         return fillGenre(g, characterId, personaId);
-      S.pendingGenre = rollGenre(g.key);
+      /* 이 대화의 인물을 넘긴다. S.character 는 아직 이 사람이 아니다 */
+      S.pendingGenre = rollGenre(g.key, null, null,
+                                 S.characters.find(x => x.id === characterId));
       /* 여기서부터는 새 대화로 화면이 옮겨진다. 접지 않으면 그 위에 남는다 */
       closeSheet();
       newChat(characterId, personaId);
@@ -8530,7 +8539,7 @@ const shown = t => fill(t, S.character?.name, S.persona?.name);
 
 /* 폐쇄형 장르의 걸음을 한 줄로 그린다. 지난 막은 초록, 지금 막은 파랑, 남은 막은 회색 */
 /* 결이 있는 장르(연애)가 어디까지 왔는지. 막 대신 뼈대의 빈칸을 잣대로 쓴다.
-   **결 이름은 안 보인다** — 「하룻밤으로 시작」이라 적어 두면 앞으로 올 것을 알려 주는 꼴이다 */
+   결 이름도 함께 보인다 — 무슨 이야기를 하고 있는지는 알고 있어야 한다 */
 function veinHtml(g){
   const 칸 = Object.keys(g?.slots || {});
   if (!칸.length || !g.vein) return '';
@@ -8549,7 +8558,7 @@ function veinHtml(g){
   const 걸린것 = 칸.filter(k => done[k] === '중');
   const 남은것 = 칸.filter(k => !done[k] || done[k] === '아직');
   return '<div class="gArc">' +
-    '<div class="gGoal">◎ 이 이야기가 무엇을 두고 벌어지는가</div>' + bar +
+    '<div class="gGoal">◎ ' + esc(g.veinT || '이 이야기가 무엇을 두고 벌어지는가') + '</div>' + bar +
     '<div class="gArcNow">' + 지난수 + ' / ' + 칸.length + ' 지났습니다</div>' +
     (걸린것.length
       ? '<div class="gArcDesc">지금 걸려 있는 것 — <b>' +
@@ -12049,15 +12058,18 @@ function 지난결적기(id, k){
   try{ localStorage.setItem(지난결키(id), JSON.stringify(것.slice(-4))); }catch(_){}
 }
 
-function rollGenre(key, manual, keep){
+function rollGenre(key, manual, keep, 그인물){
   const g0 = GENRES.find(x => x.key === key);
   if (!g0 || !g0.plot) return null;
   /* 결이 있는 장르는 먼저 결을 뽑는다. 뽑힌 결의 뼈대와 빈칸으로 나머지가 굴러간다.
      다시 굴려도 앞서 정한 결은 지킨다 — 결까지 바뀌면 이야기가 통째로 갈린다 */
   let vein = null;
   if (g0.veins && g0.veins.length){
-    /* 검증 도구가 이 함수를 떼어다 따로 돌린다. 거기엔 S 가 없다 */
-    const 인물 = typeof S !== 'undefined' ? S.character : null;
+    /* **인물을 받아 쓴다.** S.character 는 채팅 화면을 연 뒤에야 걸리므로,
+       인물 목록에서 새 대화를 만들 때는 비어 있거나 딴 사람이다.
+       그러면 카드의 문이 하나도 안 열려 결을 읽는 뜻이 사라진다.
+       검증 도구가 이 함수를 떼어다 따로 돌리기도 한다 — 거기엔 S 가 없다 */
+    const 인물 = 그인물 || (typeof S !== 'undefined' ? S.character : null);
     const 이미 = keep && keep.vein && g0.veins.find(v => v.k === keep.vein);
     vein = 이미 || veinPick(g0, 인물, 지난결(인물?.id));
     if (vein && !이미) 지난결적기(인물?.id, vein.k);
@@ -13941,13 +13953,29 @@ const FLD_HELP = {
     '이 인물이 <b>무엇으로 끌리는 사람인지</b>를 두셋 적습니다. 쉼표로 나눕니다.<br>' +
     '<b>앞에 적은 것일수록 자주 드러납니다.</b>' +
     '<div class="genBox"><b>어디에 영향을 미칩니까</b><span>' +
-    '· <b>말과 몸짓</b> — 그 결이 드러날 자리가 오면 장면 안에서 한 번씩 비칩니다<br>' +
-    '· <b>자동생성</b> — 성격 · 성장배경 · 말투를 지을 때 이 결에 맞춰 씁니다<br>' +
+    '· <b>말과 몸짓</b> — 그 결이 드러날 자리가 오면 장면 안에서 한 번씩 비칩니다. ' +
+    '다만 지금 장면이 받을 수 있을 때만이고, 안 나와도 잘못이 아닙니다<br>' +
+    '· <b>자리 만들기</b> — 같은 장면이 길어지면 환경을 하나 움직여 결을 보일 틈을 냅니다<br>' +
     '· <b>매력 수치</b> — 결이 드러난 자리에서 매력이 움직입니다<br>' +
-    '· <b>되풀이 막기</b> — 최근에 쓴 방식은 다음에 피합니다' +
+    '· <b>되풀이 막기</b> — 최근에 쓴 방식은 다음에 피합니다. 같은 결이라도 매번 다르게 나옵니다<br>' +
+    '· <b>자동생성</b> — 성격 · 성장배경 · 말투 · 습관을 지을 때 이 결에 맞춰 씁니다<br>' +
+    '· <b>첫 장면</b> — 이 인물을 처음 보는 자리에서 그 결이 먼저 눈에 걸리게 씁니다<br>' +
+    '· <b>인물 카드 자동생성</b> — 「선호형」으로 뽑으면 설정의 선호 스타일과 함께 걸립니다' +
+    '</span></div>' +
+    '<div class="genBox"><b>연애 장르라면 하나 더</b><span>' +
+    '이 결과 별개로, <b>이 이야기가 무엇을 두고 벌어지는지</b>가 대화마다 따로 정해집니다.<br>' +
+    '카드를 읽어 앱이 정하며, <b>채팅 설정 → 장르</b>에서 지금 어디까지 왔는지 볼 수 있습니다.' +
     '</span></div>' +
     '<span class="dim">아래 이름 가운데 골라 쓰면 그 결에 딸린 짜임이 함께 걸립니다. ' +
     '직접 적어도 되지만, 목록에 있는 것이 더 촘촘하게 반영됩니다.</span>'],
+  avatar: ['프로필 이미지',
+    '아래 <b>외형 · 복장 태그</b>로 인물 사진을 한 장 뽑아 목록 썸네일로 씁니다.<br>' +
+    '정사각 512px, <b>장당 $0.01</b>입니다. 없으면 이름 첫 글자가 대신 표시됩니다.' +
+    '<div class="genBox"><b>알아 두실 것</b><span>' +
+    '· <b>이미 사진이 있는 상태에서 다시 누르면</b> 외형 태그부터 새로 쓴 뒤 뽑습니다<br>' +
+    '· 어느 경우든 <b>저장을 눌러야</b> 반영됩니다<br>' +
+    '· 아래 <b>이미지 시드</b>를 채워 두면 같은 얼굴로 다시 뽑힙니다' +
+    '</span></div>'],
   secret: ['아직 아무에게도 말 안 한 것',
     '<b>이 칸은 앱이 채우지 않습니다.</b> 자동생성도 건드리지 않습니다.<br>' +
     '이 사람이 속에만 두고 있는 것 하나입니다.' +
@@ -17891,9 +17919,9 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b121';
-const APP_BUILT = '2026-08-30 09:59';
-const APP_NOTE  = '긴급중지 되살림 · 구글 주소 · 카드 주사위를 중계에도 · 팝업 단계 · 중지 단추 · 알림 삭제 · 연애 주제 보기';
+const APP_BUILD = 'b122';
+const APP_BUILT = '2026-08-30 10:38';
+const APP_NOTE  = '결을 그 인물로 뽑음 · 결 이름 표시 · i 축약 셋 · 태그칸 1.5배 · 스와이프 무디게';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
