@@ -1934,7 +1934,9 @@ const LS = {
   charSort:'rp_charsort', chatSort:'rp_chatsort', guide:'rp_guideoff', chatModel:'rp_chatmodel',
   notes:'rp_notes', macro:'rp_macro', wake:'rp_wake',
   penalty:'rp_penalty', tokMig:'rp_tokmig', own:'rp_own', nvFold:'rp_nvfold', personaSort:'rp_personasort',
-  intro:'rp_intro', introModel:'rp_intromodel', intro1:'rp_intro1'
+  intro:'rp_intro', introModel:'rp_intromodel', intro1:'rp_intro1',
+  /* 주인공의 행동을 대신 써 줄 것인가. 기본은 '0' — 맡겼을 때만 */
+  lead:'rp_lead'
 };
 /* localStorage 도 같은 까닭으로 가른다. 값만 갈아 끼우면 쓰는 자리는 손댈 것이 없다 */
 if (DIST) for (const k in LS) LS[k] = 'd_' + LS[k];
@@ -2023,6 +2025,7 @@ const RELAY_MARK = {
   '@RULE_CAST':  () => RULE_CAST,
   '@RULE_CHARM': () => RULE_CHARM,
   '@RULE_SCENE': () => RULE_SCENE,
+  '@RULE_LEAD_ON': () => RULE_LEAD_ON,
   '@RULE_OWN_ON':  () => RULE_OWN_ON,
   '@RULE_OWN_OFF': () => RULE_OWN_OFF,
   '@TASTE':      () => DEFAULT_TASTE,
@@ -2490,12 +2493,22 @@ const RULE_CHARM = '';
    기본은 「끔」이다 — 상대가 내 뜻대로만 움직이면 이야기가 아니라 받아쓰기가 된다. */
 const RULE_OWN_ON = '';
 
+/* ── 주인공의 행동을 대신 써 줄 것인가 ──
+   규칙 1번은 「맡긴다는 말이 이번 턴에 실제로 있을 때만」 대신 쓰라고 한다.
+   그것이 기본이다. 켜면 이 조항이 그 단서를 걷어낸다.
+
+   왜 옵션인가 — 맡기는 말을 매번 쓰는 것이 번거로운 사람이 있고,
+   반대로 제 인물이 제멋대로 움직이는 것을 못 견디는 사람이 있다. */
+const RULE_LEAD_ON = '';
+
 /* 장면이 걸려 있을 때만 붙인다. 늘 실어 두면 쓰지도 않는 조항에 매 턴 값을 치른다 */
 const RULE_SCENE = '';
 
 const RULE_OWN_OFF = '';
 
 const ownOn = () => cfg('own', '0') === '1';
+/* 주인공의 행동을 대신 써 줄 것인가. 기본은 끔 — 맡겼을 때만 쓴다 */
+const leadOn = () => cfg('lead', '0') === '1';
 
 /* ── 잔액 ──
    얼마나 남았는지 모르고 쓰다가 한복판에서 끊기는 일이 있다.
@@ -3162,7 +3175,10 @@ function toastUndo(말, 되돌리기){
 const MACRO_N = 3, MACRO_NAME = 6, MACRO_BODY = 400;
 const MACRO_DEF = [
   {n:'매크로 1', v:''},
-  {n:'매크로 2', v:''},
+  /* 「{{char}}를 둘러싼 다른 사람 쪽에서 연다」 로 장면을 열면 내가 그 자리에 없다.
+     그때 무엇을 쳐야 할지 난감하다는 이야기가 있었다 (윤주희 39턴).
+     지켜보는 것도 한 수인데, 그 지문을 매번 손으로 치는 것이 번거로워 미리 채워 둔다 */
+  {n:'지켜봄',   v:'*나는 아직 그 자리에 없다. 장면이 그대로 이어진다.*'},
   /* 별다른 입력 없이 진행만 맡기고 싶을 때 쓰는 것을 미리 채워 둔다 */
   {n:'계속',     v:'*계속*'}
 ];
@@ -4818,7 +4834,10 @@ function flagSheet(id){
     {label: '직접 적기', run: async () => {
       const v = prompt('무엇이 이상했습니까', m.flag || '');
       if (v === null) return;
-      const t = String(v).trim().slice(0, 40);
+      /* 40자에서 자르고 있었다. 「직전에 씬을 취소했어도 씬 표기가 이어지며, 구글키 3.5플래시라이트 응」
+         처럼 한창 쓰던 문장이 통째로 날아갔다. 무엇이 이상했는지 적는 칸이니
+         잘리면 그 자리를 나중에 못 알아본다. 화면에서 길면 줄여 보이면 될 일이다 */
+      const t = String(v).trim().slice(0, 300);
       if (!t) return;
       m.flag = t; await dbPut('messages', m);
       msgNodeCache.delete(m.id); renderMsgs(false);
@@ -5250,6 +5269,14 @@ async function clampStatusInText(text){
    완전히 사라지지는 않는다. */
 /* 사유는 이번 턴에만 뜻이 있다. 남겨 두면 지난 턴의 까닭이 계속 따라다닌다 */
 const EPHEMERAL_STATS = ['소지품','미해결','사유'];
+/* **그 턴에만 뜻이 있는 칸.** 보관함(updateKeeps)이 이미 받아 갔으므로
+   상태 카드에 남길 까닭이 없다. 남으면 매 턴 프롬프트로 다시 나가
+   같은 것을 계속 새로 만들고 계속 지우라고 시킨다 — 실제로 한 카드 안에
+   「미해결+ = 관계의 방향 정하기」 와 「미해결- = 관계의 방향 정하기」 가
+   나란히 앉아 있었다 (윤주희 대화).
+   「씬」 은 여기 안 넣는다 — 장면이 도는 동안에는 남아야 하기 때문이다.
+   장면이 닫힐 때 syncScene 이 지운다. */
+const ONESHOT_STATS = ['미해결+','미해결-'];
 /* 둘만 있는 자리가 아니게 되면서, 지금 누가 함께 있는지가 중요해졌다.
    혼자가 아닌 이상 늘 보여 준다. */
 const ALONE_RE = /^(없음|혼자|둘만|아무도|없다)/;
@@ -5473,6 +5500,11 @@ async function syncStatus(text){
   for (const key of EPHEMERAL_STATS){
     if (stt[key] === undefined) delete nextCard[key];
   }
+  /* 새로 생김(+) · 끝남(-) 은 보관함이 받아 갔다. 카드에는 안 남긴다 */
+  for (const key of ONESHOT_STATS) delete nextCard[key];
+  /* 장면이 없는데 번호만 남는 일을 막는다. 닫을 때도 지우지만 여기서 한 번 더 받친다 —
+     장면 없이 모델이 「씬」 을 지어 적는 턴도 있다 */
+  if (!S.chat.scene) delete nextCard['씬'];
   mem.keeps = updateKeeps(mem.keeps, stt, S.messages.length);
   await noteCast(text);
   const moved = await applyCastChanges(text);
@@ -6361,6 +6393,11 @@ async function syncScene(out){
     const mem = await getMem(S.chat.id);
     mem.keeps = mem.keeps || [];
     if (sc.after) mem.keeps.push({t: '장면 뒤', v: sc.after, at: S.messages.length});
+    /* **카드에서도 지운다.** syncStatus 가 먼저 돌아 「씬=3/3」 을 이미 넣어 두었다.
+       그대로 두면 다음 턴 프롬프트에 끝난 장면의 번호가 실려, 모델이 그것을 이어 적는다.
+       실제로 「씬=3/3」 이 닫힌 뒤로도 카드에 스물넷 턴을 앉아 있었다 (윤주희 대화 45→69턴) */
+    delete mem.stateCard['씬'];
+    mem.updatedAt = now();
     await dbPut('memory', mem);
     /* 무엇이 끝났는지 남긴다. 단추를 곧바로 띄우고, 다음에 무엇을 권할지 정하는 데 쓴다 */
     S.chat.sceneEnded = {kind: sc.kind, name: sc.name, at: S.messages.length};
@@ -6485,6 +6522,13 @@ function sceneNowSheet(){
      html: '<b>그만두고 원래대로</b>' +
        '<div class="shint">장면 설계를 버립니다. 지금까지 쓴 것은 그대로 남습니다.</div>',
      run: async () => { S.chat.scene = null; await dbPut('chats', S.chat);
+                        /* 접었는데 카드에 번호가 남으면 다음 턴이 그 장면을 이어 적는다 */
+                        const mem = await getMem(S.chat.id);
+                        if (mem.stateCard['씬'] !== undefined){
+                          delete mem.stateCard['씬'];
+                          mem.updatedAt = now();
+                          await dbPut('memory', mem);
+                        }
                         paintNextScene(); toast('장면을 접었습니다'); }}
   ]);
 }
@@ -6784,7 +6828,9 @@ function fmt(t, role){
       /* 말머리에 이미 내 이름이 붙어 있으므로 주인공 대사는 이름을 생략한다 */
       /* 말풍선 머리에 이름이 있어도 대사 줄에 한 번 더 붙여 준다.
          상대 쪽은 그렇게 나오는데 내 쪽만 빠져 있으면 읽는 결이 달라진다. */
-      const badge = '<b>' + esc(who) + '</b> ';
+      /* 누른 이름이 누구인지 담아 둔다. 조연이면 그 조연을 열어야 하는데,
+         이름 없이는 화면에서 그것을 알 길이 없어 늘 {{char}} 카드가 열렸다 */
+      const badge = '<b data-who="' + esc(who) + '">' + esc(who) + '</b> ';
       return '<span class="dlg">' + badge + esc(m[2]) + '</span>';
     }
 
@@ -6930,7 +6976,8 @@ function msgHTML(m, isLast){
     /* 장르가 한 걸음 나아간 턴. 어디가 장르인지는 모델만 알므로 턴 표시까지만 한다 */
     (m.genre ? '<span class="mmark gm">' + esc(m.genre) + ' 한 걸음</span>' : '') +
     /* 이상하다고 찍어 둔 것. 눈에 띄어야 나중에 훑을 때 바로 보인다 */
-    (m.flag ? '<span class="mmark bad">' + esc(m.flag) + '</span>' : '');
+    (m.flag ? '<span class="mmark bad" title="' + esc(m.flag) + '">' +
+      esc(m.flag.length > 28 ? m.flag.slice(0, 27) + '…' : m.flag) + '</span>' : '');
   /* 이름을 짧게 줄인다. 아홉 개가 두 줄로 넘어가면 말풍선이 단추밭이 된다.
      지금 어느 쪽인지는 글자 대신 색으로 알린다. */
   const offBtn = m.mark === '채움' ? ''
@@ -8838,6 +8885,9 @@ const CHAT_MENU = [
   {i:'🧠', t:'기억',    run: () => openMemory(), leave:true, hide: () => DIST},
   {i:'✍', t:'내 지문', hide: () => DIST, run: () => ownSheet(), opens:true,
    now: () => ownOn() ? '전부 그대로' : '반응은 상대가'},
+  /* 「내 지문」 과 짝이다 — 그것은 내가 쓴 것을 어디까지 받을지, 이것은 안 쓴 것을 대신 쓸지 */
+  {i:'🎬', t:'주인공 행동', hide: () => DIST, run: () => leadSheet(), opens:true,
+   now: () => leadOn() ? '대신 이어 씀' : '맡겼을 때만'},
   {i:'⚙', t:'이 대화 설정', hide: () => DIST, run: () => chatCfgSheet(), opens:true,
    /* 걸어 둔 것이 있으면 몇 가지인지 보인다 — 왜 다른 대화와 다른지 알 수 있게 */
    now: () => { const n = CFG_META.filter(m => cfgOwn(m.k)).length;
@@ -8926,6 +8976,23 @@ function ownSheet(reshow){
      html: '<b>내가 쓴 대로 전부 일어납니다</b>' + (on ? ' ✓' : '') +
        '<div class="shint">상대의 반응까지 적어 두면 그대로 따릅니다. 뜻대로 되지만 뜻밖의 일은 줄어듭니다.</div>',
      run: () => { localStorage.setItem(LS.own, '1'); toast('내가 쓴 대로 전부 일어납니다'); 다시(); }}
+  ], null, reshow);
+}
+/* 주인공의 행동을 대신 써 줄 것인가. ownSheet 과 짝이라 같은 모양으로 둔다 */
+function leadSheet(reshow){
+  const on = leadOn();
+  const 다시 = () => setTimeout(() => leadSheet(true), 0);
+  sheet('주인공의 행동을 대신 써 줄까요', [
+    {info: true, html: '<span class="pguide">내가 안 쓴 내 행동을 상대역이 이어 써도 되는지입니다. ' +
+      '<b>속마음</b> 은 어느 쪽이든 쓰지 않습니다.</span>'},
+    {label:'맡겼을 때만 씁니다',
+     html: '<b>맡겼을 때만 씁니다</b>' + (on ? '' : ' ✓') +
+       '<div class="shint">「알아서」 · 「대신」 처럼 맡기는 말을 그 턴에 썼을 때만 이어 씁니다. 내 인물은 내가 움직입니다.</div>',
+     run: () => { localStorage.setItem(LS.lead, '0'); toast('맡겼을 때만 씁니다'); 다시(); }},
+    {label:'맡기지 않아도 이어 씁니다',
+     html: '<b>맡기지 않아도 이어 씁니다</b>' + (on ? ' ✓' : '') +
+       '<div class="shint">장면이 멈추지 않게 내 행동까지 이어 씁니다. 큰 결정은 그래도 나를 기다립니다.</div>',
+     run: () => { localStorage.setItem(LS.lead, '1'); toast('맡기지 않아도 이어 씁니다'); 다시(); }}
   ], null, reshow);
 }
 /* 모델을 바꾸는 길이 설정 격자 안쪽 한 곳뿐이라 멀었다. 늘 보이는 이름을 그대로 단추로 쓴다. */
@@ -9536,7 +9603,12 @@ $('cTitle').onclick = () => { if (S.chat) openWho(); };
 /* 말풍선 안의 이름은 매번 다시 그려지므로 위임으로 받는다 */
 $('msgs').addEventListener('click', e => {
   const b = e.target.closest('.msg.assistant .dlg b');
-  if (b) return void openWho();
+  if (b){
+    /* 조연 이름이면 그 조연을 연다. 태현을 눌렀는데 윤주희가 열리면 안 된다 */
+    const 누구 = b.dataset.who || '';
+    const i = (S.chat?.cast || []).findIndex(p => p.name === 누구);
+    return void (i >= 0 ? editCast(i) : openWho());
+  }
   const chip = e.target.closest('[data-keep]');
   if (chip) openKeeps(chip.dataset.keep);
 });
@@ -10740,7 +10812,14 @@ async function send(opts){
 
   S.streaming = true; $('cSend').textContent = '중지';
   $('cSend').classList.add('stop'); $('cSend').classList.remove('pri');
-  busy('stream', '응답을 받는 중');
+  /* 구글은 **뭉텅이로 보낸다.** 실측해 보면 서른여덟 자씩 스물넷 도막으로 끊어 오는데,
+     OpenRouter 쪽은 네 자씩 백서른다섯 도막이라 물 흐르듯 나온다.
+     그래서 구글이 더 빠른데도(전체 4.4초 대 22.3초) 멈춘 것처럼 보이고,
+     「자꾸 끊긴다 · 처음ㆍ중간ㆍ끝마다 오래 걸린다」 로 느껴진다 (results/260830_003).
+     고칠 수 있는 것이 아니므로 **무슨 일이 벌어지는지 알린다.** */
+  busy('stream', isGG(모델이름())
+    ? '응답을 받는 중  ·  구글은 뭉텅이로 보냅니다'
+    : '응답을 받는 중');
   S.abort = new AbortController();
 
   try{
@@ -14356,13 +14435,37 @@ $('ceSave').onclick = async () => {
 };
 
 /* 상황 글에서 첫 장면의 장소·일시·외관·내면을 어림잡는다 */
+/* 상황 글에 계절이 적혀 있으면 그 계절의 날짜로 연다.
+   「첫눈이 내리는 밤」 이라고 써 두고 8월에 시작하면, 모델은 배경을 따라간다 —
+   실제로 8/23 낮 12시에 첫눈이 내렸다 (한다은 대화 267턴).
+   달력과 배경 중 무엇을 고칠지는 분명하다. **배경이 먼저다.** */
+const 계절말 = [
+  {달: 12, 표: /첫눈|함박눈|눈발|눈보라|폭설|크리스마스|성탄|연말|송년|한파|패딩|목도리|장갑|입김|얼어붙|고드름|난로|히터|스키|스케이트|겨울/},
+  {달:  4, 표: /벚꽃|개나리|목련|진달래|새 학기|개학|입학|신입생|봄비|황사|미세먼지|나들이|봄바람|꽃샘|봄/},
+  {달:  7, 표: /장마|무더위|폭염|열대야|매미|소나기|피서|해수욕|바닷가|물놀이|에어컨|선풍기|빙수|여름/},
+  {달: 10, 표: /단풍|낙엽|추석|한가위|코스모스|억새|선선|쌀쌀|은행잎|수확|가을/}
+];
+function 계절잡기(글){
+  for (const {달, 표} of 계절말) if (표.test(글)) return 달;
+  return 0;   /* 못 찾으면 오늘 그대로 */
+}
+/* 그 달의 가운데쯤으로 잡는다. 요일은 실제 달력에서 가져온다 —
+   지어내면 「12/15 금」 처럼 달력에 없는 날이 되어 그 자체가 어긋난다 */
+function 계절날(달){
+  const 이제 = new Date();
+  let 해 = 이제.getFullYear();
+  /* 이미 지난 계절이면 다음 해로 넘긴다. 「지난 겨울」 로 여는 것은 어색하다 */
+  if (달 < 이제.getMonth() + 1) 해 += 1;
+  return new Date(해, 달 - 1, 15);
+}
 function guessStartState(c){
-  const sc = String(c.scenario || '');
+  const sc = String(c.scenario || '') + ' ' + String(c.description || '');
   /* 시각만 남긴다. 밤·새벽 같은 말은 am/pm 과 겹치므로 쓰지 않는다. */
   const when = /새벽/.test(sc) ? '3:10 am' : /아침|오전/.test(sc) ? '9:20 am'
              : /점심|한낮|정오/.test(sc) ? '12:40 pm' : /오후/.test(sc) ? '4:30 pm'
              : /저녁|해질/.test(sc) ? '7:50 pm' : '10:40 pm';
-  const d = new Date();
+  const 달 = 계절잡기(sc);
+  const d = 달 ? 계절날(달) : new Date();
   const dow = '일월화수목금토'[d.getDay()];
   const date = (d.getMonth()+1) + '/' + d.getDate() + ' ' + dow + ' ' + when;
   /* 장소는 상황 글 첫 문장에서 조사 앞 명사구를 대충 집어 온다 */
@@ -14811,9 +14914,11 @@ const GG_MODELS = [
   {id:'gemini-3.1-flash-lite', name:'Gemini 3.1 Flash Lite', ctx:1048576,
    rpm:15, rpd:1000,
    note:'가장 빠르고 한도가 넉넉하다. 평상시 대화에 쓴다'},
+  /* 260830 실측 — 69턴(20,425 토큰) 대화로 세 번 쳐 보니 747자 → 155자 → 25자로 무너졌다.
+     3.1 은 같은 자리에서 1,181~1,325자를 냈다. **폴백으로 걸면 오히려 손해다** */
   {id:'gemini-3.5-flash-lite', name:'Gemini 3.5 Flash Lite', ctx:1048576,
-   rpm:15, rpd:1000,
-   note:'3.1 이 막혔을 때 이쪽이 돌았다. 폴백으로 걸어 둔다'},
+   rpm:15, rpd:1000, 짧음:true,
+   note:'긴 대화에서 본문이 25자까지 줄었다 · 폴백으로 걸지 말 것'},
   /* 이 둘은 생각을 못 끈다. 상한을 두 배로 줘도 스무 초쯤 걸린다 — 골라 쓰기 전에 알아야 한다 */
   {id:'gemini-3.6-flash',      name:'Gemini 3.6 Flash',      ctx:1048576,
    rpm:10, rpd:1500, 느림:true,
@@ -14835,10 +14940,10 @@ function ggLimit(m){
 /* 목록에 섞어 넣을 때 OpenRouter 모델과 같은 모양으로 만든다 */
 const 구글모델들 = () => GG_MODELS.map(m => ({
   id: GG_PREFIX + m.id,
-  name: '[구글] ' + m.name + (m.느림 ? ' — 느립니다' : ''),
+  name: '[구글] ' + m.name + (m.느림 ? ' — 느립니다' : '') + (m.짧음 ? ' — 짧게 나옵니다' : ''),
   context_length: m.ctx,
   gg: true,
-  rpm: m.rpm, rpd: m.rpd, 조심: !!m.조심, 느림: !!m.느림,
+  rpm: m.rpm, rpd: m.rpd, 조심: !!m.조심, 느림: !!m.느림, 짧음: !!m.짧음,
   구글한도: ggLimit(m),
   구글메모: m.note,
   /* 무료라 시세가 없다. 값 계산이 0 으로 나오게 둔다 */
@@ -18019,11 +18124,11 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b127';
-const APP_BUILT = '2026-08-30 12:25';
+const APP_BUILD = 'b130';
+const APP_BUILT = '2026-08-30 19:12';
 const APP_BAKED = true;   /* 이 파일은 구운 것입니다. 손으로 고치지 마십시오 —
                              app/index.html 을 고치고 node 검증/본편굽기.js 를 다시 돌리십시오 */
-const APP_NOTE  = '구글도 중계로 — 앱이 직접 부르면 브라우저 CORS 에 막힌다';
+const APP_NOTE  = '8월에 눈이 오던 것 — 배경의 계절로 날짜를 연다 · 매 턴 동의를 구하지 않는다';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
