@@ -9731,8 +9731,11 @@ async function streamInto(target, CTX, signal){
 
 const imgKey   = () => (localStorage.getItem(LS.imgKey) || '').trim();
 /* 중계를 쓰면 키는 그쪽이 갖는다. 이 기기에 없는 것이 정상이므로 「없다」로 막으면 안 된다.
-   막는 자리가 아홉 곳이라 하나씩 고치면 반드시 빠뜨린다 — 여기 한 곳에서 판단한다 */
-const 글쓸수있나 = () => !!localStorage.getItem(LS.key) || onRelay();
+   막는 자리가 아홉 곳이라 하나씩 고치면 반드시 빠뜨린다 — 여기 한 곳에서 판단한다.
+
+   **구글 키도 여기서 함께 본다.** 구글만 넣어 두고 쓰는 사람이 있는데,
+   OpenRouter 키만 보면 대화는 실제로 도는데도 「키를 입력하십시오」에 막힌다 */
+const 글쓸수있나 = () => !!localStorage.getItem(LS.key) || onRelay() || 구글쓸수있나();
 const 그림그릴수있나 = () => !!imgKey() || onRelay();
 /* 옛 단일 모델 설정. 수위별 묶음이 생기기 전의 것이라 이제 화면 표기에 쓰지 않는다 */
 const imgSpec  = () => S.imgModels.find(m => m.id === localStorage.getItem(LS.imgModel));
@@ -17919,9 +17922,9 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b122';
-const APP_BUILT = '2026-08-30 10:38';
-const APP_NOTE  = '결을 그 인물로 뽑음 · 결 이름 표시 · i 축약 셋 · 태그칸 1.5배 · 스와이프 무디게';
+const APP_BUILD = 'b123';
+const APP_BUILT = '2026-08-30 10:53';
+const APP_NOTE  = '구글 키만 있어도 글을 쓸 수 있게 — 글쓸수있나 가 구글을 안 보던 것';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
