@@ -14865,19 +14865,38 @@ function ggFreeText(m){
 const price  = m => ({in:parseFloat(m.pricing?.prompt||0)*1e6, out:parseFloat(m.pricing?.completion||0)*1e6});
 
 async function fetchModels(){
+  /* 구글은 목록을 **안 물어본다.** 앱이 들고 있는 것이라 OpenRouter 와 무관하다.
+     배포판에는 안 넣는다 — 내 무료 한도를 나눠 줄 까닭이 없다 */
+  const 구글 = DIST ? [] : 구글모델들();
+  let 온것 = null, 탈 = '';
   try{
     const res = await apiFetch('or', '/models', {});
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const 온것 = ((await res.json()).data||[]).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
-    /* 구글은 목록을 안 물어보고 앱이 들고 있는 것을 앞에 붙인다.
-       배포판에는 안 넣는다 — 내 무료 한도를 나눠 줄 까닭이 없다 */
-    S.models = DIST ? 온것 : [...구글모델들(), ...온것];
-    renderModelSelect();
-    renderCharModel();
-    renderFallbacks();
-  }catch(e){
-    $('sModel').innerHTML = `<option value="">— 로드 실패: ${esc(e.message)} —</option>`;
-  }
+    if (!res.ok){
+      /* 중계에 초대 코드를 안 넣으면 401 이 온다. 무엇이 모자란지 그대로 알린다 */
+      let 왜 = 'HTTP ' + res.status;
+      try{ const j = await res.json(); if (j?.error?.message) 왜 = j.error.message; }catch(_){}
+      throw new Error(왜);
+    }
+    온것 = ((await res.json()).data||[]).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  }catch(e){ 탈 = e.message; }
+
+  /* **OpenRouter 가 막혀도 구글은 그대로 싣는다.**
+     예전에는 한 번 던지면 구글까지 함께 사라져, 고를 모델이 없어 보내기부터 막혔다 */
+  S.models = [...구글, ...(온것 || [])];
+  renderModelSelect();
+  renderCharModel();
+  renderFallbacks();
+
+  if (온것 === null){
+    S.modelFetchErr = 탈;
+    const el = $('sModel');
+    /* 구글이라도 있으면 목록은 살려 두고, 못 불러온 사실만 덧붙인다 */
+    if (구글.length)
+      el.insertAdjacentHTML('beforeend',
+        '<option value="" disabled>— OpenRouter 목록을 못 불러왔습니다: ' + esc(탈) + ' —</option>');
+    else
+      el.innerHTML = '<option value="">— 로드 실패: ' + esc(탈) + ' —</option>';
+  } else S.modelFetchErr = '';
 }
 function modelLabel(m){
   const ctx = m.context_length ? `${Math.round(m.context_length/1000)}k` : '?';
@@ -17997,9 +18016,9 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b124';
-const APP_BUILT = '2026-08-30 10:58';
-const APP_NOTE  = '진행중 배너 — 제목 잘림 · 투명도 · 중상단 · 끌어서 옮기기';
+const APP_BUILD = 'b125';
+const APP_BUILT = '2026-08-30 11:06';
+const APP_NOTE  = 'OpenRouter 목록이 막혀도 구글 모델은 남게 — 고를 모델이 없어 보내기가 막히던 것';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
