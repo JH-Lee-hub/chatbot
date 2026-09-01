@@ -68,7 +68,8 @@
   .tapwide{position:relative}
   .tapwide::after{content:'';position:absolute;top:50%;left:50%;
     width:44px;height:44px;transform:translate(-50%,-50%)}
-  .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px}
+  /* 260901 — 가장자리를 좁혀 카드 안을 넓힌다. ⋯ 가 들어가도 안 좁아 보이게 */
+  .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px}
 
   /* ── 하단 탭 ── */
   /* 설정이 한 화면에 안 들어와 세로로 길었다. 묶음별로 갈라 놓는다 */
@@ -101,7 +102,8 @@
   /* ── 카드 ── */
   .card{
     background:var(--panel); border:1px solid var(--line); border-radius:12px;
-    padding:13px; margin-bottom:9px; display:flex; gap:11px; align-items:center;
+    /* 위아래를 좌우보다 더 줄인다. 좌우까지 줄이면 글이 테두리에 붙어 답답하다 */
+    padding:10px 12px; margin-bottom:6px; display:flex; gap:10px; align-items:center;
   }
   .card:active{background:var(--panel2)}
   .av{width:40px;height:40px;border-radius:11px;flex:0 0 auto;display:grid;place-items:center;
@@ -815,8 +817,15 @@
   #vChats{position:relative}
   .pickBar{position:absolute;left:0;right:0;top:0;z-index:6;background:var(--panel);
     border-bottom:1px solid var(--acc)}
-  .pickBar h2{color:var(--acc)}
-  .pickBar .ico.dan{color:var(--err)}
+  .pickBar h2{color:var(--acc);flex:0 0 auto;font-size:13px}
+  /* 할 수 있는 일이 다섯까지 온다. 좁은 화면에서는 옆으로 굴린다 —
+     줄을 바꾸면 그만큼 목록이 가려진다 */
+  #pickActs{flex:1 1 auto;display:flex;gap:5px;overflow-x:auto;justify-content:flex-end;
+    scrollbar-width:none}
+  #pickActs::-webkit-scrollbar{display:none}
+  #pickActs button{flex:0 0 auto;padding:5px 9px;border-radius:7px;font-size:11.5px;
+    background:var(--panel2);border:1px solid var(--line2);color:var(--tx2);white-space:nowrap}
+  #pickActs button.dan{color:var(--err);border-color:rgba(255,107,107,.4)}
   /* 고르는 동안에는 어느 것이 골라졌는지가 한눈에 보여야 한다 */
   .card.picked{outline:2px solid var(--acc);outline-offset:-2px;background:var(--panel2)}
   .card .pickDot{position:absolute;right:10px;top:10px;width:19px;height:19px;
@@ -858,7 +867,10 @@
     background:var(--panel2);border:1px solid var(--line2);color:var(--tx);
     font-size:12px;font-family:inherit;line-height:1.45;resize:vertical}
   .wishBox:focus{outline:none;border-color:var(--acc)}
-  .wishEx{margin-top:3px;font-size:10px;line-height:1.3;color:var(--tx3)}
+  .wishEx{margin-top:4px;font-size:10px;line-height:1.35;color:var(--tx3)}
+  /* 예시 둘을 세로로 나눈다. 왼쪽 선으로 「적는 글」임을 보인다 */
+  .wishExOne{padding-left:6px;border-left:2px solid var(--line2);margin-top:4px}
+  .wishExOne:first-child{margin-top:0}
   /* ⓘ · 글 · 칸 순. **칸을 글자에 딱 붙인다** —
      넓으면 빈 데를 눌러도 켜져 실수가 난다 */
   .wishSw{display:flex;align-items:center;gap:6px;margin-top:7px;
@@ -899,6 +911,8 @@
   /* 장소는 한 줄로. 길면 뒤를 자른다 */
   #statPopWhere{margin-top:2px;color:var(--tx3);max-width:15em;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* 두 줄짜리 단추. 좁고 높아 카드 높이를 안 늘린다 */
+  .goBtn{padding:4px 8px;font-size:10.5px;line-height:1.2;flex:0 0 auto;white-space:nowrap}
   .cntRow{display:flex;align-items:center;gap:10px}
   .cntRow>b{flex:0 0 auto}
   .cntBar{display:inline-flex;gap:3px}
@@ -944,7 +958,8 @@
   .noteHead{display:flex;align-items:center;gap:8px;margin-bottom:8px}
   .noteHead b{flex:1;font-size:13px;color:var(--tx2)}
   .noteHead .btn{padding:4px 10px;font-size:11px}
-  .noteRow{padding:9px 11px;border-radius:9px;background:var(--panel2);margin-bottom:6px;
+  /* 260901 — 줄 사이를 절반으로. 알림이 여럿일 때 화면을 너무 먹었다 */
+  .noteRow{padding:9px 11px;border-radius:9px;background:var(--panel2);margin-bottom:3px;
     border-left:2px solid transparent}
   .noteRow.new{border-left-color:var(--acc)}
   .noteRow.bad{border-left-color:#e06b6b}
@@ -1035,13 +1050,14 @@
 
   <!-- ══════════ 대화 목록 ══════════ -->
   <section class="view on" id="vChats">
-    <!-- 고르기 줄. 상단바 **위에 겹쳐** 뜬다 —
-         자리를 새로 만들면 목록이 아래로 밀려 방금 누른 카드가 눈에서 사라진다 -->
-    <div class="bar pickBar" id="chatPickBar" style="display:none">
-      <button class="ico" id="chatPickX" title="그만두기">✕</button>
-      <h2 id="chatPickN">0개</h2>
-      <button class="ico" id="chatPickAll" title="모두 고르기">☑</button>
-      <button class="ico dan" id="chatPickDel" title="고른 것 지우기">🗑</button></div>
+    <!-- 고르기 줄. 대화 · 대상 · 내 정보가 **한 줄을 나눠 쓴다.**
+         상단바 위에 겹쳐 뜬다 — 자리를 새로 만들면 목록이 밀려
+         방금 누른 카드가 눈에서 사라진다 -->
+    <div class="bar pickBar" id="pickBar" style="display:none">
+      <button class="ico" id="pickX" title="그만두기">✕</button>
+      <h2 id="pickN">0개</h2>
+      <button class="ico" id="pickAll" title="모두 고르기">☑</button>
+      <div id="pickActs"></div></div>
     <div class="bar"><h2>대화</h2>
       <button class="ico thumbBtn" data-thumb="1" title="사진 보기">🖼</button>
       <button class="ico" id="bFindChat" title="검색">🔍</button>
@@ -6059,29 +6075,6 @@ async function loadAll(){
   /* 목록에 마지막 장소·시각을 띄우려면 기억이 필요하다. 미리 담아 둔다. */
   S.mems = Object.fromEntries((await dbAll('memory')).map(m => [m.chatId, m]));
 }
-/* ═══ 목록에서 여러 개 고르기 ═══
-   꾹 눌러 들어오고, 하나도 안 남으면 저절로 나간다.
-   고른 것을 화면이 아니라 여기 담아 둔다 — 다시 그려도 안 흩어지게 */
-const 고른대화 = new Set();
-const 고르는중 = () => 고른대화.size > 0 || S.chatPick === true;
-
-function 고르기끄기(){
-  S.chatPick = false; 고른대화.clear(); renderChats();
-}
-function 고르기그리기(){
-  const 바 = $('chatPickBar');
-  if (!바) return;
-  const 켬 = 고르는중();
-  바.style.display = 켬 ? '' : 'none';
-  if (켬) $('chatPickN').textContent = 고른대화.size + '개 고름';
-}
-function 고르기뒤집기(id){
-  if (고른대화.has(id)) 고른대화.delete(id); else 고른대화.add(id);
-  /* 다 풀면 저절로 빠져나온다. 「그만두기」를 따로 안 눌러도 되게 */
-  if (!고른대화.size) S.chatPick = false;
-  renderChats();
-}
-
 /* 꾹 누르기. 움직이면 취소다 —
    안 그러면 목록을 손가락으로 넘길 때마다 고르기 모드가 열린다 */
 function 꾹누르기(el, 할일){
@@ -6111,26 +6104,172 @@ function 꾹누르기(el, 할일){
   }, true);
 }
 
-/* 고른 것을 한 번에 지운다. 스물을 지우려고 예순 번 누르던 자리다 */
-async function 고른것지우기(){
-  const 것 = [...고른대화];
-  if (!것.length) return;
-  const 이름 = 것.slice(0, 3)
-    .map(id => S.chats.find(x => x.id === id)?.title || '이름 없음').join(' · ');
-  if (!confirm('대화 ' + 것.length + '개를 지웁니다.\n' + 이름 +
-               (것.length > 3 ? ' 그 밖 ' + (것.length - 3) + '개' : '') +
-               '\n\n원문이 모두 사라지며 되돌릴 수 없습니다.')) return;
-  busy('once', '대화 ' + 것.length + '개를 지우는 중');
+/* ═══════════════ 목록에서 여러 개 고르기 ═══════════════
+   대화 · 대상 · 내 정보가 같은 길을 쓴다.
+   목록마다 다른 것은 **무엇을 할 수 있나**뿐이라 그것만 아래 표로 둔다. */
+const 고름 = {어디: null, 것: new Set()};
+const 고르는중 = 어디 => 고름.어디 === 어디 && (고름.것.size > 0 || 고름.켬);
+
+/* 목록마다 이름 · 그리는 함수 · 할 수 있는 일 */
+const 목록표 = {
+  chats:    {통: 'chatList',    다시: () => renderChats(),
+             이름: id => (S.chats.find(x => x.id === id) || {}).title || '이름 없음'},
+  chars:    {통: 'charList',    다시: () => renderChars(),
+             이름: id => (S.characters.find(x => x.id === id) || {}).name || '이름 없음'},
+  personas: {통: 'personaList', 다시: () => renderPersonas(),
+             이름: id => (S.personas.find(x => x.id === id) || {}).name || '이름 없음'}
+};
+
+function 고르기끄기(){
+  const 어디 = 고름.어디;
+  고름.어디 = null; 고름.켬 = false; 고름.것.clear();
+  if (어디 && 목록표[어디]) 목록표[어디].다시();
+  고르기그리기();
+}
+function 고르기뒤집기(어디, id){
+  if (고름.어디 !== 어디){ 고름.어디 = 어디; 고름.것.clear(); }
+  if (고름.것.has(id)) 고름.것.delete(id); else 고름.것.add(id);
+  /* 다 풀면 저절로 빠져나온다. 「그만두기」를 따로 안 눌러도 되게 */
+  if (!고름.것.size){ 고름.켬 = false; 고름.어디 = null; }
+  목록표[어디].다시();
+}
+function 고르기켜기(어디, id){
+  고름.어디 = 어디; 고름.켬 = true; 고름.것.clear(); 고름.것.add(id);
+  if (navigator.vibrate) try{ navigator.vibrate(12); }catch(_){}
+  목록표[어디].다시();
+}
+
+/* 목록마다 할 수 있는 일.
+   **여럿을 골랐으면 내보내기와 삭제만** 남는다 —
+   이름 변경이나 편집은 하나를 가리킬 때만 뜻이 있다 */
+function 할수있는일(어디, 것들){
+  const 하나 = 것들.length === 1 ? 것들[0] : null;
+  const 여럿 = [
+    {t: '내보내기', run: 것 => 골라내보내기(어디, 것)},
+    {t: '삭제', dan: true, run: 것 => 골라지우기(어디, 것)}
+  ];
+  if (!하나) return 여럿;
+
+  if (어디 === 'chats') return [
+    {t: '이름 변경', run: () => 대화이름바꾸기(하나)},
+    ...여럿
+  ];
+  if (어디 === 'chars') return [
+    {t: 'New Chat', run: () => { 고르기끄기(); pickPersona(하나); }},
+    {t: '편집', run: () => { 고르기끄기(); editChar(하나); }},
+    ...여럿
+  ];
+  /* 내 정보 */
+  const p = S.personas.find(x => x.id === 하나) || {};
+  const 대화수 = S.chats.filter(x => x.personaId === 하나).length;
+  return [
+    ...(p.isDefault ? [] : [{t: '기본으로 설정', run: () => 기본주인공(하나)}]),
+    {t: '편집', run: () => { 고르기끄기(); editPersona(하나); }},
+    ...여럿.slice(0, 1),
+    ...(대화수 ? [{t: '대화 모두보기',
+                  run: () => { 고르기끄기(); filterChatsByPersona(하나); }}] : []),
+    여럿[1]
+  ];
+}
+
+/* 이름만 바꾼다. 대화에만 있는 일이다 */
+async function 대화이름바꾸기(id){
+  const ch = S.chats.find(x => x.id === id);
+  if (!ch) return;
+  const t = prompt('대화 이름', ch.title || '');
+  if (t === null) return;
+  ch.title = t.trim();
+  await dbPut('chats', ch);
+  고르기끄기();
+}
+/* 기본 주인공은 하나뿐이다. 세우면 나머지는 내린다 */
+async function 기본주인공(id){
+  for (const o of S.personas){
+    const want = o.id === id;
+    if (!!o.isDefault !== want){ o.isDefault = want; await dbPut('personas', o); }
+  }
+  await loadAll();
+  고르기끄기();
+  toast((S.personas.find(x => x.id === id) || {}).name + ' 을 기본으로 삼았습니다');
+}
+
+/* 고른 것을 내보낸다. 여럿이면 하나씩 내려받는다 —
+   묶어서 한 파일로 내면 되돌릴 때 통째로만 되므로 낱개로 둔다 */
+function 골라내보내기(어디, 것들){
+  const 냄 = {chats: id => exportChat(id, true),
+              chars: id => exportChar(id),
+              personas: id => exportPersona(id)}[어디];
+  if (!냄) return;
+  것들.forEach((id, i) => setTimeout(() => 냄(id), i * 250));
+  고르기끄기();
+  toast(것들.length + '개를 내보냅니다', 2500);
+}
+
+/* 고른 것을 지운다. 한 번만 묻는다 */
+async function 골라지우기(어디, 것들){
+  if (!것들.length) return;
+  const 표 = 목록표[어디];
+  const 말 = {chats: '대화', chars: '대상', personas: '주인공'}[어디];
+  const 이름 = 것들.slice(0, 3).map(표.이름).join(' · ');
+  /* 대상 · 주인공은 딸린 대화가 있어 되돌릴 수 없다. 그 수를 미리 알린다 */
+  const 딸린 = 어디 === 'chars'
+    ? S.chats.filter(c => 것들.includes(c.characterId)).length
+    : 어디 === 'personas'
+    ? S.chats.filter(c => 것들.includes(c.personaId)).length : 0;
+  if (!confirm(말 + ' ' + 것들.length + '개를 지웁니다.\n' + 이름 +
+               (것들.length > 3 ? ' 그 밖 ' + (것들.length - 3) + '개' : '') +
+               (어디 === 'chats' ? '\n\n원문이 모두 사라지며 되돌릴 수 없습니다.'
+                : 딸린 ? '\n\n딸린 대화 ' + 딸린 + '개는 남지만 ' + 말 + '이 빈 채가 됩니다.'
+                       : '\n\n되돌릴 수 없습니다.'))) return;
+  busy('once', 말 + ' ' + 것들.length + '개를 지우는 중');
   try{
-    for (const id of 것){
-      for (const m of await dbBy('messages', 'chatId', id)) await dbDel('messages', m.id);
-      await dbDel('memory', id); await dbDel('chats', id);
+    for (const id of 것들){
+      if (어디 === 'chats'){
+        for (const m of await dbBy('messages', 'chatId', id)) await dbDel('messages', m.id);
+        await dbDel('memory', id); await dbDel('chats', id);
+      } else if (어디 === 'chars'){
+        await dbDel('characters', id);
+      } else {
+        /* 마지막 주인공은 못 지운다. 없으면 새 대화가 주인공 없이 열린다 */
+        if (S.personas.length - 것들.length < 1) break;
+        await dbDel('personas', id);
+      }
     }
-    고른대화.clear(); S.chatPick = false;
-    await loadAll(); renderChats();
-    toast(것.length + '개를 지웠습니다');
+    /* 기본이 사라졌으면 남은 것 하나를 올린다 */
+    await loadAll();
+    if (어디 === 'personas' && !S.personas.some(x => x.isDefault) && S.personas[0]){
+      S.personas[0].isDefault = true;
+      await dbPut('personas', S.personas[0]);
+      await loadAll();
+    }
+    고르기끄기();
+    renderChats(); renderChars(); renderPersonas();
+    toast(것들.length + '개를 지웠습니다');
   }catch(e){ toast('지우기 실패: ' + e.message, 4000); }
   finally{ busy(null); }
+}
+
+/* 상단바를 덮는 줄. 셋이 한 줄을 나눠 쓴다 —
+   화면마다 따로 두면 같은 것을 세 벌 고치게 된다 */
+function 고르기그리기(){
+  const 바 = $('pickBar');
+  if (!바) return;
+  const 어디 = 고름.어디;
+  const 켬 = !!어디 && 고르는중(어디);
+  바.style.display = 켬 ? '' : 'none';
+  if (!켬) return;
+  /* 덮을 화면 위로 옮긴다 */
+  const 화면 = {chats: 'vChats', chars: 'vChars', personas: 'vPersonas'}[어디];
+  const 곳 = $(화면);
+  if (곳 && 바.parentElement !== 곳) 곳.insertBefore(바, 곳.firstChild);
+  $('pickN').textContent = 고름.것.size + '개';
+  const 것들 = [...고름.것];
+  const 할것 = 할수있는일(어디, 것들);
+  $('pickActs').innerHTML = 할것.map((a, i) =>
+    '<button data-act="' + i + '"' + (a.dan ? ' class="dan"' : '') + '>' +
+    esc(a.t) + '</button>').join('');
+  $('pickActs').querySelectorAll('[data-act]').forEach(b =>
+    b.onclick = () => 할것[+b.dataset.act].run(것들));
 }
 
 function renderChats(){
@@ -6176,32 +6315,39 @@ function renderChats(){
       (cost > 0 ? '  ·  $' + (cost >= 0.01 ? cost.toFixed(3) : cost.toFixed(4)) : '');
     const meta = '<div class="cmeta"><span>생성 ' + stampSmart(ch.createdAt) + '</span>' +
                  '<span>수정 ' + stampSmart(ch.lastMessageAt||ch.createdAt) + '</span></div>';
-    return `<div class="card chr${고른대화.has(ch.id) ? ' picked' : ''}" data-id="${ch.id}">
+    return `<div class="card chr${고름.것.has(ch.id) && 고름.어디==='chats' ? ' picked' : ''}" data-id="${ch.id}">
       ${av}
       <div class="t"><b>${esc(ch.title || c?.name || '이름 없음')}${at?`<em>${esc(at)}</em>`:''}</b>
         ${nowAt?`<span class="nowat">${esc(nowAt)}</span>`:''}
         <span class="dim">${esc(l2)}</span></div>
       ${meta}
-      ${고르는중() ? '<span class="pickDot">✓</span>'
+      ${고르는중('chats') ? '<span class="pickDot">✓</span>'
                    : '<button class="ico" data-menu="' + ch.id + '">⋯</button>'}</div>`;
   }).join('');
   box.querySelectorAll('.card').forEach(el => {
     el.onclick = e => {
       /* 고르는 중에는 탭이 여는 것이 아니라 고르는 것이다 */
-      if (고르는중()) return 고르기뒤집기(el.dataset.id);
-      if (e.target.dataset.menu) return chatMenu(e.target.dataset.menu);
+      if (고르는중('chats')) return 고르기뒤집기('chats', el.dataset.id);
+      if (e.target.dataset.menu) return 카드메뉴('chats', e.target.dataset.menu);
       openChat(el.dataset.id);
     };
     /* 꾹 누른 그 카드는 골라진 채로 들어간다 — 한 번 더 누르게 하지 않는다 */
     꾹누르기(el, () => {
-      if (고르는중()) return;
-      S.chatPick = true;
-      고른대화.add(el.dataset.id);
-      if (navigator.vibrate) try{ navigator.vibrate(12); }catch(_){}
-      renderChats();
+      if (고르는중('chats')) return;
+      고르기켜기('chats', el.dataset.id);
     });
   });
   고르기그리기();
+}
+
+/* ⋯ 를 누르면 고르기 줄과 **같은 것**이 창으로 뜬다.
+   두 벌로 두면 한쪽만 고쳤을 때 갈라진다 */
+function 카드메뉴(어디, id){
+  const 할것 = 할수있는일(어디, [id]);
+  sheet(목록표[어디].이름(id), 할것.map(a => ({
+    label: a.t, danger: !!a.dan,
+    run: () => { 고름.어디 = 어디; 고름.것 = new Set([id]); closeSheet(); a.run([id]); }
+  })));
 }
 /* 대화 하나를 담은 파일을 실제로 넣는다.
    목록의 「불러오기」와 설정의 「가져오기」가 같은 일을 하므로 여기 한 곳에 둔다.
@@ -6231,17 +6377,19 @@ function importChatFile(){
     }catch(e){ toast('불러오기 실패: ' + e.message); }
   });
 }
-$('chatPickX').onclick = 고르기끄기;
-$('chatPickDel').onclick = 고른것지우기;
+$('pickX').onclick = 고르기끄기;
 /* 지금 걸러 놓은 목록 안에서만 모두 고른다 —
    검색해 좁혀 놓고 「모두」를 눌렀는데 안 보이던 것까지 지워지면 안 된다 */
-$('chatPickAll').onclick = () => {
-  const 보이는것 = [...$('chatList').querySelectorAll('.card')].map(el => el.dataset.id);
-  const 다골랐나 = 보이는것.length && 보이는것.every(id => 고른대화.has(id));
-  if (다골랐나) 보이는것.forEach(id => 고른대화.delete(id));
-  else 보이는것.forEach(id => 고른대화.add(id));
-  if (!고른대화.size) S.chatPick = false;
-  renderChats();
+$('pickAll').onclick = () => {
+  const 어디 = 고름.어디;
+  if (!어디) return;
+  const 통 = $(목록표[어디].통);
+  const 보이는것 = [...통.querySelectorAll('.card')].map(el => el.dataset.id);
+  const 다골랐나 = 보이는것.length && 보이는것.every(id => 고름.것.has(id));
+  if (다골랐나) 보이는것.forEach(id => 고름.것.delete(id));
+  else 보이는것.forEach(id => 고름.것.add(id));
+  if (!고름.것.size){ 고름.켬 = false; 고름.어디 = null; }
+  목록표[어디].다시();
 };
 $('bLoadChat').onclick = importChatFile;
 
@@ -14087,7 +14235,141 @@ function makeSheet(reshow){
 }
 /* 동시에 지을 때 아직 저장 안 된 이름들. 겹침을 여기서도 본다 —
    S.characters 만 보면 같은 이름 둘이 함께 빠져나간다 */
+/* 동시에 지을 때 아직 저장 안 된 이름들. 겹침을 여기서도 본다 —
+   S.characters 만 보면 같은 이름 둘이 함께 빠져나간다 */
 const 짓는중이름 = new Set();
+
+/* ── 260901 · 요청을 씨앗에 반영한다 ──
+   나이는 꼴이 몇 안 된다. 앱이 바로 읽으면 부름이 안 늘고 빗나갈 일도 없다 */
+const 한글수 = {영:0, 공:0, 한:1, 두:2, 세:3, 네:4, 다섯:5, 여섯:6, 일곱:7, 여덟:8, 아홉:9,
+  열:10, 스물:20, 서른:30, 마흔:40, 쉰:50, 예순:60,
+  스무:20, 열한:11, 열두:12, 열세:13, 열넷:14};
+/* 「서른여덟」처럼 붙여 쓴 것을 센다. 「스물다섯」도 같다 */
+function 한글나이(글){
+  const m = String(글).match(/(스물|서른|마흔|쉰|예순|스무)\s*(한|두|세|네|다섯|여섯|일곱|여덟|아홉)?\s*살?/);
+  if (!m) return null;
+  const 십 = 한글수[m[1] === '스무' ? '스물' : m[1]] || 0;
+  const 일 = m[2] ? (한글수[m[2]] || 0) : 0;
+  return 십 + 일;
+}
+/* 요청 글에서 나이를 읽는다. 못 읽으면 null — 그러면 씨앗을 안 건드린다 */
+function 요청나이(글){
+  const t = String(글 || '');
+  if (!t.trim()) return null;
+  /* ① 「38세」 「38살」 — 가장 또렷하다 */
+  const 딱 = t.match(/(\d{2})\s*(?:세|살)(?![^\s]*(?:까지|부터|이상|이하))/);
+  if (딱){ const n = +딱[1]; if (n >= 18 && n <= 80) return {lo: n, hi: n}; }
+  /* ② 「20대 초반」 「30대 후반」 「40대」 */
+  const 대 = t.match(/(\d0)\s*대\s*(초반|중반|후반)?/);
+  if (대){
+    const b = +대[1];
+    if (b >= 10 && b <= 70){
+      const 결 = 대[2];
+      if (결 === '초반') return {lo: b, hi: b + 3};
+      if (결 === '중반') return {lo: b + 3, hi: b + 6};
+      if (결 === '후반') return {lo: b + 6, hi: b + 9};
+      return {lo: b, hi: b + 9};
+    }
+  }
+  /* ③ 「서른여덟」 */
+  const 한 = 한글나이(t);
+  if (한 !== null && 한 >= 18 && 한 <= 80) return {lo: 한, hi: 한};
+  return null;
+}
+
+/* ── 2층 · 요청을 읽어 씨앗 칸으로 나눈다 ──
+   나이는 1층이 이미 읽었다. 여기서는 표로 못 푸는 것만 맡는다 —
+   성향 · 결핍 · 관계 · 수치. 여럿을 뽑아도 **한 번만** 부른다 */
+const 수치이름 = {호감:'aff', 반감:'ant', 경계:'grd', 긴장:'ten',
+  체력:'hp', 이성:'int', 매력:'cha', 욕심:'amb', 대담:'brv', 욕구:'des'};
+async function 요청읽기(글, seed, gender){
+  const 물 = [
+    '아래는 인물 하나를 만들어 달라는 요청이다.',
+    '',
+    글,
+    '',
+    '── 할 일 ──',
+    '이 요청이 **무엇을 바꾸라고 하는지**만 가려낸다.',
+    '**요청에 안 적힌 것은 반드시 null 로 둔다.** 짐작해서 채우지 않는다 —',
+    '적지도 않은 것이 바뀌면 요청한 사람이 놀란다.',
+    '',
+    '아래 꼴 그대로 JSON 하나만 낸다. 다른 말을 붙이지 않는다.',
+    '{',
+    '  "job": null,        // 직업. 적혔으면 그 말 그대로',
+    '  "relation": null,   // {{user}}와의 사이. 「~ 사이」 꼴 한 줄',
+    '  "surface": null,    // 겉으로 보이는 성향 한 줄',
+    '  "lack": null,       // 속에 있는 결핍 한 줄',
+    '  "stats": null       // 아래 이름 중 요청이 가리키는 것만. 0~100',
+    '}',
+    '',
+    '수치 이름 : 호감 · 반감 · 경계 · 긴장 · 체력 · 이성 · 매력 · 욕심 · 대담 · 욕구',
+    '- 「매력적」 → 매력 높게   「쑥쓰럼」 → 대담 낮게',
+    '- 「짝사랑한다」 → 호감 높게, 경계 낮게',
+    '- **서로 당기는 말이 함께 오면 갈라서 담는다** —',
+    '  「활발한데 쑥쓰럼쟁이」는 겉 성향을 활발로, 대담은 낮게 두는 것이다.',
+    '- 요청이 수치를 안 가리키면 stats 는 null.'
+  ].join('\n');
+  const r = await askTextEx(물, 500, 0.2, 요약모델() || undefined);
+  const m = String(r.text || '').match(/\{[\s\S]*\}/);
+  if (!m) return null;
+  try{ return JSON.parse(m[0]); }catch(_){ return null; }
+}
+
+/* 앱이 바로 읽을 수 있는 것을 씨앗에 얹는다.
+   **읽어 낸 것만** 바꾼다. 못 읽은 칸은 손대지 않는다 */
+function 씨앗에반영(seed, 바람, mode){
+  const 글 = String(바람?.글 || '').trim();
+  if (!글) return {seed, 남은것: ''};
+  const 새것 = {...seed};
+  const 한것 = [];
+  /* 나이 — 설정 범위 밖이라도 **켰을 때만** 넘어간다 */
+  const 나이 = 요청나이(글);
+  if (나이){
+    let {lo, hi} = 나이;
+    if (!바람.셈){
+      /* 껐으면 설정 범위 안으로 당긴다. 겹치는 데가 없으면 아예 안 바꾼다 */
+      const sLo = Math.max(18, parseInt(localStorage.getItem(LS.ageMin) || '20', 10));
+      const sHi = Math.max(sLo, parseInt(localStorage.getItem(LS.ageMax) || '39', 10));
+      lo = Math.max(lo, sLo); hi = Math.min(hi, sHi);
+    }
+    if (lo <= hi){
+      새것.age = rollAge(lo, hi, mode);
+      /* 나이를 바꿨으면 학력도 그 나이에 맞게 다시 뽑는다 —
+         안 그러면 스물둘인데 「박사 수료」가 붙는다 */
+      새것.edu = rollEdu(새것.age, 새것.job);
+      한것.push('나이');
+    }
+  }
+  /* 읽어 낸 것은 요청 글에서 빼지 않는다 —
+     모델도 그것을 알아야 설명 글이 카드와 맞는다 */
+  return {seed: 새것, 한것};
+}
+
+/* 2층이 읽어 온 것을 씨앗에 담는다. **온 칸만** 바꾼다 */
+function 읽은것담기(seed, 읽은것, 바람){
+  if (!읽은것) return seed;
+  const 새것 = {...seed};
+  const 글칸 = {job: 'job', relation: 'relation', surface: 'surface', lack: 'lack'};
+  for (const [k, 자리] of Object.entries(글칸)){
+    const v = 읽은것[k];
+    if (typeof v === 'string' && v.trim()) 새것[자리] = v.trim().slice(0, 60);
+  }
+  /* 직업이 바뀌었으면 학력도 그 직업에 맞게 다시 뽑는다 */
+  if (새것.job !== seed.job) 새것.edu = rollEdu(새것.age, 새것.job);
+  if (읽은것.stats && typeof 읽은것.stats === 'object'){
+    새것.stats = {...(seed.stats || {})};
+    for (const [이름, 값] of Object.entries(읽은것.stats)){
+      const 자리 = 수치이름[이름];
+      const n = parseInt(값, 10);
+      if (자리 && Number.isFinite(n)) 새것.stats[자리] = Math.max(0, Math.min(100, n));
+    }
+  }
+  /* 「짝사랑」처럼 기울기를 뒤집는 말이 오면 결과 기울기도 맞춘다 —
+     안 그러면 좋아한다면서 {{user}}가 매달리는 구도가 된다 */
+  if (바람 && /짝사랑|먼저 다가|적극/.test(String(바람.글 || '')) && 새것.gap)
+    새것.gap = {...새것.gap, up: false};
+  return 새것;
+}
 
 /* 단계에서 정한 씨앗에서 **첫인상만** 새로 굴린다.
    관계 · 결 · 사연은 그대로 둔다 — 그것이 「일괄 적용」의 알맹이다.
@@ -14107,6 +14389,12 @@ async function 카드한장(mode, gender, seed, 바람){
   {
     /* 단계로 만들었으면 그때 정한 씨앗을 그대로 쓴다 */
     seed = seed || rollSeeds(mode, gender);
+    /* 260901 — **요청을 씨앗에 먼저 반영한다.**
+       전에는 요청이 프롬프트 뒤에만 붙어, 모델은 따라도 카드는 안 바뀌었다.
+       여기서 고치면 [고정 재료]도 카드도 같은 데서 나온다 */
+    seed = 씨앗에반영(seed, 바람, mode).seed;
+    /* 2층이 읽어 온 것도 담는다. 없으면 아무 일도 안 한다 */
+    seed = 읽은것담기(seed, 바람?.읽은것, 바람);
     /* 중계를 쓰면 프롬프트를 안 짜고 씨앗만 넘긴다 */
     /* 주사위는 **앱이 굴린다.** 중계에서 또 굴리면 같은 코드가 두 벌이 되고,
        앱과 중계가 갈라지는 것이 이 프로젝트에서 여러 번 물린 병이다.
@@ -14206,6 +14494,20 @@ async function generateCharacter(mode, gender, seed, 몇장, 바람){
   짓는중이름.clear();
   const 된것 = [], 자빠진것 = [];
   try{
+    /* 260901 — 요청을 **한 번만** 읽는다. 넷을 뽑아도 한 번이라
+       넷이 같은 결로 나오고 값도 한 번치만 든다.
+       나이만 적혔으면 1층이 이미 다 했으므로 안 부른다 —
+       나이 말고 남는 말이 있을 때만 부른다 */
+    {
+      const 글 = String(바람?.글 || '').trim();
+      const 나이뺀것 = 글.replace(/\d{2}\s*(?:세|살)|\d0\s*대\s*(?:초반|중반|후반)?/g, '')
+                        .replace(/[,·\s]+/g, '');
+      if (나이뺀것.length >= 3){
+        알림();
+        /* 여기서 자빠져도 카드는 만들어야 한다. 못 읽으면 씨앗 그대로 간다 */
+        바람 = {...바람, 읽은것: await 요청읽기(글, null, gender).catch(() => null)};
+      }
+    }
     /* 하나가 자빠져도 나머지는 남아야 한다. 그래서 allSettled 다 */
     const 판 = await Promise.allSettled(
       /* 260901 — 단계로 정한 씨앗을 여럿에 쓸 때는 **첫인상만** 새로 굴린다.
@@ -14474,33 +14776,41 @@ document.querySelectorAll('.autogen').forEach(b => b.onclick = () => startAutofi
    급할 때는 통째로, 애착이 필요할 때는 단계로. */
 /* ═══ 원하는 방향 받기 ═══
    적고 싶으면 적고, 아니면 그냥 넘긴다. 비우고 넘기면 지금까지와 똑같다. */
+/* 두 예시가 **서로 다른 것**을 보여 준다 —
+   하나는 인물을 조건으로 나열하는 꼴, 하나는 관계를 문장으로 푸는 꼴.
+   같은 결로 둘을 적으면 「이렇게만 적어야 하나」로 읽힌다 */
 const 방향예시 = [
-  '불륜이 가능한 상황', '상대가 먼저 적극적으로 다가온다',
-  '나와는 오래된 소꿉친구였다', '돈 문제로 얽혀 있다',
-  '직장 상사와 부하', '겉으로는 차갑고 속으로는 흔들린다'
+  ['30대 초반, 말수 적고 손으로 하는 일을 함',
+   '겉으로는 무뚝뚝한데 챙길 것은 다 챙김'],
+  ['오래 알고 지낸 사이인데 요즘 서로 어색해졌다.',
+   '내가 먼저 연락하지 않으면 상대도 먼저 오지 않는다.']
 ];
 /* 창을 띄우고, 적은 것을 돌려준다. 그만두면 null */
 function 방향묻기(제목, 이어서){
   sheet(제목, [
     {info: true, html:
-      '<div class="wishHead"><b>원하는 방향이 있으면 적으십시오</b>' +
+      '<div class="wishHead"><b>별도 요청사항이 있습니까?</b>' +
       '<span class="wishSub">없으면 비운 채 넘기시면 됩니다</span></div>' +
       '<textarea id="genWish" rows="2" class="wishBox" ' +
-        'placeholder="한두 줄이면 충분합니다"></textarea>' +
+        'placeholder="있다면, 한두 줄 정도 입력하십시오"></textarea>' +
       /* 예시는 둘이면 결이 전해진다. 넷을 늘어놓으면 그것대로 골라야 할 것처럼 읽힌다 */
-      '<div class="wishEx">예: ' + 방향예시.slice(0, 2).map(x => '「' + esc(x) + '」').join(' · ') + '</div>' +
+      /* 두 줄짜리라 한 줄에 못 눕힌다. 덩이로 나눠 보인다 */
+      '<div class="wishEx">' + 방향예시.slice(0, 2).map(x =>
+        '<div class="wishExOne">' + x.map(l => esc(l)).join('<br>') + '</div>').join('') +
+      '</div>' +
       /* ⓘ 를 앞에 둔다 — 무슨 뜻인지 먼저 알고 켜야 한다.
          칸은 글자에 딱 붙여 좁힌다. 넓으면 빈 데를 눌러도 켜져 실수가 난다 */
       '<div class="wishSw">' +
       '<button type="button" class="wishI" id="genWishI">i</button>' +
-      '<label for="genWishHard">이미 정해진 것도 변경 허용</label>' +
+      '<label for="genWishHard">기본 설정값 및 기존값도 변경 허용</label>' +
       '<input type="checkbox" id="genWishHard">' +
       '</div>' +
       '<div class="wishHelp" id="genWishHelp" style="display:none">' +
-      '<b>끄면</b> — 나이 · 직업 · 성격 수치처럼 <b>이미 굴려 놓은 재료는 그대로</b> 둡니다. ' +
-      '적으신 것은 상황 · 첫 장면 · 말투에 얹힙니다.<br>' +
-      '<b>켜면</b> — 적으신 것이 <b>재료까지 덮습니다.</b> 「유부녀로」라고 쓰면 관계가, ' +
-      '「20대 초반」이라고 쓰면 나이가 바뀝니다. 대신 적지 않은 것끼리 안 맞을 수 있습니다.</div>',
+      '<b>끄면</b> — 설정에 정해 둔 <b>나이 범위 · 선호 스타일</b>과 이미 적혀 있는 값을 지킵니다. ' +
+      '적으신 것은 그 안에서 반영됩니다.<br>' +
+      '<b>켜면</b> — 적으신 것이 <b>그것들도 덮습니다.</b> 「38세」라고 쓰면 설정한 나이 범위를 넘어서고, ' +
+      '「유부녀로」라고 쓰면 이미 정해진 관계가 바뀝니다.<br>' +
+      '어느 쪽이든 <b>안 적으신 것은 안 건드립니다.</b></div>',
      after: () => {
        const 칸 = $('genWish'), 셈 = $('genWishHard'), 물 = $('genWishI');
        S.genWish = {글: '', 셈: false};
@@ -15136,22 +15446,29 @@ function renderChars(){
     const cnt = S.chats.filter(x => x.characterId === c.id).length;
     const av = avatarOf(c);
     return `
-    <div class="card chr" data-id="${c.id}">
+    <div class="card chr${고름.것.has(c.id) && 고름.어디==='chars' ? ' picked' : ''}" data-id="${c.id}">
       ${av}
       <div class="t"><b>${esc(c.name)}${cnt?`<i class="cnt" data-chats="${c.id}" title="이 대상의 대화만 보기">(${cnt})</i>`:''}${cap?`<em>${esc(cap)}</em>`:''}</b>
         <span class="dim">${esc(l2)}</span></div>
       ${meta}
-      <button class="btn" data-go="${c.id}" style="padding:6px 11px;font-size:12px">새 대화</button>
+      ${고르는중('chars') ? '<span class="pickDot">✓</span>'
+        : '<button class="btn goBtn" data-go="' + c.id + '">New<br>Chat</button>' +
+          '<button class="ico" data-menu="' + c.id + '">⋯</button>'}
     </div>`;
   }).join('');
   box.querySelectorAll('.card').forEach(el => {
     el.onclick = e => {
       if (el.dataset.longpress){ delete el.dataset.longpress; return; }
+      if (고르는중('chars')) return 고르기뒤집기('chars', el.dataset.id);
       if (e.target.dataset.chats) return filterChatsBy(e.target.dataset.chats);
       if (e.target.dataset.go) return pickPersona(e.target.dataset.go);
+      if (e.target.dataset.menu) return 카드메뉴('chars', e.target.dataset.menu);
       editChar(el.dataset.id);
     };
-    bindLongPress(el, () => { el.dataset.longpress = '1'; charMenu(el.dataset.id); });
+    bindLongPress(el, () => {
+      el.dataset.longpress = '1';
+      if (!고르는중('chars')) 고르기켜기('chars', el.dataset.id);
+    });
   });
 }
 
@@ -15685,12 +16002,7 @@ $('ceMenu').onclick = () => {
        toast('「' + 새것.name + '」 로 떠 왔습니다 — 이제 갱신에 안 걸립니다', 3500);
        editChar(새것.id);
      }},
-    {label:'프로필 내보내기 (JSON · 이미지 제외)', run: () => {
-      const {id, createdAt, updatedAt, accent, preferredModel, temperature, profile: pfAll, ...card} = e;
-      const {avatar, ...profile} = pfAll || {};
-      download(e.name + '.json', JSON.stringify(
-        {spec:'chara_card_v2', data:{...card, extensions:{accent: e.accent, profile: profile||{}}}}, null, 2));
-    }},
+    {label:'프로필 내보내기 (JSON · 이미지 제외)', run: () => exportChar(e.id)},
     {label:'전체 프로필 내보내기 (묶음)', run: () => {
       const all = S.characters.map(c => {
         const {id, createdAt, updatedAt, accent, preferredModel, temperature, profile, ...card} = c;
@@ -15817,20 +16129,27 @@ function renderPersonas(){
                  '<span>수정 ' + stampSmart(p.updatedAt || p.createdAt) + '</span>' +
                  '<span>' + (used ? '사용 ' + stampSmart(used) : '안 씀') + '</span></div>';
     return `
-    <div class="card chr" data-id="${p.id}">
+    <div class="card chr${고름.것.has(p.id) && 고름.어디==='personas' ? ' picked' : ''}" data-id="${p.id}">
       ${avatarOf({name:p.name, profile:{avatar:p.avatar||''}, accent:'#3a4152'})}
       <div class="t"><b>${esc(p.name)}${cnt?`<i class="cnt" data-pchats="${p.id}" title="이 주인공의 대화만 보기">(${cnt})</i>`:''}${cap?`<em>${esc(cap)}</em>`:''}${p.isDefault?'<em>기본</em>':''}</b>
         <span class="dim">${esc(l2)}</span></div>
       ${meta}
+      ${고르는중('personas') ? '<span class="pickDot">✓</span>'
+        : '<button class="ico" data-menu="' + p.id + '">⋯</button>'}
     </div>`;
   }).join('');
   box.querySelectorAll('.card').forEach(el => {
     el.onclick = e => {
       if (el.dataset.longpress){ delete el.dataset.longpress; return; }
+      if (고르는중('personas')) return 고르기뒤집기('personas', el.dataset.id);
       if (e.target.dataset.pchats) return filterChatsByPersona(e.target.dataset.pchats);
+      if (e.target.dataset.menu) return 카드메뉴('personas', e.target.dataset.menu);
       editPersona(el.dataset.id);
     };
-    bindLongPress(el, () => { el.dataset.longpress = '1'; personaMenu(el.dataset.id); });
+    bindLongPress(el, () => {
+      el.dataset.longpress = '1';
+      if (!고르는중('personas')) 고르기켜기('personas', el.dataset.id);
+    });
   });
 }
 $('bNewPersona').onclick = () => editPersona(null);
@@ -15906,6 +16225,17 @@ function personaMenu(id){
 }
 
 /* 주인공 하나를 파일로. 인물 카드와 달리 한 겹이라 그대로 내보낸다 */
+/* 대상 하나를 파일로. 편집 화면 메뉴와 목록 고르기가 같이 쓴다 —
+   두 벌로 두면 한쪽만 고쳤을 때 조용히 갈라진다 */
+function exportChar(id){
+  const e = S.characters.find(x => x.id === id);
+  if (!e) return;
+  const {id: _, createdAt, updatedAt, accent, preferredModel, temperature, profile: pfAll, ...card} = e;
+  /* 사진은 뺀다. 넣으면 파일이 몇 MB 가 되고 옮길 때 걸린다 */
+  const {avatar, ...profile} = pfAll || {};
+  download(e.name + '.json', JSON.stringify(
+    {spec:'chara_card_v2', data:{...card, extensions:{accent: e.accent, profile: profile || {}}}}, null, 2));
+}
 function exportPersona(id){
   const p = S.personas.find(x => x.id === id);
   if (!p) return;
@@ -19381,11 +19711,11 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b141';
-const APP_BUILT = '2026-09-01 13:02';
+const APP_BUILD = 'b143';
+const APP_BUILT = '2026-09-01 14:02';
 const APP_BAKED = true;   /* 이 파일은 구운 것입니다. 손으로 고치지 마십시오 —
                              app/index.html 을 고치고 node 검증/본편굽기.js 를 다시 돌리십시오 */
-const APP_NOTE  = '인원수 게이지 · 방향창 다듬기 · 스탯 판(끌기·일시·장소) · 안내창 통합 · 다음 장면 차례와 「상대 혼자 있음」';
+const APP_NOTE  = '대화·대상·내정보에서 꾹 눌러 여럿 골라 다루기 · 카드마다 ⋯ · New Chat · 여백 조임';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
