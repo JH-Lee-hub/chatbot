@@ -298,20 +298,19 @@
   #cBal{display:flex;flex-direction:column;align-items:flex-end;gap:1px;line-height:1.3;height:auto}
   #cBal .bl1{font-size:10px;color:var(--tx2)}
   #cBal .bl2{font-size:9.5px;color:var(--tx3)}
-  /* 260901 — 말풍선 위에 겹쳐 떠서 뒤의 글을 가렸다. 반쯤 비친다.
-     누르는 자리는 그대로다 — 흐린 것과 안 눌리는 것은 다른 일이다 */
+  /* 260901 — 말풍선 위에 겹쳐 떠서 뒤의 글을 가렸다. **반쯤 비친 채로 둔다.**
+     손을 댈 때만 또렷해지게 해 봤더니 깜빡이는 것처럼 보였다 — 하나로 못 박는다.
+     누르는 자리는 그대로다. 흐린 것과 안 눌리는 것은 다른 일이다 */
   #jump{position:absolute;right:13px;bottom:150px;display:flex;flex-direction:column;gap:6px;z-index:20;
     opacity:.5}
-  /* 손을 대면 또렷해진다. 누를 때 무엇을 누르는지는 보여야 한다 */
-  #jump:active,#jump:hover{opacity:1}
   #jump button{width:26px;height:26px;border-radius:50%;background:var(--panel2);
     border:1px solid var(--line2);color:var(--tx2);font-size:12px;line-height:1;padding-bottom:1px;
     box-shadow:0 2px 8px rgba(0,0,0,.4);display:grid;place-items:center}
   #jump button:active{background:#2b3140}
   /* 화면이 스스로 안 내려가므로, 아래에 안 본 글이 있으면 이 단추가 알려 준다 */
   #jBot.hot{background:var(--acc);color:#111;border-color:var(--acc)}
-  /* 알리는 자리는 흐리면 뜻이 없다. 그때만 또렷하게 둔다 */
-  #jump:has(#jBot.hot){opacity:1}
+  /* 알릴 때도 흐리기는 마찬가지다 — 바탕색이 갈리므로 반쯤 비쳐도 눈에 띈다.
+     여기만 또렷하게 두었더니 오르내릴 때마다 깜빡이는 것처럼 보였다 */
   #vChat{position:relative}
   #meter{flex:0 0 auto;background:var(--panel);border-top:1px solid var(--line);
          padding:6px 12px;font-size:10.5px;color:var(--tx3);display:flex;gap:13px;flex-wrap:wrap}
@@ -461,7 +460,9 @@
   #sheetIn h3.canback{cursor:pointer;margin:4px 0 8px;padding:9px 8px;border-radius:9px;
     background:var(--panel2);color:var(--tx)}
   #sheetIn h3.canback:active{background:#2b3140}
-  .sitem{display:block;width:100%;text-align:left;padding:13px 12px;border-radius:10px;
+  /* 260901 — 글자와 글자 사이가 26px 이었다(안 여백 13px 씩). 절반으로 줄인다.
+     항목이 두세 줄이라 높이는 남으므로 누르기에는 지장이 없다 */
+  .sitem{display:block;width:100%;text-align:left;padding:6px 12px;border-radius:10px;
          font-size:14.5px;white-space:pre-line;line-height:1.5}
   .sitem::first-line{font-weight:600}
   .sitem .ksub{display:block;font-size:11px;color:var(--tx3);margin-top:3px;font-weight:400}
@@ -6936,7 +6937,7 @@ function sceneClosing(){
    있어야 {{user}}가 무엇을 할지 알고, 제3자 장면에서는 끝을 미리 잡아 두어야 흩어지지 않는다. */
 const SCENE_KINDS = {
   alone: {
-    name: '혼자 있는 시간',
+    name: '내가 혼자 있음',
     hint: '상대 없이 {{user}} 혼자 있는 장면입니다. 무엇을 해야 다음으로 넘어가는지 알려 줍니다.',
     ask: '이 장면에서 {{user}}는 혼자다. {{char}}는 이 자리에 없다. ' +
          '{{user}}가 무엇을 하면 이 장면이 끝나는지를 하나 정해서 완수 칸에 적는다. ' +
@@ -6944,7 +6945,7 @@ const SCENE_KINDS = {
     need: ['완수']
   },
   meet: {
-    name: '다시 마주치는 자리',
+    name: '다시 마주한다',
     hint: '시간이 흐른 뒤 두 사람이 다시 만나는 자리부터 시작합니다.',
     ask: '시간이 흐른 뒤 {{user}}와 {{char}}가 다시 마주치는 자리다. ' +
          '그 사이에 무엇이 있었는지가 첫 턴 서술에 한 줄 흘러야 한다. ' +
@@ -6965,8 +6966,16 @@ const SCENE_KINDS = {
     /* 읽는 사람은 {{user}} 다. 여기서 고를 것이 없으므로 갈래를 안 받는다 */
     need: ['완수']
   },
+  /* 260901 — 고르는 것만으로는 하고 싶은 장면이 안 나올 때가 있다.
+     적어 넣으면 그것으로 짠다. ask 는 designScene 이 적으신 글로 채운다 */
+  custom: {
+    name: '직접 상황 설정',
+    hint: '어떤 장면을 열지 직접 적습니다. 적은 것으로 장면을 짭니다.',
+    ask: '',
+    need: []
+  },
   third: {
-    name: '다른 사람 쪽에서',
+    name: '다른 사람 상황',
     hint: '조연이나 바깥 사정이 벌어집니다. 고르는 것에 따라 끝이 갈리고, 그 결과가 두 사람 사이에 남습니다.',
     ask: '{{char}}를 둘러싼 다른 사람이나 바깥 사정 쪽에서 일이 벌어진다. ' +
          '{{user}}가 무엇을 고르느냐에 따라 끝이 갈리도록, **끝을 두셋 미리 잡아** 갈래 칸에 적는다. ' +
@@ -7000,7 +7009,7 @@ const SCENE_KINDS = {
 const sceneLen = () => 3 + Math.floor(Math.random() * 3);      /* 3~5턴 */
 const sceneForks = () => 2 + Math.floor(Math.random() * 2);    /* 2~3갈래 */
 
-async function designScene(kind){
+async function designScene(kind, 직접글){
   const K = SCENE_KINDS[kind];
   if (!K) throw new Error('알 수 없는 갈래입니다');
   const cn = S.character?.name || '상대';
@@ -7013,6 +7022,11 @@ async function designScene(kind){
   const lastAi = (S.messages || []).filter(inStory).filter(m => m.role === 'assistant').slice(-1)[0];
   const st = lastAi ? (readStatus(lastAi.content) || {}) : {};
   const here = ['장소', '일시', '동석'].map(k => st[k] ? k + '=' + st[k] : '').filter(Boolean).join(' | ');
+  /* 260901 — 오간 말을 300자씩 자르다 보니 **마지막 장면의 끝이 잘려 나갔다.**
+     「나갔다」 「출근했다」가 하필 그 끝자락에 있다. 마지막 답의 뒷부분은 따로 살린다 */
+  const 끝자락 = lastAi
+    ? lastAi.content.replace(/\[상태\][^\n]*/g, '').trim().slice(-420)
+    : '';
 
   const L = [
     '너는 이야기의 다음 장면을 설계하는 작가다. 아래 대화에 이어지는 장면 하나를 짠다.',
@@ -7021,7 +7035,39 @@ async function designScene(kind){
       '방금 「' + S.chat.sceneEnded.name + '」 장면이 끝났다. 이번 장면은 그 결과를 안고 이어진다. 없던 일로 하지 않는다.'] : []),
     ...(here ? ['', '[지금 자리]', here,
       '이 자리에서 이어진다. 새 장면이 다른 곳에서 열리더라도 **여기에서 옮겨 간 것**이라야 하고, 없던 장소로 갑자기 건너뛰지 않는다.'] : []),
-    '', '[짜야 할 장면]', K.ask,
+    /* 260901 — 방금 장면이 **어떻게 닫혔는지**를 통째로 보인다.
+       두고 나갔는지, 함께 남았는지가 여기 적혀 있다 */
+    ...(끝자락 ? ['', '[방금 장면이 이렇게 닫혔다]', 끝자락,
+      '**여기서 이어진다.** 이 끝을 없던 일로 하지 않는다.'] : []),
+    '', '[때와 자리를 정할 때 — 반드시 따진다]',
+    '- **방금 한쪽이 어디로 갔으면, 그 일이 끝날 만큼 지난 뒤라야 다시 마주친다.**',
+    '  출근했으면 하루 일이 끝난 뒤다. 한두 시간 뒤에 집 앞에서 마주치지 않는다.',
+    '  수업 · 근무 · 먼 길도 마찬가지다. 얼마나 걸리는 일인지를 먼저 헤아린다.',
+    '- **두 사람이 지금 같은 자리에 있는지 떨어져 있는지**를 먼저 본다.',
+    '  떨어져 있으면 다시 만날 까닭이 있어야 한다. 우연이면 그럴듯한 자리라야 한다.',
+    '- WHERE 에는 **얼마나 지난 뒤인지를 또렷하게** 적는다 —',
+    '  「그날 저녁」 「사흘 뒤 점심」처럼. 「시간이 흐른 뒤」처럼 뭉뚱그리지 않는다.',
+    /* 260901 — 장면이 {{user}} 의 마음까지 정해 버렸다.
+       「고백을 마음먹고 찾아간다」 같은 것은 그 자리에서 고를 일이지 미리 정할 일이 아니다.
+       무엇을 쓰지 말라만 하면 대신 쓸 것을 몰라 결국 쓴다 — **꼴을 준다.**
+       보기는 안 든다. 들면 그 보기대로만 짜게 된다 */
+    '', '[{{user}} 몫은 대신 정하지 않는다]',
+    '- **{{user}}가 무엇을 하기로 마음먹었는지 정하지 않는다.** 그것은 {{user}}가 그 자리에서 고를 일이다.',
+    '  「{{user}}가 ~하기로 하고 ~한다」 「{{user}}가 ~할 결심으로」 같은 꼴을 쓰지 않는다.',
+    '  결심 · 각오 · 다짐은 전부 {{user}} 몫이다. 그 안을 들여다보고 적지 않는다.',
+    '- 대신 **고를 자리가 열리는 것**까지만 짠다.',
+    '  무엇이 {{user}} 앞에 놓였는지, 무엇을 고를 수 있게 되었는지를 적는다.',
+    '  「~해야 하는 자리다」 「~할지 정해야 한다」 「~할 수 있게 되었다」 꼴로 쓴다.',
+    '- **{{char}}와 바깥 사정은 마음껏 정해도 된다.** 거기서 {{user}} 앞에 자리가 생긴다.',
+    '  {{char}}가 무엇을 하고 무슨 말을 꺼내는지는 정해도 되고, 정해야 장면이 선다.',
+    '- 목표 · 완수 · 갈래 · 방식 **어디에도** {{user}}가 이미 정했다는 말이 들어가지 않는다.',
+    '', '[짜야 할 장면]',
+    /* 직접 적으셨으면 그 글이 곧 지시다. 갈래가 정해 둔 말 대신 이것을 쓴다 */
+    (kind === 'custom' && 직접글)
+      ? ['{{user}}가 이런 장면을 열어 달라고 했다.', '', 직접글, '',
+         '**적힌 것을 그대로 살린다.** 다른 장면으로 바꾸지 않는다.',
+         '적히지 않은 것만 앞의 흐름에 맞게 채운다.'].join('\n')
+      : K.ask,
     '', '[규격]',
     '- 이 장면은 ' + len + '턴 안에 끝난다. 그 길이에 맞는 크기로 짠다. 큰 사건을 벌이지 않는다.',
     '- 목표는 **무엇이 이루어져야 이 장면이 닫히는가**다. 한 줄로 쓴다.',
@@ -7195,11 +7241,11 @@ function sceneOpenText(sc){
   return L.join(' ');
 }
 
-async function startScene(kind){
+async function startScene(kind, 직접글){
   if (!S.chat || S.streaming) return;
   busy('stream', '장면을 짜는 중  ·  보통 5~15초', {wave: true});
   let sc;
-  try{ sc = await designScene(kind); }
+  try{ sc = await designScene(kind, 직접글); }
   catch(e){ busy(null); return toast('장면을 짜지 못했습니다 — ' + e.message, 4000); }
   busy(null);
   S.chat.scene = sc;
@@ -7209,6 +7255,32 @@ async function startScene(kind){
   if (sc.done) toast('이 장면에서 할 일 — ' + sc.done, 8000);
   delete S.chat.sceneEnded;   /* 새 장면을 열었으니 앞 장면의 자취는 지운다 */
   send({text: '[지시] ' + sceneOpenText(sc)});
+}
+
+/* 어떤 장면을 열지 직접 적는다. 적은 것을 그대로 설계에 넘긴다 —
+   고르는 것만으로는 하고 싶은 장면이 안 나올 때가 있다 */
+function 상황묻기(){
+  sheet('직접 상황 설정', [
+    {info: true, html:
+      '<div class="wishHead"><b>어떤 장면을 여시겠습니까?</b>' +
+      '<span class="wishSub">한두 줄이면 됩니다</span></div>' +
+      '<textarea id="sceneWish" rows="3" class="wishBox" ' +
+        'placeholder="어디에서 · 언제 · 무슨 일이 벌어지는지"></textarea>' +
+      /* 무엇까지 적어도 되는지를 알려 준다. 적어 놓지 않으면
+         「내가 무엇을 한다」까지 적고 그대로 정해져 버린다 */
+      '<div class="wishHelp">상대와 바깥 사정은 마음껏 정하셔도 됩니다. ' +
+      '다만 <b>{{user}}가 무엇을 할지는 적지 않으셔도 됩니다</b> — 그 자리에서 고르시면 됩니다.</div>',
+     after: () => { const 칸 = $('sceneWish'); if (칸) 칸.focus(); }},
+    /* 닫기 를 달면 run 보다 **먼저** 닫힌다. 그러면 빈 채로 눌러도 창이 사라지고
+       무엇이 잘못됐는지 볼 자리가 없다. 글이 있을 때만 손수 닫는다 */
+    {label: '이 상황으로 짭니다',
+     run: () => {
+       const t = ($('sceneWish')?.value || '').trim().slice(0, 300);
+       if (!t) return toast('무엇을 열지 한 줄이라도 적어 주십시오');
+       closeSheet();
+       startScene('custom', t);
+     }}
+  ], null, false, null, true);
 }
 
 /* 진행 중일 때는 지금 무엇을 하고 있는지와 그만두는 길을 보여 준다 */
@@ -7223,23 +7295,35 @@ function sceneNowSheet(){
     {info: true, html: '<span class="pguide">' + rows.join('<br>') +
       '<span class="dim">칸은 응답이 실제로 나아갈 때만 오릅니다. ' +
       '이야기와 상관없는 말을 하면 그 턴은 제자리입니다.</span></span>'},
-    {label: '이 장면을 여기서 끝낸다',
+    /* 260901 — 고르고도 창이 안 닫혔다. 둘 다 고른 것으로 할 일이 끝나는 자리다 */
+    {label: '이 장면을 여기서 끝낸다', 닫기: true,
      html: '<b>이 장면을 여기서 끝낸다</b>' +
        '<div class="shint">남은 칸을 접고 다음 응답에서 매듭짓게 합니다.</div>',
      run: () => { S.chat.scene.cur = S.chat.scene.len - 1; dbPut('chats', S.chat);
                   paintNextScene(); toast('다음 응답에서 매듭짓습니다'); }},
+    /* 260901 — 설계를 버리는 일인데 누르자마자 적용됐다. 실수로 누르면 되돌릴 길이 없다.
+       한 번 묻는다. 창을 쌓으므로 제목 줄이 곧 돌아가는 단추가 된다 */
     {label: '그만두고 원래대로', danger: true,
      html: '<b>그만두고 원래대로</b>' +
        '<div class="shint">장면 설계를 버립니다. 지금까지 쓴 것은 그대로 남습니다.</div>',
-     run: async () => { S.chat.scene = null; await dbPut('chats', S.chat);
-                        /* 접었는데 카드에 번호가 남으면 다음 턴이 그 장면을 이어 적는다 */
-                        const mem = await getMem(S.chat.id);
-                        if (mem.stateCard['씬'] !== undefined){
-                          delete mem.stateCard['씬'];
-                          mem.updatedAt = now();
-                          await dbPut('memory', mem);
-                        }
-                        paintNextScene(); toast('장면을 접었습니다'); }}
+     run: () => sheet('장면을 접습니까', [
+       {info: true, html: '<span class="pguide">' +
+         '<b>' + esc(sc.name) + '</b> 설계를 버립니다.<br>' +
+         '목표 · 남은 칸 · 갈래가 사라지고, 다음 응답부터는 장면 없이 이어집니다.' +
+         '<span class="dim">지금까지 쓴 대화는 그대로 남습니다. ' +
+         '다만 <b>같은 설계로는 못 돌아옵니다</b> — 새로 짜야 합니다.</span></span>'},
+       {label: '접습니다', danger: true, 닫기: true,
+        run: async () => { S.chat.scene = null; await dbPut('chats', S.chat);
+                           /* 접었는데 카드에 번호가 남으면 다음 턴이 그 장면을 이어 적는다 */
+                           const mem = await getMem(S.chat.id);
+                           if (mem.stateCard['씬'] !== undefined){
+                             delete mem.stateCard['씬'];
+                             mem.updatedAt = now();
+                             await dbPut('memory', mem);
+                           }
+                           paintNextScene(); toast('장면을 접었습니다'); }},
+       {label: '아니요', run: () => sheetBack()}
+     ])}
   ]);
 }
 
@@ -7259,7 +7343,7 @@ function nextSceneSheet(){
   /* 260901 — 손이 가는 차례로 잡는다.
      시간 흘리기가 가장 잦고, 그다음이 다시 만남이다.
      내가 없는 장면 셋(상대 혼자 · 나 혼자 · 제3자)은 뒤에 모아 둔다 */
-  const SCENE_ORDER = ['tell', 'meet', 'charAlone', 'alone', 'third', 'close'];
+  const SCENE_ORDER = ['tell', 'meet', 'charAlone', 'alone', 'third', 'custom', 'close'];
   const kinds = SCENE_ORDER.filter(k => SCENE_KINDS[k] && (k !== 'close' || long))
     /* 차례에 안 적힌 것이 생겨도 안 사라지게 뒤에 붙인다 */
     .concat(Object.keys(SCENE_KINDS).filter(k => !SCENE_ORDER.includes(k)));
@@ -7285,9 +7369,10 @@ function nextSceneSheet(){
               esc(fill(K.hint, cn, S.persona?.name)) + '</div>',
         /* 260901 — 고르면 창을 닫는다. 안 닫아 두었더니 뒤에서 장면이 짜이고
            대사가 흐르는 동안 창이 그대로 덮고 있었다.
-           고른 것으로 할 일이 끝나는 자리라 「닫기」가 맞다 */
-        닫기: true,
-        run: () => startScene(k)
+           고른 것으로 할 일이 끝나는 자리라 「닫기」가 맞다.
+           다만 **직접 적는 것**은 적는 창을 먼저 띄워야 하므로 여기서 안 닫는다 */
+        ...(k === 'custom' ? {} : {닫기: true}),
+        run: () => k === 'custom' ? 상황묻기() : startScene(k)
       };
     })
   ]);
@@ -20190,11 +20275,11 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b153';
-const APP_BUILT = '2026-09-01 17:10';
+const APP_BUILD = 'b156';
+const APP_BUILT = '2026-09-01 17:44';
 const APP_BAKED = true;   /* 이 파일은 구운 것입니다. 손으로 고치지 마십시오 —
                              app/index.html 을 고치고 node 검증/본편굽기.js 를 다시 돌리십시오 */
-const APP_NOTE  = '위/아래 단추가 뒤 글을 덜 가림 · 입력칸 늘리는 손잡이를 단추로 · 다음 장면 고르면 창 닫힘 · 뒤로가기로 고르기와 거르기 풀기';
+const APP_NOTE  = '다음 장면에 직접 상황 설정 추가 · 목록 이름과 여백 손질 · 장면이 맥락과 때를 헤아리고 유저 몫은 안 정함 · 장면 접기는 한 번 물음';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
