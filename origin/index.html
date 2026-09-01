@@ -29,6 +29,9 @@
   }
   input:focus,select,textarea:focus{outline:none;border-color:var(--line2)}
   textarea{resize:vertical;line-height:1.6}
+  /* 브라우저가 그리는 손잡이는 감춘다. 우리 것과 겹치면 어느 쪽이 잡힐지 모르고,
+     그것이 「눌리긴 하는데 늘어나다 끊긴다」로 나타난다 */
+  textarea::-webkit-resizer{display:none}
   .btn{
     background:var(--panel2); border:1px solid var(--line); border-radius:9px;
     padding:9px 14px; font-size:13.5px; text-align:center; display:inline-block;
@@ -295,13 +298,20 @@
   #cBal{display:flex;flex-direction:column;align-items:flex-end;gap:1px;line-height:1.3;height:auto}
   #cBal .bl1{font-size:10px;color:var(--tx2)}
   #cBal .bl2{font-size:9.5px;color:var(--tx3)}
-  #jump{position:absolute;right:13px;bottom:150px;display:flex;flex-direction:column;gap:6px;z-index:20}
+  /* 260901 — 말풍선 위에 겹쳐 떠서 뒤의 글을 가렸다. 반쯤 비친다.
+     누르는 자리는 그대로다 — 흐린 것과 안 눌리는 것은 다른 일이다 */
+  #jump{position:absolute;right:13px;bottom:150px;display:flex;flex-direction:column;gap:6px;z-index:20;
+    opacity:.5}
+  /* 손을 대면 또렷해진다. 누를 때 무엇을 누르는지는 보여야 한다 */
+  #jump:active,#jump:hover{opacity:1}
   #jump button{width:26px;height:26px;border-radius:50%;background:var(--panel2);
     border:1px solid var(--line2);color:var(--tx2);font-size:12px;line-height:1;padding-bottom:1px;
     box-shadow:0 2px 8px rgba(0,0,0,.4);display:grid;place-items:center}
   #jump button:active{background:#2b3140}
   /* 화면이 스스로 안 내려가므로, 아래에 안 본 글이 있으면 이 단추가 알려 준다 */
   #jBot.hot{background:var(--acc);color:#111;border-color:var(--acc)}
+  /* 알리는 자리는 흐리면 뜻이 없다. 그때만 또렷하게 둔다 */
+  #jump:has(#jBot.hot){opacity:1}
   #vChat{position:relative}
   #meter{flex:0 0 auto;background:var(--panel);border-top:1px solid var(--line);
          padding:6px 12px;font-size:10.5px;color:var(--tx3);display:flex;gap:13px;flex-wrap:wrap}
@@ -900,6 +910,16 @@
      숫자는 tabular-nums 로 자릿수를 고정한다 — 1 과 8 의 폭이 다르면 그것만으로도 떨린다 */
   /* 260901 — absolute 였을 때는 자판이 뜨면서 통이 밀리면 판도 딸려 올라갔다.
      fixed 는 통과 상관없이 화면에 붙는다. 자리는 판자리놓기() 가 매번 다시 잡는다 */
+  /* 입력칸 늘리는 손잡이. **touch-action:none 을 미리 박아 두는 것이 핵심이다** —
+     누른 뒤에 바꾸면 브라우저가 이미 스크롤로 정해 버려서 도중에 끊긴다 */
+  #grow{position:fixed;z-index:60;width:30px;height:30px;display:none;
+    touch-action:none;cursor:ns-resize;align-items:flex-end;justify-content:flex-end;
+    padding:5px;gap:2px;flex-direction:column}
+  #grow.on{display:flex}
+  #grow i{display:block;height:2px;border-radius:1px;background:var(--tx3);opacity:.75}
+  #grow i:first-child{width:12px}
+  #grow i:last-child{width:7px}
+  #grow.hold i{background:var(--acc);opacity:1}
   #statPop{position:fixed;z-index:5;
     background:var(--panel);border:1px solid var(--line2);border-radius:9px;
     padding:4px 6px 5px;box-shadow:0 2px 10px rgba(0,0,0,.28);
@@ -7952,44 +7972,73 @@ if (window.visualViewport){
   addEventListener('focusout', 따라가기);
 }
 /* 일시 줄을 잡고 끈다. 접기 단추 위에서 시작한 것은 끌기로 안 친다 */
-/* 입력창을 늘리는 손잡이가 너무 작다.
-   브라우저가 그리는 것이라 CSS 로 크기를 못 키운다 —
-   그래서 **눌리는 자리만 가로챈다.** 보이는 손잡이는 그대로 두고,
-   오른쪽 아래 네모 안을 누르면 우리가 높이를 바꾼다.
-   늘릴 수 있는 칸(resize 가 vertical 이나 both)에만 걸린다 */
-(function 늘리기넓히기(){
-  const 자리 = 24;                 /* ⓘ 단추만 한 크기 */
-  let 잡은것 = null, 시작Y = 0, 시작높이 = 0, 옛터치 = '';
+/* 입력창을 늘리는 손잡이.
+
+   브라우저가 그려 주는 손잡이는 작고, 눌리는 자리만 넓혀 봐야 보이지가 않는다.
+   게다가 손가락으로는 **아예 안 잡힌다** — touch-action 을 누른 뒤에 바꿔서는 늦다.
+   브라우저는 손가락이 닿는 순간 이미 「스크롤이다」를 정해 두고,
+   그래서 살짝 늘어나다 pointercancel 로 끊긴다.
+
+   그러니 **진짜 단추**를 띄운다. CSS 에 touch-action:none 을 **미리** 박아 두면
+   브라우저가 애초에 스크롤로 안 친다.
+   하나만 만들어 돌려 쓴다 — 칸이 여기저기서 생기므로 칸마다 붙이면 빠뜨린다 */
+(function 늘리기손잡이(){
+  const 최소 = 38;
+  let 칸 = null, 잡음 = null;
+  const 손 = document.createElement('div');
+  손.id = 'grow';
+  손.setAttribute('aria-label', '입력칸 높이 조절');
+  손.innerHTML = '<i></i><i></i>';
+  document.body.appendChild(손);
+
   const 늘릴수있나 = el => {
-    if (!el || el.tagName !== 'TEXTAREA') return false;
+    if (!el || el.tagName !== 'TEXTAREA' || el.disabled || el.readOnly) return false;
     const r = getComputedStyle(el).resize;
     return r === 'vertical' || r === 'both';
   };
-  addEventListener('pointerdown', e => {
-    const el = e.target;
-    if (!늘릴수있나(el)) return;
-    const b = el.getBoundingClientRect();
-    if (e.clientX < b.right - 자리 || e.clientY < b.bottom - 자리) return;
-    잡은것 = el; 시작Y = e.clientY; 시작높이 = b.height;
-    /* 끄는 동안 화면이 따라 밀리면 못 늘린다 */
-    옛터치 = el.style.touchAction; el.style.touchAction = 'none';
-    try{ el.setPointerCapture(e.pointerId); }catch(_){}
-    e.preventDefault();
-  }, true);
-  addEventListener('pointermove', e => {
-    if (!잡은것) return;
-    const 최소 = 38, 최대 = Math.max(최소, innerHeight * 0.6);
-    잡은것.style.height =
-      Math.max(최소, Math.min(최대, 시작높이 + (e.clientY - 시작Y))) + 'px';
-    if (e.cancelable) e.preventDefault();
-  });
-  const 놓기 = () => {
-    if (!잡은것) return;
-    잡은것.style.touchAction = 옛터치;
-    잡은것 = null;
+  const 놓아둘자리 = () => {
+    if (!칸 || !칸.isConnected){ 감추기(); return; }
+    const b = 칸.getBoundingClientRect();
+    /* 화면 밖으로 나간 칸에는 안 붙인다 — 허공에 단추만 떠 있게 된다 */
+    if (b.width < 8 || b.bottom < 0 || b.top > innerHeight){ 손.classList.remove('on'); return; }
+    손.style.left = (b.right - 30) + 'px';
+    손.style.top  = (b.bottom - 30) + 'px';
+    손.classList.add('on');
   };
-  addEventListener('pointerup', 놓기);
-  addEventListener('pointercancel', 놓기);
+  const 붙이기 = el => { 칸 = el; 놓아둘자리(); };
+  const 감추기 = () => { 칸 = null; 손.classList.remove('on'); };
+
+  /* 쓰고 있는 칸에 붙는다. 눌러서 커서가 간 칸이 곧 늘리고 싶은 칸이다 */
+  addEventListener('focusin', e => {
+    if (늘릴수있나(e.target)) 붙이기(e.target); else if (e.target !== 손) 감추기();
+  });
+  addEventListener('focusout', () => {
+    /* 단추를 누르느라 커서가 빠진 것일 수 있다. 한 박자 뒤에 다시 본다 */
+    setTimeout(() => { if (!잡음 && !늘릴수있나(document.activeElement)) 감추기(); }, 0);
+  });
+  /* 글을 치면 칸이 자라고, 창이 굴러가면 자리가 바뀐다. 따라다닌다 */
+  addEventListener('input', e => { if (e.target === 칸) 놓아둘자리(); });
+  addEventListener('scroll', () => { if (칸) 놓아둘자리(); }, true);
+  addEventListener('resize', () => { if (칸) 놓아둘자리(); });
+
+  손.addEventListener('pointerdown', e => {
+    if (!칸) return;
+    /* 커서가 칸에서 빠지지 않게 막는다. 빠지면 자판이 내려가 화면이 요동친다 */
+    e.preventDefault();
+    잡음 = {y: e.clientY, h: 칸.getBoundingClientRect().height};
+    try{ 손.setPointerCapture(e.pointerId); }catch(_){}
+    손.classList.add('hold');
+  });
+  손.addEventListener('pointermove', e => {
+    if (!잡음 || !칸) return;
+    const 최대 = Math.max(최소, innerHeight * 0.6);
+    칸.style.height = Math.max(최소, Math.min(최대, 잡음.h + (e.clientY - 잡음.y))) + 'px';
+    놓아둘자리();
+    e.preventDefault();
+  });
+  const 놓기 = () => { if (!잡음) return; 잡음 = null; 손.classList.remove('hold'); 놓아둘자리(); };
+  손.addEventListener('pointerup', 놓기);
+  손.addEventListener('pointercancel', 놓기);
 })();
 function 판끌기달기(){
   const 판 = $('statPop'), 손잡이 = $('statPopTop');
@@ -20141,11 +20190,11 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b151';
-const APP_BUILT = '2026-09-01 16:49';
+const APP_BUILD = 'b153';
+const APP_BUILT = '2026-09-01 17:10';
 const APP_BAKED = true;   /* 이 파일은 구운 것입니다. 손으로 고치지 마십시오 —
                              app/index.html 을 고치고 node 검증/본편굽기.js 를 다시 돌리십시오 */
-const APP_NOTE  = '다음 장면 고르면 창 닫힘 · 뒤로가기로 고르기와 거르기 풀기 · 고르기 메뉴 안 잘림 · 이름 줄임';
+const APP_NOTE  = '위/아래 단추가 뒤 글을 덜 가림 · 입력칸 늘리는 손잡이를 단추로 · 다음 장면 고르면 창 닫힘 · 뒤로가기로 고르기와 거르기 풀기';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
