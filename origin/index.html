@@ -14016,6 +14016,11 @@ function 주사위글(d){
   return L.join(String.fromCharCode(10));
 }
 
+/* 260901 — 한 번에 다 받으면 첫 대사가 그릇을 먹고 뒤가 잘린다.
+   갈래를 받아 두 번에 나눠 받는다. 앞부분(재료 · 규칙)은 둘이 같이 쓴다 */
+const CARD_사람칸 = ['NAME', 'TRAITS', 'HABIT', 'LOOK', 'OUTFIT', 'DESCRIPTION',
+                     'PERSONALITY', 'GROWTH', 'EDU', 'FINANCE', 'LIVING', 'FRIENDS', 'DATING'];
+const CARD_장면칸 = ['SCENARIO', 'FIRST_MES', 'MES_EXAMPLE', 'STARTPLACE'];
 function cardPrompt(){ throw new Error("중계가 짭니다 — " + "cardPrompt"); }
 
 
@@ -14238,6 +14243,10 @@ function makeSheet(reshow){
 /* 동시에 지을 때 아직 저장 안 된 이름들. 겹침을 여기서도 본다 —
    S.characters 만 보면 같은 이름 둘이 함께 빠져나간다 */
 const 짓는중이름 = new Set();
+/* 빈 칸이 있던 카드를 모아 뒀다가 끝에 한 번 알린다.
+   장마다 알리면 넷을 뽑을 때 알림이 넷 뜬다 */
+let 빈칸알림 = [];
+const name0 = sec => String(sec.name || '').split('\n')[0].trim() || '이름 없음';
 
 /* ── 260901 · 요청을 씨앗에 반영한다 ──
    나이는 꼴이 몇 안 된다. 앱이 바로 읽으면 부름이 안 늘고 빗나갈 일도 없다 */
@@ -14400,19 +14409,31 @@ async function 카드한장(mode, gender, seed, 바람){
        앱과 중계가 갈라지는 것이 이 프로젝트에서 여러 번 물린 병이다.
        안 넘기면 「이미 정해진 것」이 통째로 빠져 늘 솔로가 나온다 */
     const 주사위 = 카드주사위();
-    /* 260901 — askText 는 **끊겼는지를 안 돌려준다.**
-       그릇에 걸려 뒤가 잘려도 모른 채 저장했고, 검사하는 것은 앞의 두 칸뿐이었다.
-       askTextEx 로 바꿔 끊김을 보고, 있어야 할 칸이 다 왔는지 센다 */
-    const 받은것 = await askTextEx(null, 4200, 1.0, null,
-      {카드: {seed, mode, gender, 주사위, 바람: 방향글(바람)}});
-    const sec = parseSections(받은것.text);
+    /* 260901 — **두 번에 나눠 받는다.**
+       한 번에 받으면 첫 대사(1,350자)가 그릇을 먹고 뒤 일곱 칸이 잘렸다.
+       사람을 먼저 받고, 그 사람을 읽혀 장면을 받는다 */
+    const 부르기 = async 갈래 => {
+      const 짐 = {카드: {seed, mode, gender, 주사위, 바람: 방향글(바람), 갈래}};
+      if (갈래 === '장면') 짐.카드.앞것 = 사람글;
+      const r = await askTextEx(null, 2800, 1.0, null, 짐);
+      return r;
+    };
+    let 사람글 = '';
+    const 사람 = await 부르기('사람');
+    사람글 = String(사람.text || '');
+    const sec = parseSections(사람글);
+    /* 이름과 설정이 없으면 카드가 아니다. 그때만 버린다 */
     if (!sec.name || !sec.description) throw new Error('형식이 어긋났습니다. 다시 눌러보십시오');
-    /* 끊겼으면 뒷칸이 통째로 비거나 반토막이다. 조용히 넘어가면 카드에 구멍이 남는다 */
+    const 장면 = await 부르기('장면');
+    Object.assign(sec, parseSections(String(장면.text || '')));
+
+    /* 260901 — **한 칸 비었다고 버리지 않는다.**
+       전에는 열다섯 중 하나만 비어도 throw 해서, 넷을 뽑으면 하나만 남았다.
+       「습관」이 안 왔다고 사람을 통째로 버릴 까닭이 없다.
+       없으면 없는 대로 두고 무엇이 비었는지만 알린다 */
     const 빈칸 = CARD_SECTIONS.filter(k => !String(sec[k] || '').trim());
-    if (받은것.cut || 빈칸.length)
-      throw new Error(받은것.cut
-        ? '글이 그릇에 걸려 끊겼습니다 — 다시 눌러보십시오'
-        : '빠진 칸이 있습니다 (' + 빈칸.map(k => CARD_LABEL[k] || k).join(' · ') + ') — 다시 눌러보십시오');
+    if (빈칸.length)
+      빈칸알림.push(name0(sec) + ' — ' + 빈칸.map(k => CARD_LABEL[k] || k).join(' · '));
 
     let name = (sec.name || '').split('\n')[0].replace(/["'()\[\]{}·・]/g, '').trim().slice(0, 12);
     /* 모델이 딴 이름을 지어 왔거나 비워 왔으면 앱이 뽑은 이름을 쓴다 */
@@ -14492,6 +14513,7 @@ async function generateCharacter(mode, gender, seed, 몇장, 바람){
   알림();
 
   짓는중이름.clear();
+  빈칸알림 = [];
   const 된것 = [], 자빠진것 = [];
   try{
     /* 260901 — 요청을 **한 번만** 읽는다. 넷을 뽑아도 한 번이라
@@ -14536,6 +14558,11 @@ async function generateCharacter(mode, gender, seed, 몇장, 바람){
       noteDone('인물 생성 실패', 자빠진것[0] || '', genFrom, false);
       toast('생성 실패: ' + (자빠진것[0] || ''));
     }
+    /* 260901 — 빈 칸이 있어도 카드는 남긴다. 다만 무엇이 비었는지는 알린다 —
+       조용히 넘어가면 편집 화면에 가서야 구멍을 본다 */
+    if (빈칸알림.length)
+      noteDone('일부 칸이 비었습니다', 빈칸알림.join('\n') +
+               '\n편집 화면에서 채우거나 그 칸만 다시 뽑으십시오', genFrom, false);
   }catch(e){
     noteDone('인물 생성 실패', e.message, genFrom, false);
     toast('생성 실패: ' + e.message);
@@ -19711,11 +19738,11 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b143';
-const APP_BUILT = '2026-09-01 14:02';
+const APP_BUILD = 'b144';
+const APP_BUILT = '2026-09-01 14:10';
 const APP_BAKED = true;   /* 이 파일은 구운 것입니다. 손으로 고치지 마십시오 —
                              app/index.html 을 고치고 node 검증/본편굽기.js 를 다시 돌리십시오 */
-const APP_NOTE  = '대화·대상·내정보에서 꾹 눌러 여럿 골라 다루기 · 카드마다 ⋯ · New Chat · 여백 조임';
+const APP_NOTE  = '인물 카드를 두 번에 나눠 받음 (첫 대사가 뒤를 자르던 것) · 한 칸 비었다고 안 버림';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
