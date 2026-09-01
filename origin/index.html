@@ -4029,6 +4029,16 @@ addEventListener('popstate', e => {
     return;
   }
 
+  /* 260901 — 걸러 보는 중이면 **거르기부터 푼다.** 고르기와 같은 결이다.
+     안 그러면 걸러 놓은 채 뒤로가기를 눌렀을 때 앱이 그대로 나간다 */
+  let 거르던중 = false;
+  try{ 거르던중 = S.view === 'vChats' && 거르는중(); }catch(_){}
+  if (거르던중){
+    거르기풀기();
+    try{ history.pushState({v: S.view}, ''); }catch(_){}
+    return;
+  }
+
   /* 덮개가 열려 있으면 한 겹만 벗긴다. 칸은 이미 하나 줄었으므로 다시 안 쌓는다 */
   if (겹수() > 0){
     접는중 = true;
@@ -7253,6 +7263,10 @@ function nextSceneSheet(){
               '</b><div class="shint">' +
               (first ? '앞 장면에서 있었던 일을 안고 다시 만납니다. ' : '') +
               esc(fill(K.hint, cn, S.persona?.name)) + '</div>',
+        /* 260901 — 고르면 창을 닫는다. 안 닫아 두었더니 뒤에서 장면이 짜이고
+           대사가 흐르는 동안 창이 그대로 덮고 있었다.
+           고른 것으로 할 일이 끝나는 자리라 「닫기」가 맞다 */
+        닫기: true,
         run: () => startScene(k)
       };
     })
@@ -15801,6 +15815,18 @@ async function searchChatBodies(){
 }
 
 /* 인물 카드의 (n) 을 누르면 그 인물의 대화만 본다 */
+/* 지금 걸러 보는 중인가. 뒤로가기가 이것을 먼저 본다 */
+const 거르는중 = () => !!(S.chatOnly || S.chatOnlyPersona);
+/* 260901 — 푸는 글이 두 군데에 똑같이 있었다. 한 곳으로 모은다 —
+   두 벌로 두면 한쪽만 고쳤을 때 조용히 갈라진다 */
+function 거르기풀기(){
+  if (!거르는중()) return false;
+  S.chatOnly = null; S.chatOnlyPersona = null;
+  const bar = $('chatFilter');
+  if (bar) bar.classList.remove('on');
+  renderChats();
+  return true;
+}
 function filterChatsBy(charId){
   S.chatOnly = charId; S.chatOnlyPersona = null;
   S.chatQ = ''; S.chatHits = null;
@@ -15810,11 +15836,7 @@ function filterChatsBy(charId){
   bar.innerHTML = '<span>' + esc(c?.name || '삭제된 대상') + ' 의 대화만 보는 중</span>' +
     '<div class="sp"></div><button id="chatFilterX">전체 보기 ✕</button>';
   bar.classList.add('on');
-  $('chatFilterX').onclick = () => {
-    S.chatOnly = null;
-    bar.classList.remove('on');
-    renderChats();
-  };
+  $('chatFilterX').onclick = 거르기풀기;
   show('vChats'); renderChats();
 }
 
@@ -16607,11 +16629,7 @@ function filterChatsByPersona(pid){
   bar.innerHTML = '<span>' + esc(p?.name || '삭제된 주인공') + ' 으로 한 대화만 보는 중</span>' +
     '<div class="sp"></div><button id="chatFilterX">전체 보기 ✕</button>';
   bar.classList.add('on');
-  $('chatFilterX').onclick = () => {
-    S.chatOnlyPersona = null;
-    bar.classList.remove('on');
-    renderChats();
-  };
+  $('chatFilterX').onclick = 거르기풀기;
   show('vChats'); renderChats();
 }
 
@@ -20123,11 +20141,11 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b150';
-const APP_BUILT = '2026-09-01 16:33';
+const APP_BUILD = 'b151';
+const APP_BUILT = '2026-09-01 16:49';
 const APP_BAKED = true;   /* 이 파일은 구운 것입니다. 손으로 고치지 마십시오 —
                              app/index.html 을 고치고 node 검증/본편굽기.js 를 다시 돌리십시오 */
-const APP_NOTE  = '고르기 메뉴 안 잘림 · 이름 줄임(저장 · 대화보기 · 기본 설정) · 뒤로가기로 고르기 풀기';
+const APP_NOTE  = '다음 장면 고르면 창 닫힘 · 뒤로가기로 고르기와 거르기 풀기 · 고르기 메뉴 안 잘림 · 이름 줄임';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
