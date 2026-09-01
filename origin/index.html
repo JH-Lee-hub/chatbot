@@ -136,10 +136,15 @@
   .card .t span.dim{color:var(--tx3)}
   .card .t span.nowat{color:var(--tx2)}
   .cmeta{flex:0 0 auto;text-align:right;font-size:10.5px;color:var(--tx3);line-height:1.55;
-         margin-right:2px;white-space:nowrap}
+         margin-right:0;white-space:nowrap}
   .cmeta span{display:block}
-  .card.chr{align-items:flex-start}
-  .card.chr .av{margin-top:2px}
+  /* 260901 — 위로 쏠려 보이던 것을 가운데로. 생성·수정 줄과 단추가
+     이름 줄에 붙어 있어 아래가 빈 것처럼 읽혔다 */
+  .card.chr{align-items:center}
+  /* ⋯ 좌우 여백을 3분의 1로. 글과 카드 선 사이가 너무 넓었다 */
+  .card>.ico{flex:0 0 auto;width:22px;height:26px;margin-left:2px;margin-right:-4px;
+    font-size:15px;line-height:1;color:var(--tx3);background:transparent;border:0;padding:0}
+  .card .pickDot{margin-left:2px;margin-right:-2px}
   .av img{width:100%;height:100%;object-fit:cover;border-radius:11px;display:block}
   .av.pic0{background:var(--panel2)!important}
   #ceAvatar{width:104px;height:104px;border-radius:11px;border:1px solid var(--line);
@@ -954,12 +959,13 @@
     border-radius:9px;background:var(--acc);color:#0b0d12;font-size:10px;font-style:normal;
     font-weight:700;line-height:15px;text-align:center;padding:0 3px;display:none}
   #nav em.on{display:block}
-  #noteBox{margin-bottom:14px}
-  .noteHead{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  #noteBox{margin-bottom:0}
+  .noteHead{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .listHead{margin-top:12px}
   .noteHead b{flex:1;font-size:13px;color:var(--tx2)}
   .noteHead .btn{padding:4px 10px;font-size:11px}
-  /* 260901 — 줄 사이를 절반으로. 알림이 여럿일 때 화면을 너무 먹었다 */
-  .noteRow{padding:9px 11px;border-radius:9px;background:var(--panel2);margin-bottom:3px;
+  /* 260901 — 줄 사이와 안 여백을 더 좁힌다. 알림이 화면을 너무 먹었다 */
+  .noteRow{padding:6px 10px;border-radius:8px;background:var(--panel2);margin-bottom:2px;
     border-left:2px solid transparent}
   .noteRow.new{border-left-color:var(--acc)}
   .noteRow.bad{border-left-color:#e06b6b}
@@ -969,7 +975,9 @@
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   /* 알림이 쌓여도 주인공 목록이 화면 밖으로 밀리면 안 된다.
      3.5개까지만 자리를 주고 나머지는 이 안에서 굴린다 — 잘린 넷째 줄이 더 있다는 표가 된다 */
-  #noteList{max-height:207px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  /* 260901 — 2.4개쯤만 보이게 줄인다. 반쯤 걸친 것이 있어야 더 있다는 것이 보인다.
+     한 칸은 여백 3 + 안 18 + 글 두 줄 34 ≈ 55px 이므로 2.4개면 132 */
+  #noteList{max-height:132px;overflow-y:auto;-webkit-overflow-scrolling:touch}
   /* 지금 도는 것. 끝난 알림과 눈에 띄게 갈라 둔다 */
   .noteRow.live{border-left:3px solid var(--acc);background:var(--panel2);cursor:pointer}
   .noteRow.live b{color:var(--acc)}
@@ -1095,6 +1103,8 @@
         <div class="noteHead"><b>알림</b><button class="btn" id="noteClear">비우기</button></div>
         <div id="noteList"></div>
       </div>
+      <!-- 260901 — 알림과 주인공이 한 덩이로 보였다. 제목으로 가른다 -->
+      <div class="noteHead listHead"><b>내 페르소나</b></div>
       <div id="personaList"></div>
     </div>
   </section>
@@ -4925,13 +4935,15 @@ function seedGauss(seed, i){
 /* 두 시각이 며칠 떨어져 있는가. 하루의 경계는 slept 와 같이 새벽 5시로 본다 */
 /* 이야기 안에서 얼마나 지났는가. 바깥 시계가 아니라 상태 줄의 일시로 잰다 —
    하룻밤 사이에 몰아서 스무 턴을 해도 이야기 속에서는 두 시간일 수 있다. */
+/* 260901 — 목록에서는 짧은 꼴로 적는다. 「22일 21시간 (6시간 28분)」은
+   한 줄을 다 먹어 이름이 잘렸다. 「22d 21h (6h 28m)」이면 반이다 */
 function spanText(chat){
   const a = minuteOf(chat?.t0), b = minuteOf(chat?.t1);
   if (a === null || b === null || b <= a) return '';
   const m = b - a;
   const d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60);
   if (!d && !h) return '';
-  return (d ? d + '일 ' : '') + (h ? h + '시간' : '');
+  return (d ? d + 'd ' : '') + (h ? h + 'h' : '');
 }
 /* 실제로 붙잡고 있던 시간. 사이가 벌어진 데서 끊어 덩어리마다 더한다.
    30분은 「잠깐 자리를 뜬 것」과 「나중에 다시 들어온 것」을 가르는 선이다 —
@@ -4951,11 +4963,11 @@ function playMinutes(msgs){
 /* 「2시간 10분」처럼. 하루를 넘으면 날로 적는다 */
 function playText(분){
   if (!분) return '';
-  if (분 < 60) return 분 + '분';
+  if (분 < 60) return 분 + 'm';
   const h = Math.floor(분 / 60), m = 분 % 60;
-  if (h < 24) return h + '시간' + (m ? ' ' + m + '분' : '');
+  if (h < 24) return h + 'h' + (m ? ' ' + m + 'm' : '');
   const d = Math.floor(h / 24);
-  return d + '일' + (h % 24 ? ' ' + (h % 24) + '시간' : '');
+  return d + 'd' + (h % 24 ? ' ' + (h % 24) + 'h' : '');
 }
 
 /* 목록을 그릴 때는 메시지를 읽지 않는다. 대화를 열 때 한 번 채워 둔다 */
@@ -6308,17 +6320,18 @@ function renderChats(){
     /* 이야기가 지금 어디까지 와 있는가 — 상태 카드의 자리와 시각.
        이름 옆은 한 줄로 잘리므로 여기에 따로 한 줄을 둔다. */
     const sc = S.mems?.[ch.id]?.stateCard || {};
-    const nowAt = [sc['일시'], sc['장소']].filter(Boolean).join('  ·  ');
-    /* 관계 수치는 뺀다. 목록에서 볼 일이 없고, 대신 얼마나 했고 얼마가 들었는지가 필요하다 */
+    /* 260901 — 채팅 속 **일시는 뺀다.** 바깥 날짜(생성 · 수정)와 헷갈리고
+       목록에서 볼 일이 적다. 장소는 「지금 어디까지 왔나」라 남긴다.
+       그러면 카드가 세 줄에서 두 줄이 된다 */
     const cost = Number(ch.cost) || 0;
-    const l2 = turnsOf(ch) + '턴' +
-      (cost > 0 ? '  ·  $' + (cost >= 0.01 ? cost.toFixed(3) : cost.toFixed(4)) : '');
+    const l2 = [turnsOf(ch) + '턴',
+                '$' + (cost >= 0.01 ? cost.toFixed(3) : cost.toFixed(4)),
+                sc['장소'] || ''].filter(Boolean).join('  ·  ');
     const meta = '<div class="cmeta"><span>생성 ' + stampSmart(ch.createdAt) + '</span>' +
                  '<span>수정 ' + stampSmart(ch.lastMessageAt||ch.createdAt) + '</span></div>';
     return `<div class="card chr${고름.것.has(ch.id) && 고름.어디==='chats' ? ' picked' : ''}" data-id="${ch.id}">
       ${av}
       <div class="t"><b>${esc(ch.title || c?.name || '이름 없음')}${at?`<em>${esc(at)}</em>`:''}</b>
-        ${nowAt?`<span class="nowat">${esc(nowAt)}</span>`:''}
         <span class="dim">${esc(l2)}</span></div>
       ${meta}
       ${고르는중('chats') ? '<span class="pickDot">✓</span>'
@@ -14298,30 +14311,98 @@ async function 요청읽기(글, seed, gender){
     글,
     '',
     '── 할 일 ──',
-    '이 요청이 **무엇을 바꾸라고 하는지**만 가려낸다.',
-    '**요청에 안 적힌 것은 반드시 null 로 둔다.** 짐작해서 채우지 않는다 —',
-    '적지도 않은 것이 바뀌면 요청한 사람이 놀란다.',
+    '이 요청을 **구체적인 재료로 풀어낸다.**',
+    '적힌 말을 그대로 베끼지 않는다 — 뭉뚱그린 말은 **하나를 골라 또렷하게** 바꾼다.',
     '',
     '아래 꼴 그대로 JSON 하나만 낸다. 다른 말을 붙이지 않는다.',
     '{',
-    '  "job": null,        // 직업. 적혔으면 그 말 그대로',
+    '  "age": null,        // 요청에 **숫자나 연령대가 적혔을 때만.** 아니면 null',
+    '  "job": null,        // **실제 직업 이름 하나.** 「~적인 직업」 같은 갈래 말은 쓰지 않는다',
+    '  "shade": null,      // 남에게 말 못 하거나 숨기는 것. 벌이 · 취향 · 버릇 · 지난 일 무엇이든',
     '  "relation": null,   // {{user}}와의 사이. 「~ 사이」 꼴 한 줄',
+    '  "temper": null,     // {{user}}를 대하는 태도나 노림수. 「~한다」 꼴 한 줄',
+    '  "scene": null,      // 첫 장면이 어떤 자리인지. 요청이 자리를 말할 때만',
     '  "surface": null,    // 겉으로 보이는 성향 한 줄',
     '  "lack": null,       // 속에 있는 결핍 한 줄',
-    '  "stats": null       // 아래 이름 중 요청이 가리키는 것만. 0~100',
+    '  "stats": null       // 요청이 **곧바로 가리키는 것만.** 많아야 넷. 0~100',
     '}',
     '',
     '수치 이름 : 호감 · 반감 · 경계 · 긴장 · 체력 · 이성 · 매력 · 욕심 · 대담 · 욕구',
-    '- 「매력적」 → 매력 높게   「쑥쓰럼」 → 대담 낮게',
-    '- 「짝사랑한다」 → 호감 높게, 경계 낮게',
-    '- **서로 당기는 말이 함께 오면 갈라서 담는다** —',
-    '  「활발한데 쑥쓰럼쟁이」는 겉 성향을 활발로, 대담은 낮게 두는 것이다.',
-    '- 요청이 수치를 안 가리키면 stats 는 null.'
+    '',
+    '── 지킬 것 ──',
+    '- **요청에 안 적힌 칸은 반드시 null 로 둔다.** 짐작해서 채우지 않는다 —',
+    '  적지도 않은 것이 바뀌면 요청한 사람이 놀란다.',
+    '- **나이는 특히 그렇다.** 숫자나 「20대」 같은 말이 없으면 age 는 null 이다.',
+    '  「연예인」이나 「사장」에서 나이를 짐작하지 않는다 — 그것은 앱이 굴려 정한다.',
+    '- **stats 도 그렇다.** 열을 다 채우지 않는다. 요청이 대놓고 가리키는 서넛만 적는다.',
+    '  안 적힌 수치는 앱이 그 인물에 맞게 이미 굴려 두었다. 덮으면 그 결이 사라진다.',
+    '- **job 은 겉으로 내건 일이다.** 숨기는 벌이가 따로 있으면 그것은 shade 에 적고,',
+    '  job 에는 남들이 아는 직업을 적는다. 숨길 것 없이 그 일로만 살면 job 에 바로 적는다.',
+    '- **shade 는 벌이만이 아니다.** 남에게 말 못 할 취향 · 버릇 · 지난 일도 여기다.',
+    '- **temper 는 사이(relation)와 다르다.** 사이는 어떤 관계인가이고,',
+    '  temper 는 그 사이에서 **무엇을 하려 드는가**이다.',
+    '- **scene 은 사람이 아니라 자리다.** 요청이 「어디서 어떻게 만난다」를 말할 때만 적는다.',
+    '- 서로 당기는 말이 함께 오면 **갈라서 담는다** —',
+    '  겉으로 보이는 결은 surface 로, 속으로 못 하는 것은 수치를 낮게 두는 식이다.',
+    '',
+    '── 어떤 꼴로 바꾸는지 (보기) ──',
+    '**아래는 바꾸는 꼴을 보이는 것이지 이런 인물을 만들라는 뜻이 아니다.**',
+    '요청에 없는 결 · 직업 · 자리를 여기서 끌어다 쓰지 않는다.',
+    '',
+    '요청 : 「러시아 소속 스파이, 내게 탈취할 비밀이 있음, 미인계도 사용」',
+    '{"job":"무역회사 통역","shade":"러시아 쪽에 정보를 넘긴다. 신분은 위장이다",',
+    ' "relation":"업무로 몇 번 마주친 사이","temper":"{{user}}가 쥔 것을 노리고 접근한다",',
+    ' "stats":{"매력":78,"대담":72,"경계":66}}',
+    '  → 겉 직업과 숨기는 것을 갈랐다. 노림수는 temper 로 갔다.',
+    '    **age 와 scene 은 요청에 없어서 null 이다.** stats 도 가리킨 셋만 적었다.',
+    '',
+    '요청 : 「과 동기, 친하진 않았지만 팀플 때문에 함께 주인공의 방에 있음, 어쩌다 술을 먹게 됨」',
+    '{"relation":"같은 과 동기. 말은 몇 번 섞었지만 친하지는 않다",',
+    ' "scene":"팀플 자료를 맞추러 {{user}}의 방에 왔다가, 늦어지며 술자리가 되었다",',
+    ' "stats":{"호감":32,"경계":38}}',
+    '  → 사람보다 **자리**를 말한 요청이다. job · shade · age 는 안 적혀서 전부 null.',
+    '',
+    '요청 : 「25세 바리스타」',
+    '{"age":"25세","job":"바리스타"}',
+    '  → 적힌 것이 둘뿐이면 **나오는 것도 둘뿐이다.** 나머지 일곱 칸은 아예 적지 않는다.',
+    '    성격도 관계도 수치도 지어내지 않는다 — 그것은 앱이 이미 굴려 두었다.'
   ].join('\n');
-  const r = await askTextEx(물, 500, 0.2, 요약모델() || undefined);
-  const m = String(r.text || '').match(/\{[\s\S]*\}/);
-  if (!m) return null;
-  try{ return JSON.parse(m[0]); }catch(_){ return null; }
+  /* 온도를 낮게 둔다. 이것은 **읽는 일**이지 짓는 일이 아니다 —
+     0.4 로 두었더니 「25세 바리스타」 한 줄에 취향과 관계까지 지어냈다 */
+  const r = await askTextEx(물, 600, 0.1, 요약모델() || undefined);
+  return JSON너그럽게(r.text);
+}
+
+/* 모델이 낸 JSON 을 너그럽게 읽는다.
+   깐깐하게 읽었더니 멀쩡한 답 하나가 통째로 버려졌다 —
+   프롬프트에 `//` 주석을 보여 줬으니 모델이 그것을 따라 적는다.
+   울타리와 마지막 쉼표도 흔하다 */
+function JSON너그럽게(글){
+  let t = String(글 || '');
+  /* ```json 울타리를 걷는다 */
+  t = t.replace(/```[a-zA-Z]*\n?/g, '').replace(/```/g, '');
+  const a = t.indexOf('{'), b = t.lastIndexOf('}');
+  if (a < 0 || b <= a) return null;
+  t = t.slice(a, b + 1);
+  const 해보기 = x => { try{ return JSON.parse(x); }catch(_){ return null; } };
+  let o = 해보기(t);
+  if (o) return o;
+  /* 줄 끝 주석을 걷는다. 따옴표 안의 // 는 안 건드린다 —
+     「http://」 같은 것이 값에 들어 있을 수 있다 */
+  t = t.split('\n').map(줄 => {
+    let 안 = false;
+    for (let i = 0; i < 줄.length - 1; i++){
+      const c = 줄[i];
+      if (c === '"' && 줄[i - 1] !== '\\') 안 = !안;
+      if (!안 && c === '/' && 줄[i + 1] === '/') return 줄.slice(0, i);
+    }
+    return 줄;
+  }).join('\n');
+  o = 해보기(t);
+  if (o) return o;
+  /* 마지막 쉼표를 걷는다 */
+  o = 해보기(t.replace(/,(\s*[}\]])/g, '$1'));
+  return o;
 }
 
 /* 앱이 바로 읽을 수 있는 것을 씨앗에 얹는다.
@@ -14354,17 +14435,47 @@ function 씨앗에반영(seed, 바람, mode){
   return {seed: 새것, 한것};
 }
 
+/* 직업이 아니라 **갈래**를 적어 온 것을 가른다.
+   「불법적인 직업」 「비밀스러운 일」은 직업 칸에 넣으면 카드에 그대로 남는다 */
+const 갈래말 = /(적인|스러운|한|같은)\s*(직업|일|직종|업종)$|^(직업|일)$/;
+const 직업다운가 = v => {
+  const t = String(v || '').trim();
+  if (!t || t.length > 24) return false;
+  return !갈래말.test(t);
+};
+
 /* 2층이 읽어 온 것을 씨앗에 담는다. **온 칸만** 바꾼다 */
 function 읽은것담기(seed, 읽은것, 바람){
   if (!읽은것) return seed;
   const 새것 = {...seed};
-  const 글칸 = {job: 'job', relation: 'relation', surface: 'surface', lack: 'lack'};
+  /* temper 는 씨앗에 이미 있는 칸이다 — {{user}}를 대하는 온도.
+     사이(relation)와 다르다. 사이는 어떤 관계인가이고, temper 는 무엇을 하려 드는가다 */
+  const 글칸 = {relation: 'relation', surface: 'surface', lack: 'lack', temper: 'temper'};
   for (const [k, 자리] of Object.entries(글칸)){
     const v = 읽은것[k];
     if (typeof v === 'string' && v.trim()) 새것[자리] = v.trim().slice(0, 60);
   }
-  /* 직업이 바뀌었으면 학력도 그 직업에 맞게 다시 뽑는다 */
-  if (새것.job !== seed.job) 새것.edu = rollEdu(새것.age, 새것.job);
+  /* 직업은 **직업다운 것만** 받는다. 갈래 말이 오면 씨앗을 그대로 둔다 —
+     그러지 않으면 카드의 직업 칸에 「불법적인 직업」이 그대로 적힌다 */
+  if (직업다운가(읽은것.job)) 새것.job = String(읽은것.job).trim().slice(0, 24);
+  /* 260901 — 모델이 나이를 또렷하게 바꿔 주면 1층 파서로 다시 읽는다.
+     「활기찬 나이」가 「20대 초반~중반」으로 와야 이 자리에서 잡힌다 */
+  if (typeof 읽은것.age === 'string'){
+    const 나이 = 요청나이(읽은것.age);
+    if (나이) 새것.age = rollAge(나이.lo, 나이.hi, 새것.mode || 'taste');
+  }
+  /* 떳떳하지 못한 벌이는 **그늘로 보낸다.**
+     앱이 이미 겉 직업과 실제 벌이를 갈라 적고 수치까지 미는 얼개를 갖고 있다.
+     직업 칸에 밀어 넣으면 그 얼개를 통째로 건너뛴다 */
+  if (typeof 읽은것.shade === 'string' && 읽은것.shade.trim())
+    새것.그늘글 = 읽은것.shade.trim().slice(0, 80);
+  /* 첫 장면 자리. 씨앗에 없던 칸이라 따로 담아 프롬프트에 얹는다 —
+     「팀플 때문에 방에 함께 있다」처럼 **사람이 아니라 자리**를 말한 요청이 있다 */
+  if (typeof 읽은것.scene === 'string' && 읽은것.scene.trim())
+    새것.장면글 = 읽은것.scene.trim().slice(0, 120);
+  /* 직업이나 나이가 바뀌었으면 학력도 그것에 맞게 다시 뽑는다 */
+  if (새것.job !== seed.job || 새것.age !== seed.age)
+    새것.edu = rollEdu(새것.age, 새것.job);
   if (읽은것.stats && typeof 읽은것.stats === 'object'){
     새것.stats = {...(seed.stats || {})};
     for (const [이름, 값] of Object.entries(읽은것.stats)){
@@ -14528,6 +14639,10 @@ async function generateCharacter(mode, gender, seed, 몇장, 바람){
         알림();
         /* 여기서 자빠져도 카드는 만들어야 한다. 못 읽으면 씨앗 그대로 간다 */
         바람 = {...바람, 읽은것: await 요청읽기(글, null, gender).catch(() => null)};
+        /* 260901 — 못 읽었으면 알린다. 조용히 넘어가면
+           적었는데 아무 일도 안 일어난 까닭을 알 길이 없다 */
+        if (!바람.읽은것)
+          toast('요청을 못 읽었습니다 — 무작위로 만듭니다', 4000);
       }
     }
     /* 하나가 자빠져도 나머지는 남아야 한다. 그래서 allSettled 다 */
@@ -19738,11 +19853,11 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b144';
-const APP_BUILT = '2026-09-01 14:10';
+const APP_BUILD = 'b146';
+const APP_BUILT = '2026-09-01 14:42';
 const APP_BAKED = true;   /* 이 파일은 구운 것입니다. 손으로 고치지 마십시오 —
                              app/index.html 을 고치고 node 검증/본편굽기.js 를 다시 돌리십시오 */
-const APP_NOTE  = '인물 카드를 두 번에 나눠 받음 (첫 대사가 뒤를 자르던 것) · 한 칸 비었다고 안 버림';
+const APP_NOTE  = '요청을 두 번에 나눠 읽고 짓기 (해석 → 사람 → 장면) · 안 적은 것은 안 채움 · 카드 여백과 시간 표기 · 내 정보 구분';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
