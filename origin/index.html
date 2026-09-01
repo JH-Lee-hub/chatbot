@@ -875,6 +875,9 @@
   .wishEx{margin-top:4px;font-size:10px;line-height:1.35;color:var(--tx3)}
   /* 예시 둘을 세로로 나눈다. 왼쪽 선으로 「적는 글」임을 보인다 */
   .wishExOne{padding-left:6px;border-left:2px solid var(--line2);margin-top:4px}
+  /* 이름표를 앞에 붙인다. 글만 보이면 「이런 인물을 만들어야 하나」로 읽힌다 —
+     이름표가 있으면 「아, 이런 것도 적을 수 있구나」로 읽힌다 */
+  .wishExOne i{display:block;font-style:normal;color:var(--tx2);font-weight:600}
   .wishExOne:first-child{margin-top:0}
   /* ⓘ · 글 · 칸 순. **칸을 글자에 딱 붙인다** —
      넓으면 빈 데를 눌러도 켜져 실수가 난다 */
@@ -2289,9 +2292,29 @@ async function 막힌까닭(res){
            (얼마 ? ' — ' + 얼마 + '초 뒤에 풀립니다' : '');
   }catch(_){ return ''; }
 }
+/* 260901 — 구글이 400 으로 「이 자리에서는 못 쓴다」고 할 때가 있다.
+   실측 : 같은 키가 다른 회선에서는 200 이었다. 모델도 키도 아니고 **나가는 IP** 다.
+   그냥 「400 오류」로 뜨면 무엇을 하면 되는지 알 길이 없다 */
+const 지역막힘 = 글 =>
+  /User location is not supported|FAILED_PRECONDITION/i.test(String(글 || ''));
+let 지역말한때 = 0;
+async function 지역살피기(res, who){
+  if (!res || res.status !== 400 || who !== 'gg') return res;
+  try{
+    const t = await res.clone().text();
+    if (!지역막힘(t)) return res;
+    const 이제 = Date.now();
+    if (이제 - 지역말한때 > 60000){
+      지역말한때 = 이제;
+      toast('구글이 지금 연결로는 안 받습니다 — 와이파이로 바꾸거나 VPN 을 끄고 보십시오', 6000);
+    }
+  }catch(_){}
+  return res;
+}
 /* 429 면 까닭을 읽어 띄운다. 폴백은 그대로 돈다 —
    알리는 것과 넘어가는 것은 다른 일이다 */
 function 막힘살피기(res, who){
+  if (res && res.status === 400 && who === 'gg') 지역살피기(res, who);
   if (!res || res.status !== 429) return res;
   const 이제 = Date.now();
   if (이제 - 막힌때 > 60000){
@@ -7835,17 +7858,64 @@ function 판자리놓기(){
   const 위 = Math.max(글.top,  봄.y) + 2;
   const 오 = Math.min(글.right,  봄.x + 봄.w) - 폭 - 2;
   const 아 = Math.min(글.bottom, 봄.y + 봄.h) - 높 - 2;
-  판.style.left = Math.round(Math.max(왼, Math.min(오, x))) + 'px';
-  판.style.top  = Math.round(Math.max(위, Math.min(아, y))) + 'px';
+  const 갈X = Math.round(Math.max(왼, Math.min(오, x)));
+  const 갈Y = Math.round(Math.max(위, Math.min(아, y)));
+  /* 값이 그대로면 아예 안 쓴다 — 같은 값을 넣는 것만으로도 그리기가 한 번 돈다.
+     260901 — 그대로일 때만 걸러서는 모자랐다. 글자를 칠 때마다 브라우저가
+     화면을 한두 픽셀씩 미는데, 그 1~2px 이 **한 글자에 한 번씩 튀는** 것으로 보였다.
+     **죽은 구역**을 둔다. 자판은 수백 픽셀을 움직이므로 따라가는 데는 지장이 없다.
+     끌어 옮기는 중에는 손을 그대로 따라가야 하므로 안 건다 */
+  const 죽은구역 = 판._끄는중 ? 0 : 6;
+  if (판._x != null &&
+      Math.abs(판._x - 갈X) <= 죽은구역 && Math.abs(판._y - 갈Y) <= 죽은구역) return;
+  판._x = 갈X; 판._y = 갈Y;
+  판.style.left = 갈X + 'px';
+  판.style.top  = 갈Y + 'px';
   판.style.right = 'auto';
 }
 /* 자판이 오르내리면 다시 잡는다.
    안드로이드는 창이 줄고(resize), iOS 는 밀어 올린다(scroll) — 둘 다 듣는다.
-   자판이 다 올라오기 전에 재면 옛 크기가 잡혀 한 번 더 늦춰 잡는다 */
+
+   260901 — 처음에는 250ms 늦춰 한 번 더 잡았다. 자판이 다 올라오기 전에 재면
+   옛 크기가 잡히기 때문인데, 그러니까 **자판이 선 뒤에 판이 툭 뛰었다.**
+   늦게 한 번 뛰는 것이 제일 거슬린다.
+   그래서 늦춰 잡기를 버리고 **움직이는 동안 매 프레임 따라간다.**
+   자판과 함께 미끄러지므로 뛰는 것이 안 보인다.
+   움직임이 멎으면 스스로 멈춘다 — 헛도는 프레임을 안 쓴다 */
 if (window.visualViewport){
-  const 다시 = () => { 판자리놓기(); setTimeout(판자리놓기, 250); };
-  visualViewport.addEventListener('resize', 다시);
-  visualViewport.addEventListener('scroll', 다시);
+  let 돌고있나 = false, 멎은수 = 0, 마지막 = '';
+  const 한프레임 = () => {
+    const v = visualViewport;
+    const 지금 = v.height + '/' + v.offsetTop + '/' + v.width;
+    if (지금 === 마지막) 멎은수++; else { 멎은수 = 0; 마지막 = 지금; }
+    판자리놓기();
+    /* 화면이 다섯 프레임 내리 그대로면 자판이 다 선 것이다 */
+    if (멎은수 >= 5){ 돌고있나 = false; return; }
+    requestAnimationFrame(한프레임);
+  };
+  const 따라가기 = () => {
+    멎은수 = 0; 마지막 = '';
+    if (돌고있나) return;
+    돌고있나 = true;
+    requestAnimationFrame(한프레임);
+  };
+  visualViewport.addEventListener('resize', 따라가기);
+  /* 260901 — scroll 하나에도 프레임을 돌렸더니 글자를 칠 때마다 되살아났다.
+     자판이 오르내리는 것은 **높이가 바뀌는** 일이다.
+     높이가 그대로면 한 번만 다시 잡고 끝낸다 — 프레임을 안 돈다 */
+  let 옛높이 = visualViewport.height;
+  visualViewport.addEventListener('scroll', () => {
+    const 이제 = visualViewport.height;
+    if (Math.abs(이제 - 옛높이) > 24){ 옛높이 = 이제; 따라가기(); }
+    else 판자리놓기();
+  });
+  /* 자판은 **누르는 순간** 올라오기 시작한다. 첫 resize 를 기다리지 않고
+     그때부터 따라붙어야 한 박자 늦는 느낌이 없다 */
+  addEventListener('focusin', e => {
+    const t = e.target;
+    if (t && (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT')) 따라가기();
+  });
+  addEventListener('focusout', 따라가기);
 }
 /* 일시 줄을 잡고 끈다. 접기 단추 위에서 시작한 것은 끌기로 안 친다 */
 /* 입력창을 늘리는 손잡이가 너무 작다.
@@ -7907,19 +7977,23 @@ function 판끌기달기(){
     const p = 어디(e);
     /* fixed 라 offsetLeft 는 화면 좌표가 아니다. 보이는 자리를 그대로 잰다 */
     const b = 판.getBoundingClientRect();
+    판._끄는중 = true;
     잡음 = {x: p.x, y: p.y, l: b.left, t: b.top};
   };
   const 움직 = e => {
     if (!잡음) return;
     const p = 어디(e);
-    판.style.left = (잡음.l + p.x - 잡음.x) + 'px';
-    판.style.top  = (잡음.t + p.y - 잡음.y) + 'px';
+    판._x = Math.round(잡음.l + p.x - 잡음.x);
+    판._y = Math.round(잡음.t + p.y - 잡음.y);
+    판.style.left = 판._x + 'px';
+    판.style.top  = 판._y + 'px';
     판.style.right = 'auto';
     if (e.cancelable) e.preventDefault();   /* 끄는 동안 화면이 안 밀리게 */
   };
   const 놓음 = () => {
     if (!잡음) return;
     잡음 = null;
+    판._끄는중 = false;
     /* **글칸에서 얼마나 떨어졌는지**로 적는다. 화면 좌표로 적으면
        자판이 올라온 채로 놓았을 때 그 자리가 그대로 굳는다 */
     const 글칸 = $('msgs');
@@ -10738,6 +10812,11 @@ function paintJump(){
 
 /* ═══════════════ 모델 호출 ═══════════════ */
 const RETRYABLE = [408, 409, 429, 500, 502, 503, 504];
+/* 260901 — 구글의 「이 자리에서는 못 쓴다」(400) 도 넘어가야 한다.
+   그 모델이 영영 안 되는 것이 아니라 지금 이 회선에서만 안 되는 것이라,
+   다음 모델로 넘기면 대화가 안 끊긴다. 다른 400 은 그대로 세운다 —
+   몸통이 잘못된 것을 넘기면 폴백을 다 태우고도 같은 데서 자빠진다.
+   가리는 것은 지역막힘() 하나다. 이 말은 구글만 내므로 업체를 따로 안 봐도 된다 */
 
 /* 이 대화가 쓰기로 한 모델. 폴백이 무엇을 답했든 이것은 안 바뀐다 */
 function chatModel(){
@@ -10919,7 +10998,11 @@ async function streamInto(target, CTX, signal){
       if (!res.ok){
         const raw = await res.text();
         let d = raw; try{ d = JSON.parse(raw).error?.message || raw; }catch(_){}
-        const e = new Error('HTTP ' + res.status + ' — ' + d); e.status = res.status; throw e;
+        const e = new Error('HTTP ' + res.status + ' — ' + d); e.status = res.status;
+        /* 260901 — 구글의 「이 자리에서는 못 쓴다」인지 여기서 표를 달아 둔다.
+           뒤에서는 몸통을 다시 읽을 수 없다 */
+        if (res.status === 400 && 지역막힘(raw)) e.넘어가도됨 = true;
+        throw e;
       }
 
       const rd = res.body.getReader(), dec = new TextDecoder();
@@ -11010,7 +11093,7 @@ async function streamInto(target, CTX, signal){
       lastErr = e;
       /* 이미 일부가 출력됐다면 폴백 시 문장이 뒤섞이므로 중단한다 */
       if (scrubOut(out).trim()){ e.partial = scrubOut(out); e.model = model; throw e; }
-      if (!RETRYABLE.includes(e.status) || i === chain.length - 1) throw e;
+      if ((!RETRYABLE.includes(e.status) && !e.넘어가도됨) || i === chain.length - 1) throw e;
     }
   }
   throw lastErr;
@@ -13678,6 +13761,16 @@ function applyTraitStats(st, traits){
   return st;
 }
 
+/* 260901 — 체형과 매력이 서로 아무 상관 없이 굴러갔다.
+   눈에 띄는 몸이 매력에 **조금** 얹히게 한다. 못 박지는 않는다 —
+   흩어짐(σ=15)이 그대로라 같은 체형에서도 매력이 넓게 나온다.
+   경계↔호감에 쓰는 결(상관 -0.2)과 같은 크기다 */
+const 체형매력 = {'마른': 4, '보통': 0, '다부진': 2, '글래머': 8, '건장한': 6};
+const 매력기울이기 = (st, frame) => {
+  const d = 체형매력[frame] || 0;
+  if (d && st.cha != null) st.cha = Math.max(0, Math.min(100, Math.round(st.cha + d)));
+  return st;
+};
 function rollStats(mode, guardBase, affBase, antiBase){
   const wild = mode !== 'taste';
   const gBase = guardBase == null ? (wild ? 52 : 40) : guardBase;
@@ -13861,7 +13954,8 @@ function rollSeeds(mode, gender){
     body: bodyRoll.body, bust: bodyRoll.bust, waist: bodyRoll.waist, hip: bodyRoll.hip,
     temper: POOL.temper.length ? pick(POOL.temper) : "",
     speech: relSpeech(rel[0]),
-    stats: applyTraitStats(rollStats(mode, rel[1], rel[2], rel[3]), traits),
+    stats: 매력기울이기(
+      applyTraitStats(rollStats(mode, rel[1], rel[2], rel[3]), traits), frame),
     imgSeed: randInt(100000, 999999)
   };
 }
@@ -14431,6 +14525,9 @@ async function 요청읽기(글, seed, gender){
     '  "scene": null,      // 첫 장면이 어떤 자리인지. 요청이 자리를 말할 때만',
     '  "surface": null,    // 겉으로 보이는 성향 한 줄',
     '  "lack": null,       // 속에 있는 결핍 한 줄',
+    '  "frame": null,      // **몸매를 말했을 때만.** 아래 넷 중 하나를 그대로 적는다',
+    '                       // 여자 : 마른 · 보통 · 다부진 · 글래머',
+    '                       // 남자 : 마른 · 보통 · 다부진 · 건장한',
     '  "stats": null       // 요청이 **곧바로 가리키는 것만.** 많아야 넷. 0~100',
     '}',
     '',
@@ -14441,6 +14538,13 @@ async function 요청읽기(글, seed, gender){
     '  적지도 않은 것이 바뀌면 요청한 사람이 놀란다.',
     '- **나이는 특히 그렇다.** 숫자나 「20대」 같은 말이 없으면 age 는 null 이다.',
     '  「연예인」이나 「사장」에서 나이를 짐작하지 않는다 — 그것은 앱이 굴려 정한다.',
+    '- **frame 은 몸을 곧바로 가리켰을 때만.** 아니면 null 이다.',
+    '  「예쁘다」 「잘생겼다」 「매력적」 「뛰어난 외모」는 **얼굴이지 몸이 아니다** — null 이다.',
+    '  다만 **버리지는 않는다** — 그 말은 stats 의 매력으로 옮긴다.',
+    '  얼굴은 매력으로, 몸은 frame 으로. 두 칸이 하는 일이 다르다.',
+    '  「글래머」 「탄탄한」 「호리호리한」처럼 몸을 말했을 때만 넷 중 하나로 옮긴다.',
+    '  넷 중 무엇도 아니면 null 이다. **가까운 것을 억지로 고르지 않는다** —',
+    '  억지로 고르면 예쁜 인물이 죄다 같은 몸이 된다. 안 정하면 앱이 굴린다.',
     '- **stats 도 그렇다.** 열을 다 채우지 않는다. 요청이 대놓고 가리키는 서넛만 적는다.',
     '  안 적힌 수치는 앱이 그 인물에 맞게 이미 굴려 두었다. 덮으면 그 결이 사라진다.',
     '- **job 은 겉으로 내건 일이다.** 숨기는 벌이가 따로 있으면 그것은 shade 에 적고,',
@@ -14552,7 +14656,10 @@ const 직업다운가 = v => {
 };
 
 /* 2층이 읽어 온 것을 씨앗에 담는다. **온 칸만** 바꾼다 */
-function 읽은것담기(seed, 읽은것, 바람){
+/* 앱이 아는 체형 이름만 받는다. 모르는 말이 오면 씨앗을 그대로 둔다 */
+const 체형이름 = {f: ['마른', '보통', '다부진', '글래머'],
+                  m: ['마른', '보통', '다부진', '건장한']};
+function 읽은것담기(seed, 읽은것, 바람, gender, mode){
   if (!읽은것) return seed;
   const 새것 = {...seed};
   /* temper 는 씨앗에 이미 있는 칸이다 — {{user}}를 대하는 온도.
@@ -14576,6 +14683,22 @@ function 읽은것담기(seed, 읽은것, 바람){
      직업 칸에 밀어 넣으면 그 얼개를 통째로 건너뛴다 */
   if (typeof 읽은것.shade === 'string' && 읽은것.shade.trim())
     새것.그늘글 = 읽은것.shade.trim().slice(0, 80);
+  /* 260901 — 몸매를 말했으면 **몸을 그 체형으로 다시 굴린다.**
+     전에는 「뛰어난 외모」가 매력 수치와 겉모습 글로만 가고
+     키 · 몸무게 · 치수는 씨앗이 굴린 그대로였다 */
+  const 성 = gender === 'm' ? 'm' : 'f';
+  if (typeof 읽은것.frame === 'string' && 체형이름[성].includes(읽은것.frame.trim())){
+    const 옛틀 = 새것.frame;
+    새것.frame = 읽은것.frame.trim();
+    /* 씨앗을 굴릴 때 옛 체형만큼 얹어 둔 것이 있다. 그것을 빼고 새것만큼 얹는다 */
+    const 참 = (체형매력[새것.frame] || 0) - (체형매력[옛틀] || 0);
+    if (참 && 새것.stats?.cha != null)
+      새것.stats = {...새것.stats,
+        cha: Math.max(0, Math.min(100, Math.round(새것.stats.cha + 참)))};
+    const 몸 = 성 === 'm' ? rollBodyMale(새것.frame, mode || 'taste')
+                          : rollBody(새것.frame, mode || 'taste');
+    Object.assign(새것, 몸);
+  }
   /* 첫 장면 자리. 씨앗에 없던 칸이라 따로 담아 프롬프트에 얹는다 —
      「팀플 때문에 방에 함께 있다」처럼 **사람이 아니라 자리**를 말한 요청이 있다 */
   if (typeof 읽은것.scene === 'string' && 읽은것.scene.trim())
@@ -14621,7 +14744,7 @@ async function 카드한장(mode, gender, seed, 바람){
        여기서 고치면 [고정 재료]도 카드도 같은 데서 나온다 */
     seed = 씨앗에반영(seed, 바람, mode).seed;
     /* 2층이 읽어 온 것도 담는다. 없으면 아무 일도 안 한다 */
-    seed = 읽은것담기(seed, 바람?.읽은것, 바람);
+    seed = 읽은것담기(seed, 바람?.읽은것, 바람, gender, mode);
     /* 중계를 쓰면 프롬프트를 안 짜고 씨앗만 넘긴다 */
     /* 주사위는 **앱이 굴린다.** 중계에서 또 굴리면 같은 코드가 두 벌이 되고,
        앱과 중계가 갈라지는 것이 이 프로젝트에서 여러 번 물린 병이다.
@@ -15045,10 +15168,12 @@ document.querySelectorAll('.autogen').forEach(b => b.onclick = () => startAutofi
    하나는 인물을 조건으로 나열하는 꼴, 하나는 관계를 문장으로 푸는 꼴.
    같은 결로 둘을 적으면 「이렇게만 적어야 하나」로 읽힌다 */
 const 방향예시 = [
-  ['30대 초반, 말수 적고 손으로 하는 일을 함',
-   '겉으로는 무뚝뚝한데 챙길 것은 다 챙김'],
-  ['오래 알고 지낸 사이인데 요즘 서로 어색해졌다.',
-   '내가 먼저 연락하지 않으면 상대도 먼저 오지 않는다.']
+  ['사이와 자리',
+   '별로 안친한 직장 동료. 2인 팀플로 상대집에 모임. 어쩌다 열린 술자리로 친해지는 중.'],
+  ['겉모습과 첫 자리',
+   '보기 드문 뛰어난 외모. 식당에서 아침식사 도중 합석. 아는 사이라는 생각에 사로잡힘.'],
+  ['숨기는 것',
+   '종종 참지 못하는 도벽을 가진 22세 대학생, 내 물건을 훔치기 위해 주의를 끌고싶어함.']
 ];
 /* 창을 띄우고, 적은 것을 돌려준다. 그만두면 null */
 function 방향묻기(제목, 이어서){
@@ -15060,8 +15185,8 @@ function 방향묻기(제목, 이어서){
         'placeholder="있다면, 한두 줄 정도 입력하십시오"></textarea>' +
       /* 예시는 둘이면 결이 전해진다. 넷을 늘어놓으면 그것대로 골라야 할 것처럼 읽힌다 */
       /* 두 줄짜리라 한 줄에 못 눕힌다. 덩이로 나눠 보인다 */
-      '<div class="wishEx">' + 방향예시.slice(0, 2).map(x =>
-        '<div class="wishExOne">' + x.map(l => esc(l)).join('<br>') + '</div>').join('') +
+      '<div class="wishEx">' + 방향예시.map(x =>
+        '<div class="wishExOne"><i>' + esc(x[0]) + '</i>' + esc(x[1]) + '</div>').join('') +
       '</div>' +
       /* ⓘ 를 앞에 둔다 — 무슨 뜻인지 먼저 알고 켜야 한다.
          칸은 글자에 딱 붙여 좁힌다. 넓으면 빈 데를 눌러도 켜져 실수가 난다 */
@@ -19978,11 +20103,11 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b147';
-const APP_BUILT = '2026-09-01 15:36';
+const APP_BUILD = 'b149';
+const APP_BUILT = '2026-09-01 16:13';
 const APP_BAKED = true;   /* 이 파일은 구운 것입니다. 손으로 고치지 마십시오 —
                              app/index.html 을 고치고 node 검증/본편굽기.js 를 다시 돌리십시오 */
-const APP_NOTE  = '상태창이 자판에 안 밀림 · 대상/내 정보도 꾹 눌러 여러 개 · 중지도 알림에 남김 · 입력창 늘리는 자리 넓힘';
+const APP_NOTE  = '수치 이름을 글에 안 씀 · 서술을 3인칭으로 못 박음 · 체형과 매력이 살짝 붙음 · 상태창 경련 잡음 · 구글 지역 막힘 안내';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
