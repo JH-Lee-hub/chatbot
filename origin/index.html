@@ -890,13 +890,19 @@
      칸 너비를 **미리 못 박는다.** max-content 로 두면 (+3) 이 붙었다 떨어질 때마다
      이름과 수치가 좌우로 흔들려 읽기가 어렵다.
      숫자는 tabular-nums 로 자릿수를 고정한다 — 1 과 8 의 폭이 다르면 그것만으로도 떨린다 */
-  #statPop{position:absolute;z-index:5;
+  /* 260901 — absolute 였을 때는 자판이 뜨면서 통이 밀리면 판도 딸려 올라갔다.
+     fixed 는 통과 상관없이 화면에 붙는다. 자리는 판자리놓기() 가 매번 다시 잡는다 */
+  #statPop{position:fixed;z-index:5;
     background:var(--panel);border:1px solid var(--line2);border-radius:9px;
     padding:4px 6px 5px;box-shadow:0 2px 10px rgba(0,0,0,.28);
     font-size:9.5px;line-height:1.4;opacity:.94;
     font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;
     user-select:none;touch-action:none}
   /* 일시 줄이 손잡이다. 여기를 잡고 끌면 판이 따라온다 */
+  /* 260901 — 폈을 때는 창 전체가 손잡이다 */
+  #statPop{cursor:move}
+  #statPop.fold{cursor:default}
+  #statPopFold{cursor:pointer}
   #statPopTop{display:flex;align-items:center;gap:6px;cursor:move;
     color:var(--acc);font-size:9.5px;white-space:nowrap}
   #statPopWhen{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis}
@@ -3146,9 +3152,19 @@ function busy(kind, what, opt){
      따로 안 넘겼으면 여기서 기본 중지를 붙인다 — 나가는 요청을 끊는 것이다.
      그것조차 못 하는 것(기기 안에서만 도는 일)은 local 로 부르므로 가린다 */
   const 기본중지 = (BUSY_ALIAS[kind] || kind) === 'local' ? null
-    : () => { try{ S.abort?.abort(); }catch(_){} S.streaming = false; busy(null); toast('중지했습니다'); };
+    : () => {
+        try{ S.abort?.abort(); }catch(_){} S.streaming = false;
+        /* 260901 — 멈춘 것도 남긴다. busy(null) 이 S.job 을 지우므로 **먼저** 적는다 */
+        noteDone((S.job?.what || what || '작업') + ' — 중지',
+                 '중지하셨습니다', S.job?.from, false);
+        busy(null); toast('중지했습니다');
+      };
   const 멈추기 = o.stop || 기본중지;
-  if (멈추기){ stop.classList.add('on'); S.job = {stop: 멈추기, what}; wakeOn(); }
+  if (멈추기){
+    /* 도는 동안 몇 초마다 다시 불린다. 처음 걸린 때만 잡아 둔다 */
+    const 언제 = S.job?.from || now();
+    stop.classList.add('on'); S.job = {stop: 멈추기, what, from: 언제}; wakeOn();
+  }
   else { stop.classList.remove('on'); S.job = null; }
   /* 오래 도는 작업에서만 화면 켜기를 묻는다. 한 턴짜리 요청에는 필요 없다 */
   paintWake(kind === 'resume' || kind === 'steps' || !!o.stop);
@@ -3550,9 +3566,12 @@ function sheetPop(){
 /* 열린 창을 쌓아 둔다. 한 칸이 한 단계다 */
 S.shStack = [];
 /* 창을 새로 연다. 같은 창을 다시 그릴 때는 reshow 로 부른다 */
-function sheet(title, items, back, reshow, 도움){
-  if (reshow && S.shStack.length) S.shStack[S.shStack.length - 1] = {title, items, back, 도움};
-  else S.shStack.push({title, items, back, 도움});
+function sheet(title, items, back, reshow, 도움, 닫기X){
+  /* 260901 — 닫기X 를 켜면 제목 줄 오른쪽에 ✕ 가 붙는다.
+     아래에 「취소」를 두는 것보다 무엇이 닫히는지 또렷하다 */
+  const 것 = {title, items, back, 도움, 닫기X};
+  if (reshow && S.shStack.length) S.shStack[S.shStack.length - 1] = 것;
+  else S.shStack.push(것);
   paintSheet();
 }
 /* 지금 창을 그린다. 한 단계 아래가 있으면 제목 줄이 뒤로 가는 단추가 된다 */
@@ -3571,6 +3590,9 @@ function paintSheet(){
         esc(title) +
         /* 도움을 단 창만 오른쪽에 ? 가 붙는다 */
         (top.도움 ? '<button class="shHelp" id="shHelp" title="사용법">?</button>' : '') +
+        /* 260901 — 닫기를 아래 단추로 두면 진짜 할 일과 나란히 놓여 헷갈린다.
+           제목 줄 오른쪽 ✕ 가 「창을 닫는다」는 뜻이 또렷하다 */
+        (top.닫기X ? '<button class="shX" id="shX" title="닫기">✕</button>' : '') +
         '</h3>'
       : '') +
     items.map((it,i)=> it.info
@@ -3578,6 +3600,8 @@ function paintSheet(){
       : `<button class="sitem ${it.danger?'dan':''}" data-i="${i}">${it.html || esc(it.label)}</button>`).join('');
   const 물 = $('shHelp');
   if (물) 물.onclick = e => { e.stopPropagation(); const f = top.도움; closeSheet(); f(); };
+  const 엑스 = $('shX');
+  if (엑스) 엑스.onclick = e => { e.stopPropagation(); closeSheet(); };
   box.querySelectorAll('.sitem').forEach(b => b.onclick = () => {
     const it = items[+b.dataset.i];
     /* 고른 뒤에 창이 어떻게 되는가 — 항목마다 다르다.
@@ -7778,35 +7802,112 @@ function 읽는말풍선(){
    기본 자리는 **채팅 출력 범위(#msgs)의 우상단**이다.
    화면 전체를 기준으로 잡으면 상단바나 상태 줄에 걸친다 */
 const 판여백 = 8;
+/* 지금 **눈에 보이는** 화면. 자판이 올라오면 여기가 줄거나 밀린다.
+   visualViewport 를 모르는 브라우저에서는 창 크기가 곧 보이는 화면이다 */
+function 보이는화면(){
+  const v = window.visualViewport;
+  return v ? {x: v.offsetLeft, y: v.offsetTop, w: v.width, h: v.height}
+           : {x: 0, y: 0, w: innerWidth, h: innerHeight};
+}
+/* 옮겨 둔 자리를 읽는다. **글칸 왼쪽 위에서 얼마나 떨어졌는지**로 적어 둔다 —
+   화면 크기가 바뀌어도 「글칸 우상단」이라는 뜻이 그대로 남는다.
+   옛 판은 통 안의 좌표라 뜻이 달라 버린다 */
+function 판옮긴자리(){
+  try{
+    const o = JSON.parse(localStorage.getItem(LS.statAt) || 'null');
+    return (o && o.v === 2) ? o : null;
+  }catch(_){ return null; }
+}
 function 판자리놓기(){
   const 판 = $('statPop'), 글칸 = $('msgs');
   if (!판 || !글칸 || 판.style.display === 'none') return;
-  const 옮김 = (() => {
-    try{ return JSON.parse(localStorage.getItem(LS.statAt) || 'null'); }catch(_){ return null; }
-  })();
-  /* 판은 #msgs 의 형제라 자리는 그 부모를 기준으로 잰다 */
-  const 안 = 글칸.offsetParent || 판.offsetParent;
+  /* fixed 라 화면 좌표로 잰다. 글칸도 화면 좌표로 놓고 견준다 */
+  const 글 = 글칸.getBoundingClientRect();
+  if (!글.width || !글.height) return;      /* 아직 안 그려졌다 */
+  const 옮김 = 판옮긴자리();
   const 폭 = 판.offsetWidth || 150, 높 = 판.offsetHeight || 60;
-  const 오른끝 = 글칸.offsetLeft + 글칸.offsetWidth;
-  let x = 옮김 ? 옮김.x : (오른끝 - 폭 - 판여백);
-  let y = 옮김 ? 옮김.y : (글칸.offsetTop + 판여백);
-  /* 창이 좁아져도 밖으로 안 나가게 안으로 끌어당긴다 */
-  const 최대X = (안 ? 안.clientWidth : 오른끝) - 폭 - 2;
-  const 최대Y = 글칸.offsetTop + 글칸.offsetHeight - 높 - 2;
-  판.style.left = Math.max(2, Math.min(최대X, x)) + 'px';
-  판.style.top  = Math.max(2, Math.min(최대Y, y)) + 'px';
+  let x = 옮김 ? 글.left + 옮김.x : (글.right - 폭 - 판여백);
+  let y = 옮김 ? 글.top  + 옮김.y : (글.top + 판여백);
+  /* 글칸 안에 두되, **자판에 가려지는 데까지는 안 내려간다.**
+     보이는 화면과 글칸이 겹치는 만큼만이 놓을 수 있는 자리다 */
+  const 봄 = 보이는화면();
+  const 왼 = Math.max(글.left, 봄.x) + 2;
+  const 위 = Math.max(글.top,  봄.y) + 2;
+  const 오 = Math.min(글.right,  봄.x + 봄.w) - 폭 - 2;
+  const 아 = Math.min(글.bottom, 봄.y + 봄.h) - 높 - 2;
+  판.style.left = Math.round(Math.max(왼, Math.min(오, x))) + 'px';
+  판.style.top  = Math.round(Math.max(위, Math.min(아, y))) + 'px';
   판.style.right = 'auto';
 }
+/* 자판이 오르내리면 다시 잡는다.
+   안드로이드는 창이 줄고(resize), iOS 는 밀어 올린다(scroll) — 둘 다 듣는다.
+   자판이 다 올라오기 전에 재면 옛 크기가 잡혀 한 번 더 늦춰 잡는다 */
+if (window.visualViewport){
+  const 다시 = () => { 판자리놓기(); setTimeout(판자리놓기, 250); };
+  visualViewport.addEventListener('resize', 다시);
+  visualViewport.addEventListener('scroll', 다시);
+}
 /* 일시 줄을 잡고 끈다. 접기 단추 위에서 시작한 것은 끌기로 안 친다 */
+/* 입력창을 늘리는 손잡이가 너무 작다.
+   브라우저가 그리는 것이라 CSS 로 크기를 못 키운다 —
+   그래서 **눌리는 자리만 가로챈다.** 보이는 손잡이는 그대로 두고,
+   오른쪽 아래 네모 안을 누르면 우리가 높이를 바꾼다.
+   늘릴 수 있는 칸(resize 가 vertical 이나 both)에만 걸린다 */
+(function 늘리기넓히기(){
+  const 자리 = 24;                 /* ⓘ 단추만 한 크기 */
+  let 잡은것 = null, 시작Y = 0, 시작높이 = 0, 옛터치 = '';
+  const 늘릴수있나 = el => {
+    if (!el || el.tagName !== 'TEXTAREA') return false;
+    const r = getComputedStyle(el).resize;
+    return r === 'vertical' || r === 'both';
+  };
+  addEventListener('pointerdown', e => {
+    const el = e.target;
+    if (!늘릴수있나(el)) return;
+    const b = el.getBoundingClientRect();
+    if (e.clientX < b.right - 자리 || e.clientY < b.bottom - 자리) return;
+    잡은것 = el; 시작Y = e.clientY; 시작높이 = b.height;
+    /* 끄는 동안 화면이 따라 밀리면 못 늘린다 */
+    옛터치 = el.style.touchAction; el.style.touchAction = 'none';
+    try{ el.setPointerCapture(e.pointerId); }catch(_){}
+    e.preventDefault();
+  }, true);
+  addEventListener('pointermove', e => {
+    if (!잡은것) return;
+    const 최소 = 38, 최대 = Math.max(최소, innerHeight * 0.6);
+    잡은것.style.height =
+      Math.max(최소, Math.min(최대, 시작높이 + (e.clientY - 시작Y))) + 'px';
+    if (e.cancelable) e.preventDefault();
+  });
+  const 놓기 = () => {
+    if (!잡은것) return;
+    잡은것.style.touchAction = 옛터치;
+    잡은것 = null;
+  };
+  addEventListener('pointerup', 놓기);
+  addEventListener('pointercancel', 놓기);
+})();
 function 판끌기달기(){
   const 판 = $('statPop'), 손잡이 = $('statPopTop');
   if (!판 || !손잡이) return;
+  /* 260901 — 폈을 때는 창 아무 데나 잡아도 끌린다.
+     일시 줄 한 줄만 잡히던 것이 조준하기 어려웠다.
+     접었을 때는 창이 곧 그 한 줄이라 달라질 것이 없다 */
+  const 잡을수있나 = e => {
+    const t = e.target;
+    if (!t) return false;
+    if (t.id === 'statPopFold') return false;      /* 접기 단추는 제 일을 한다 */
+    if (판.classList.contains('fold')) return 손잡이.contains(t);
+    return 판.contains(t);
+  };
   let 잡음 = null;
   const 어디 = e => { const p = e.touches ? e.touches[0] : e; return {x: p.clientX, y: p.clientY}; };
   const 시작 = e => {
-    if (e.target && e.target.id === 'statPopFold') return;
+    if (!잡을수있나(e)) return;
     const p = 어디(e);
-    잡음 = {x: p.x, y: p.y, l: 판.offsetLeft, t: 판.offsetTop};
+    /* fixed 라 offsetLeft 는 화면 좌표가 아니다. 보이는 자리를 그대로 잰다 */
+    const b = 판.getBoundingClientRect();
+    잡음 = {x: p.x, y: p.y, l: b.left, t: b.top};
   };
   const 움직 = e => {
     if (!잡음) return;
@@ -7819,12 +7920,18 @@ function 판끌기달기(){
   const 놓음 = () => {
     if (!잡음) return;
     잡음 = null;
-    try{ localStorage.setItem(LS.statAt,
-      JSON.stringify({x: 판.offsetLeft, y: 판.offsetTop})); }catch(_){}
+    /* **글칸에서 얼마나 떨어졌는지**로 적는다. 화면 좌표로 적으면
+       자판이 올라온 채로 놓았을 때 그 자리가 그대로 굳는다 */
+    const 글칸 = $('msgs');
+    if (글칸){
+      const 글 = 글칸.getBoundingClientRect(), b = 판.getBoundingClientRect();
+      try{ localStorage.setItem(LS.statAt, JSON.stringify(
+        {x: Math.round(b.left - 글.left), y: Math.round(b.top - 글.top), v: 2})); }catch(_){}
+    }
     판자리놓기();   /* 밖으로 나갔으면 안으로 끌어당긴다 */
   };
-  손잡이.addEventListener('mousedown', 시작);
-  손잡이.addEventListener('touchstart', 시작, {passive: true});
+  판.addEventListener('mousedown', 시작);
+  판.addEventListener('touchstart', 시작, {passive: true});
   document.addEventListener('mousemove', 움직);
   document.addEventListener('touchmove', 움직, {passive: false});
   document.addEventListener('mouseup', 놓음);
@@ -14604,6 +14711,13 @@ async function 카드한장(mode, gender, seed, 바람){
    다만 무료 모델은 분당 횟수가 있어 넷 이상은 429 를 부른다 —
    자동 폴백이 받아 주긴 해도 느려지므로 한 번에 넷까지만 연다. */
 const 한번에최대 = 4;
+/* 끊은 것인가 자빠진 것인가. fetch 를 끊으면 AbortError 가 오고,
+   중계를 거치면 글로만 올 때가 있어 둘 다 본다 */
+const 끊긴것 = e => {
+  if (!e) return false;
+  if (e.name === 'AbortError') return true;
+  return /abort|중지|취소/i.test(String(e.message || e));
+};
 async function generateCharacter(mode, gender, seed, 몇장, 바람){
   if (!글쓸수있나()){ show('vSettings'); return toast('API 키를 먼저 입력하십시오'); }
   if (!modelChain().length){ show('vSettings'); return toast('모델을 먼저 선택하십시오'); }
@@ -14669,6 +14783,10 @@ async function generateCharacter(mode, gender, seed, 몇장, 바람){
       noteDone('인물 생성 — ' + 된것.length + '/' + 셈 + '명',
                이름들 + ' · 못 만든 ' + 자빠진것.length + '명: ' + 자빠진것[0], genFrom, false);
       toast(셈 + '명 중 ' + 된것.length + '명 완료 — ' + 이름들, 4500);
+    } else if (자빠진것.some(끊긴것)){
+      /* 260901 — 끊은 것을 「실패」로 적으면 앱이 잘못한 것처럼 읽힌다 */
+      noteDone('인물 생성 취소', 셈 + '명을 만들다 중지하셨습니다', genFrom, false);
+      toast('생성을 취소했습니다');
     } else {
       noteDone('인물 생성 실패', 자빠진것[0] || '', genFrom, false);
       toast('생성 실패: ' + (자빠진것[0] || ''));
@@ -14679,8 +14797,13 @@ async function generateCharacter(mode, gender, seed, 몇장, 바람){
       noteDone('일부 칸이 비었습니다', 빈칸알림.join('\n') +
                '\n편집 화면에서 채우거나 그 칸만 다시 뽑으십시오', genFrom, false);
   }catch(e){
-    noteDone('인물 생성 실패', e.message, genFrom, false);
-    toast('생성 실패: ' + e.message);
+    if (끊긴것(e)){
+      noteDone('인물 생성 취소', '만들다 중지하셨습니다', genFrom, false);
+      toast('생성을 취소했습니다');
+    } else {
+      noteDone('인물 생성 실패', e.message, genFrom, false);
+      toast('생성 실패: ' + e.message);
+    }
   }finally{
     짓는중이름.clear();
     S.generating = false; busy(null);
@@ -14932,7 +15055,7 @@ function 방향묻기(제목, 이어서){
   sheet(제목, [
     {info: true, html:
       '<div class="wishHead"><b>별도 요청사항이 있습니까?</b>' +
-      '<span class="wishSub">없으면 비운 채 넘기시면 됩니다</span></div>' +
+      '<span class="wishSub">작성 시 소요시간이 2배로 늘어납니다</span></div>' +
       '<textarea id="genWish" rows="2" class="wishBox" ' +
         'placeholder="있다면, 한두 줄 정도 입력하십시오"></textarea>' +
       /* 예시는 둘이면 결이 전해진다. 넷을 늘어놓으면 그것대로 골라야 할 것처럼 읽힌다 */
@@ -14964,14 +15087,12 @@ function 방향묻기(제목, 이어서){
          if (h) h.style.display = h.style.display === 'none' ? '' : 'none';
        };
      }},
-    /* 취소가 왼쪽, 다음이 오른쪽 — 손이 가는 쪽이 오른쪽이다.
-       sheet 는 twoRow 로 두 칸을 나란히 눕힌다 (다시볼까 창이 쓰던 것) */
-    {label: '취소', leave: true, run: () => {}},
+    /* 260901 — 「취소」를 아래에서 뺐다. 제목 줄 ✕ 로 닫는다.
+       적는 칸 바로 밑에 취소가 붙어 있어 누르는 자리가 헷갈렸다.
+       단추가 하나뿐이니 두 칸으로 눕히던 것도 뗀다 */
     {label: '다음', leave: true,
      run: () => 이어서((S.genWish || {글: '', 셈: false}))}
-  ]);
-  /* paintSheet 가 그리면서 twoRow 를 지운다. 다 그린 뒤에 붙인다 */
-  setTimeout(() => { const sh = $('sheetIn'); if (sh) sh.classList.add('twoRow'); }, 0);
+  ], null, false, null, true);
 }
 
 /* 적은 것을 프롬프트에 얹을 글로 바꾼다. 안 적었으면 빈 글이다 */
@@ -15612,6 +15733,9 @@ function renderChars(){
       if (!고르는중('chars')) 고르기켜기('chars', el.dataset.id);
     });
   });
+  /* 260901 — 이것을 안 불러서 꾹 눌러도 상단 메뉴가 안 떴다.
+     대화 목록만 부르고 있었다 */
+  고르기그리기();
 }
 
 /* 길게 누르기 공통 처리.
@@ -16293,6 +16417,7 @@ function renderPersonas(){
       if (!고르는중('personas')) 고르기켜기('personas', el.dataset.id);
     });
   });
+  고르기그리기();
 }
 $('bNewPersona').onclick = () => editPersona(null);
 
@@ -19853,11 +19978,11 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b146';
-const APP_BUILT = '2026-09-01 14:42';
+const APP_BUILD = 'b147';
+const APP_BUILT = '2026-09-01 15:36';
 const APP_BAKED = true;   /* 이 파일은 구운 것입니다. 손으로 고치지 마십시오 —
                              app/index.html 을 고치고 node 검증/본편굽기.js 를 다시 돌리십시오 */
-const APP_NOTE  = '요청을 두 번에 나눠 읽고 짓기 (해석 → 사람 → 장면) · 안 적은 것은 안 채움 · 카드 여백과 시간 표기 · 내 정보 구분';
+const APP_NOTE  = '상태창이 자판에 안 밀림 · 대상/내 정보도 꾹 눌러 여러 개 · 중지도 알림에 남김 · 입력창 늘리는 자리 넓힘';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
