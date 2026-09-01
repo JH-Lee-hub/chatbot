@@ -821,14 +821,19 @@
   /* 상단바를 덮는다. 자리를 새로 차지하지 않아 목록이 안 밀린다 */
   #vChats{position:relative}
   .pickBar{position:absolute;left:0;right:0;top:0;z-index:6;background:var(--panel);
-    border-bottom:1px solid var(--acc)}
+    border-bottom:1px solid var(--acc);padding-left:8px;padding-right:8px;gap:4px}
   .pickBar h2{color:var(--acc);flex:0 0 auto;font-size:13px}
   /* 할 수 있는 일이 다섯까지 온다. 좁은 화면에서는 옆으로 굴린다 —
      줄을 바꾸면 그만큼 목록이 가려진다 */
-  #pickActs{flex:1 1 auto;display:flex;gap:5px;overflow-x:auto;justify-content:flex-end;
-    scrollbar-width:none}
+  /* 260901 — justify-content:flex-end 로 두었더니 넘칠 때 **앞쪽이 잘린 채
+     굴려도 안 나왔다.** 굴림칸이 아는 오래된 흠이다.
+     앞에서부터 놓고 첫 단추만 오른쪽으로 밀어 붙인다 —
+     안 넘칠 때 보이는 것은 똑같고, 넘칠 때만 앞쪽이 살아난다 */
+  #pickActs{flex:1 1 auto;display:flex;gap:4px;overflow-x:auto;
+    justify-content:flex-start;scrollbar-width:none}
+  #pickActs button:first-child{margin-left:auto}
   #pickActs::-webkit-scrollbar{display:none}
-  #pickActs button{flex:0 0 auto;padding:5px 9px;border-radius:7px;font-size:11.5px;
+  #pickActs button{flex:0 0 auto;padding:5px 7px;border-radius:7px;font-size:11px;
     background:var(--panel2);border:1px solid var(--line2);color:var(--tx2);white-space:nowrap}
   #pickActs button.dan{color:var(--err);border-color:rgba(255,107,107,.4)}
   /* 고르는 동안에는 어느 것이 골라졌는지가 한눈에 보여야 한다 */
@@ -4009,6 +4014,21 @@ addEventListener('popstate', e => {
   if (navLock) return;
   if (접는중) return;   /* 우리가 겹을 접으려고 돌린 것이다 */
 
+  /* 260901 — 고르는 중이면 **고르기부터 푼다.** 꾹 누르기 직전으로 돌아간다.
+     대상 · 대화 · 내 정보 셋 다 같다.
+     덮개보다 먼저 본다 — 고르는 중에 창을 띄우는 길은 없다 */
+  /* 고름 은 이 아래에서 선언된다. 아직 안 만들어졌을 때 손대면
+     ReferenceError 가 나면서 **뒤로가기가 통째로 죽는다.** 감싸 둔다 */
+  let 고르던중 = false;
+  try{ 고르던중 = !!(고름.어디 && 고르는중(고름.어디)); }catch(_){}
+  if (고르던중){
+    고르기끄기();
+    /* 뒤로가기가 칸을 하나 먹었다. 다시 쌓아 두지 않으면
+       다음 뒤로가기에 앱이 그대로 나간다 */
+    try{ history.pushState({v: S.view}, ''); }catch(_){}
+    return;
+  }
+
   /* 덮개가 열려 있으면 한 겹만 벗긴다. 칸은 이미 하나 줄었으므로 다시 안 쌓는다 */
   if (겹수() > 0){
     접는중 = true;
@@ -6204,7 +6224,7 @@ function 고르기켜기(어디, id){
 function 할수있는일(어디, 것들){
   const 하나 = 것들.length === 1 ? 것들[0] : null;
   const 여럿 = [
-    {t: '내보내기', run: 것 => 골라내보내기(어디, 것)},
+    {t: '저장', run: 것 => 골라내보내기(어디, 것)},
     {t: '삭제', dan: true, run: 것 => 골라지우기(어디, 것)}
   ];
   if (!하나) return 여럿;
@@ -6222,10 +6242,10 @@ function 할수있는일(어디, 것들){
   const p = S.personas.find(x => x.id === 하나) || {};
   const 대화수 = S.chats.filter(x => x.personaId === 하나).length;
   return [
-    ...(p.isDefault ? [] : [{t: '기본으로 설정', run: () => 기본주인공(하나)}]),
+    ...(p.isDefault ? [] : [{t: '기본 설정', run: () => 기본주인공(하나)}]),
     {t: '편집', run: () => { 고르기끄기(); editPersona(하나); }},
     ...여럿.slice(0, 1),
-    ...(대화수 ? [{t: '대화 모두보기',
+    ...(대화수 ? [{t: '대화보기',
                   run: () => { 고르기끄기(); filterChatsByPersona(하나); }}] : []),
     여럿[1]
   ];
@@ -20103,11 +20123,11 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b149';
-const APP_BUILT = '2026-09-01 16:13';
+const APP_BUILD = 'b150';
+const APP_BUILT = '2026-09-01 16:33';
 const APP_BAKED = true;   /* 이 파일은 구운 것입니다. 손으로 고치지 마십시오 —
                              app/index.html 을 고치고 node 검증/본편굽기.js 를 다시 돌리십시오 */
-const APP_NOTE  = '수치 이름을 글에 안 씀 · 서술을 3인칭으로 못 박음 · 체형과 매력이 살짝 붙음 · 상태창 경련 잡음 · 구글 지역 막힘 안내';
+const APP_NOTE  = '고르기 메뉴 안 잘림 · 이름 줄임(저장 · 대화보기 · 기본 설정) · 뒤로가기로 고르기 풀기';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
