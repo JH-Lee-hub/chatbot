@@ -462,6 +462,10 @@
   #sheetIn h3.canback:active{background:#2b3140}
   /* 260901 — 글자와 글자 사이가 26px 이었다(안 여백 13px 씩). 절반으로 줄인다.
      항목이 두세 줄이라 높이는 남으므로 누르기에는 지장이 없다 */
+  /* 지문 속 조연 이름. 눈에 거슬리지 않게 옅은 밑줄만 */
+  u.castn{text-decoration:underline;text-decoration-color:var(--line2);
+    text-underline-offset:3px;cursor:pointer}
+  u.castn:active{color:var(--acc)}
   .sitem{display:block;width:100%;text-align:left;padding:6px 12px;border-radius:10px;
          font-size:14.5px;white-space:pre-line;line-height:1.5}
   .sitem::first-line{font-weight:600}
@@ -792,7 +796,10 @@
     backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
     border:1px solid var(--line2);
     border-radius:9px;padding:5px 11px;font-size:12px;color:var(--tx2);
-    display:none;gap:4px;align-items:center;max-width:80vw;
+    display:none;gap:4px;align-items:center;
+    /* 260903 — 왼쪽으로 밀면 민 만큼 좁아진다. 오른쪽에서 저절로 되던 것과 같은 꼴.
+       80vw 를 뒤에 또 적으면 이 줄이 덮인다 — 한 자리에서 정한다 */
+    max-width:var(--busy-w, 80vw);
     box-shadow:0 2px 10px rgba(0,0,0,.45);
     touch-action:none;cursor:grab}
   #busy.dragging{cursor:grabbing;opacity:.9;transition:none}
@@ -2353,6 +2360,27 @@ function 막힘살피기(res, who){
   }
   return res;
 }
+/* 260903 — 구글 직통은 흘려받으면 글이 토막 난다. `stop` 으로 끝났다고 하면서
+   200자만 주고 끝낸다. 그러면 앱이 실패로 보고 두 번 더 부른다 —
+   회원님이 겪으신 「첫 31 총 105초」가 이것이다.
+   그래서 **구글에는 한 번에 받고, 받은 뒤 흘려받은 것처럼 꾸며 준다.**
+   부르는 자리를 하나도 안 고치고, 화면에서 글자가 흐르는 것도 그대로다 */
+function 흘림흉내(res){
+  return res.json().then(j => {
+    const 글 = j.choices?.[0]?.message?.content || '';
+    const 까닭 = j.choices?.[0]?.finish_reason || 'stop';
+    const 조각 = [];
+    /* 한 번에 다 뿌리면 화면이 툭 튄다. 사람이 읽는 속도쯤으로 잘라 넣는다 */
+    for (let i = 0; i < 글.length; i += 24) 조각.push(글.slice(i, i + 24));
+    const 줄 = x => 'data: ' + JSON.stringify(x) + '\n\n';
+    let 몸 = 조각.map(t => 줄({choices: [{index: 0, delta: {content: t}}]})).join('');
+    몸 += 줄({choices: [{index: 0, delta: {}, finish_reason: 까닭}],
+             ...(j.usage ? {usage: j.usage} : {}), model: j.model});
+    몸 += 'data: [DONE]\n\n';
+    return new Response(몸, {status: 200,
+      headers: {'Content-Type': 'text/event-stream'}});
+  }).catch(() => res);
+}
 function apiFetch(who, 길, opt){
   /* 부르는 자리가 열넷이라 여기 한 곳에서 막는다 */
   /* 검증 도구가 「어디로 나가는가」만 볼 때는 이 문을 잠시 연다.
@@ -2363,7 +2391,16 @@ function apiFetch(who, 길, opt){
   const 구글 = 구글로돌리기(who, 길, o);
   if (구글){
     구글.headers = apiHead('gg', 구글.headers);
-    return fetch(apiAt('gg', 길), 구글).then(r => 막힘살피기(r, 'gg'));
+    /* 흘려받기를 끄고 부른다. 부른 쪽이 흘려받기를 기다리고 있으면 꾸며서 돌려준다 */
+    let 흘리려했나 = false;
+    try{
+      const b = JSON.parse(구글.body);
+      if (b.stream){ 흘리려했나 = true; delete b.stream; delete b.stream_options;
+                     구글.body = JSON.stringify(b); }
+    }catch(_){}
+    return fetch(apiAt('gg', 길), 구글)
+      .then(r => 막힘살피기(r, 'gg'))
+      .then(r => (흘리려했나 && r.ok) ? 흘림흉내(r) : r);
   }
   o.headers = apiHead(who, o.headers);
   return fetch(apiAt(who, 길), o).then(r => 막힘살피기(r, who));
@@ -3162,6 +3199,15 @@ function etaText(sec){
 }
 /* 진행 중인 작업 하나를 기억해 둔다. 게이지 · 남은 시간 · 중지가 여기에 붙는다. */
 S.job = null;
+/* 260903 — 작업창에서 중지하면 채팅창 단추가 빨간 채로 남았다.
+   send() 의 finally 가 되돌리기는 하는데, 작업창 중지는 그 밖(인물 생성 · 장면 짜기)에서도
+   눌린다. 그때는 되돌릴 자리가 없다. 중지하는 자리에서 직접 되돌린다 */
+function 보내기단추되돌리기(){
+  const b = document.getElementById('cSend');
+  if (!b) return;
+  b.textContent = '전송';
+  b.classList.remove('stop'); b.classList.add('pri');
+}
 function busy(kind, what, opt){
   const el = $('busy'), bar = $('busyBar'), stop = $('busyStop');
   if (!kind){
@@ -3203,6 +3249,7 @@ function busy(kind, what, opt){
   const 기본중지 = (BUSY_ALIAS[kind] || kind) === 'local' ? null
     : () => {
         try{ S.abort?.abort(); }catch(_){} S.streaming = false;
+        보내기단추되돌리기();
         /* 260901 — 멈춘 것도 남긴다. busy(null) 이 S.job 을 지우므로 **먼저** 적는다 */
         noteDone((S.job?.what || what || '작업') + ' — 중지',
                  '중지하셨습니다', S.job?.from, false);
@@ -3227,30 +3274,40 @@ function busy(kind, what, opt){
   /* 지난번 자리를 되살린다. 화면 밖으로 나갔으면 버린다 */
   try{
     const p = JSON.parse(localStorage.getItem(저장키) || 'null');
-    if (p && p.x > 0 && p.x < innerWidth - 40 && p.y > 0 && p.y < innerHeight - 30) 놓기(p.x, p.y);
+    if (p && p.x > 0 && p.x < innerWidth - 40 && p.y > 0 && p.y < innerHeight - 30)
+      놓기(p.x, p.y, p.폭 || 0);
   }catch(_){}
 
-  function 놓기(x, y){
+  function 놓기(x, y, 폭){
     const R = document.documentElement.style;
     R.setProperty('--busy-x', x + 'px');
     R.setProperty('--busy-y', y + 'px');
     R.setProperty('--busy-tx', '0px');   /* 가운데 맞춤을 끈다 */
+    /* 왼쪽으로 밀어 좁힌 폭. 0 이면 제 폭대로 둔다 */
+    if (폭) R.setProperty('--busy-w', 폭 + 'px');
+    else    R.removeProperty('--busy-w');
   }
 
   let 잡음 = null;
   const 시작 = (cx, cy) => {
     /* 중지 단추를 누르는 것과 끄는 것을 가른다 */
     const r = el.getBoundingClientRect();
-    잡음 = {dx: cx - r.left, dy: cy - r.top, 움직임: 0};
+    /* 260903 — 왼쪽으로 더 밀면 민 만큼 좁아지게 하려고 지금 폭을 재 둔다 */
+    잡음 = {dx: cx - r.left, dy: cy - r.top, 움직임: 0, 폭: r.width};
     el.classList.add('dragging');
   };
   const 옮김 = (cx, cy) => {
     if (!잡음) return;
     잡음.움직임++;
-    const x = Math.max(4, Math.min(innerWidth - 40, cx - 잡음.dx));
+    const 날것 = cx - 잡음.dx;
+    const x = Math.max(4, Math.min(innerWidth - 40, 날것));
     const y = Math.max(4, Math.min(innerHeight - 30, cy - 잡음.dy));
-    놓기(x, y);
-    잡음.끝 = {x, y};
+    /* 260903 — 오른쪽에서는 남은 자리가 줄어 저절로 좁아진다.
+       왼쪽은 오른쪽에 자리가 남아 안 좁아진다 — **민 만큼 폭을 줄여** 같은 꼴로 만든다 */
+    const 좁힘 = 날것 < 4 ? Math.round(4 - 날것) : 0;
+    const 폭 = 좁힘 ? Math.max(40, Math.round(잡음.폭 - 좁힘)) : 0;
+    놓기(x, y, 폭);
+    잡음.끝 = {x, y, 폭};
   };
   const 놓음 = () => {
     if (!잡음) return;
@@ -3272,7 +3329,8 @@ function busy(kind, what, opt){
   el.addEventListener('dblclick', e => {
     if (e.target.id === 'busyStop') return;
     const R = document.documentElement.style;
-    R.removeProperty('--busy-x'); R.removeProperty('--busy-y'); R.removeProperty('--busy-tx');
+    R.removeProperty('--busy-x'); R.removeProperty('--busy-y');
+    R.removeProperty('--busy-tx'); R.removeProperty('--busy-w');
     try{ localStorage.removeItem(저장키); }catch(_){}
     toast('배너를 제자리로 돌렸습니다');
   });
@@ -4739,7 +4797,7 @@ const STATUS_ORDER = ['장소','일시','외관','내면',
 /* 대화를 여는 첫 출력에는 이 차례로 열한 수치를 전부 보여준다 */
 const FIRST_ORDER = ['체력','이성','매력','욕심','대담','욕구','호감','반감','경계','긴장','취기'];
 /* 「사유」는 맨 끝이다. 수치가 왜 움직였는지를 적는 칸이라 수치보다 뒤에 와야 읽힌다 */
-const STATUS_TAIL  = ['소지품','동석','미해결','미해결+','미해결-','씬','막','사유'];
+const STATUS_TAIL  = ['소지품','동석','미해결','미해결+','미해결-','씬','막','사유','호칭'];
 /* 앱이 계산에만 쓰는 칸. 상태 줄에도 프롬프트에도 안 실린다. */
 const HIDDEN_KEYS = ['취기대기','대담배짱','컨디션','결'];
 /* 모델이 빠뜨려도 직전 값을 그대로 이어 쓰는 항목.
@@ -4754,6 +4812,48 @@ const CARRY_STATS  = ['장소','외관','일시'];
    STATUS_TAIL 에 넣지 않으므로 rebuildStatus 가 화면 줄에 다시 쓰지 않고,
    HIDDEN_KEYS 에 있으므로 프롬프트에도 안 실린다. 보여준 것을 유저가 읽으면 몰입이 깨진다. */
 const KNOWN_KEYS = STATUS_ORDER.concat(STATUS_TAIL, ['거리', '결']);
+
+/* 260903 — 통성명을 앱이 안다.
+   전에는 프롬프트로 「통성명 전에는 이름을 부르지 마라」고만 했는데,
+   모델이 인물 카드에서 이름을 이미 보므로 잘 안 지켜졌다.
+   실제로 2턴에 「이준 : "고은영 씨 …"」 가 나왔다.
+
+   {{user}}가 **제 이름을 댄 자리**를 찾는다. 이름이 그냥 나오는 것으로는 안 바꾼다 —
+   남 이야기일 수 있다. 「나는 ~다」 「~라고 해요」 꼴이라야 한다.
+   댄 이름을 그대로 받는다. 설정한 이름과 달라도 상관없다 —
+   호칭은 「불리는 말」이지 「누구인지」가 아니다. 약칭도 별명도 거짓 이름도 그대로 쓴다 */
+/* 잡는 꼴. **끝에 붙는 조사·서술어를 따로 떼어 낸다** —
+   「준이라고」의 「이」는 조사이지 이름의 일부가 아니고,
+   「서다인입니다」의 「입니다」도 마찬가지다. 한 덩이로 잡으면 그것까지 딸려 온다 */
+/* **조사를 꼴 안에 넣는다.** 이름만 따로 잡고 나중에 떼려 하면
+   「준이라고」에서 「준이」가 되고, 한 자 이름(준)은 아예 못 잡는다.
+   그래서 「이~」로 시작하는 조사는 한 자부터, 그렇지 않은 것은 두 자부터 받는다 —
+   받침이 있는 이름 뒤에만 「이」가 붙기 때문이다 */
+const 이름댄꼴 = [
+  /(?:저는|나는|난|전)\s*([가-힣]{1,8}?)(?:이라고|이야|이에요|입니다)/,
+  /(?:저는|나는|난|전)\s*([가-힣]{2,8}?)(?:라고|야|예요)/,
+  /([가-힣]{1,8}?)이라고\s*(?:불러|해요|합니다|해|불러요|부르세요|부르시면|소개)/,
+  /([가-힣]{2,8}?)라고\s*(?:불러|해요|합니다|해|불러요|부르세요|부르시면|소개)/,
+  /자신을\s*([가-힣]{1,8}?)이라고\s*소개/,
+  /자신을\s*([가-힣]{2,8}?)라고\s*소개/,
+  /(?:이름은|제 이름은|내 이름은)\s*([가-힣]{1,8}?)(?:입니다|이에요|이야|이라고)/,
+  /(?:이름은|제 이름은|내 이름은)\s*([가-힣]{2,8}?)(?:예요|야|라고|입니다|$|[\s.,!?"'」])/
+];
+function 댄이름(글){
+  const t = String(글 || '');
+  for (const 꼴 of 이름댄꼴){
+    const m = t.match(꼴);
+    const n = m && m[1] ? m[1].trim() : '';
+    if (n) return n;
+  }
+  return '';
+}
+/* 인물 카드가 정해 둔 부르는 말. 없으면 무난한 것으로 */
+function 첫호칭(c){
+  const 글 = [c?.description, c?.personality, c?.scenario].join('\n');
+  const m = 글.match(/\{\{user\}\}\s*(?:를|을)\s*[「'"]([^」'"\n]{1,8})[」'"]\s*(?:라고|로)?\s*부/);
+  return (m && m[1]) ? m[1].trim() : '그쪽';
+}
 function fixKey(k){
   if (KNOWN_KEYS.includes(k)) return k;
   const near = KNOWN_KEYS.filter(x => {
@@ -5174,27 +5274,71 @@ const MARK_TXT = {'밖': '이야기 밖', '채움': '앱이 채움'};
 
 /* 「여기가 이상하다」를 그 자리에서 찍어 둔다. 갈래를 함께 남기면 나중에 훨씬 빨리 찾는다 */
 const FLAG_KIND = ['형식이 깨짐', '앞뒤가 안 맞음', '문체가 튐', '너무 짧음', '설정과 다름', '그냥 이상함'];
+/* 260903 — 신고에 **판과 때**를 함께 남긴다.
+   전에는 무엇이 이상했나만 남아서, 나중에 그 신고가
+   고치기 전 판의 것인지 고친 뒤에도 난 것인지 갈라볼 수가 없었다.
+   flag 는 글 그대로 둔다 — 지금 있는 도구들이 그것을 글로 읽는다. 곁에 붙인다 */
+function 신고적기(m, 글){
+  m.flag = 글;
+  m.flagAt = now();
+  m.flagBuild = APP_BUILD;
+  /* 그 말을 낸 모델. 말에 안 적혀 있으면 그때 고른 것으로 둔다 */
+  m.flagModel = m.model || (typeof chatModel === 'function' ? chatModel() : '');
+  /* 중계였나 직통이었나 · 배포판이었나. 같은 판이라도 도는 길이 다르면 결과가 다르다 */
+  m.flagWhere = (DIST ? '배포판' : '본편') + '·' + (onRelay() ? '중계' : '직통');
+  /* 260903 — **어느 판(variant)을 신고했는지.** 다시 뽑으면 content 가 바뀌어
+     나중에 무엇을 신고했는지 못 찾는다. 실제로 END 를 뱉은 판이 variants 에 남아 있는데
+     어느 것인지 알 길이 없었다 */
+  if (m.variants?.length){
+    m.flagVariant = m.activeVariant || 0;
+    m.flagText = String(m.content || '').slice(0, 400);
+  }
+  return m;
+}
 function flagSheet(id){
   const m = S.messages.find(x => x.id === id);
   if (!m) return;
-  if (m.flag) return sheet('표시를 지울까요', [
-    {info: true, html: '<span class="pguide">지금 <b>' + esc(m.flag) + '</b> 로 표시되어 있습니다.</span>'},
-    {label: '표시를 지운다', run: async () => {
-      delete m.flag; await dbPut('messages', m);
+  /* 260903 — 전에는 「지울까요」만 떴다. 고칠 길이 없어 지우고 다시 달아야 했다.
+     그리고 고르고 나서 창이 안 닫혔다 — 고른 것으로 할 일이 끝나는 자리다 */
+  if (m.flag) return sheet('이 표시를 어떻게 할까요', [
+    {info: true, html: '<span class="pguide">지금 <b>' + esc(m.flag) + '</b> 로 표시되어 있습니다.' +
+      (m.flagBuild ? '<span class="dim">' + esc(m.flagBuild) +
+        (m.flagAt ? ' · ' + stampSmart(m.flagAt) : '') + '</span>' : '') + '</span>'},
+    {label: '고쳐 적는다', 닫기: true, run: async () => {
+      const v = prompt('무엇이 이상했습니까', m.flag || '');
+      if (v === null) return;
+      const t = String(v).trim().slice(0, 300);
+      if (!t) return;
+      신고적기(m, t); await dbPut('messages', m);
+      msgNodeCache.delete(m.id); renderMsgs(false);
+      toast('「' + t + '」 으로 고쳤습니다');
+    }},
+    {label: '갈래를 다시 고른다', 닫기: true, run: () => 신고갈래고르기(m)},
+    {label: '표시를 지운다', danger: true, 닫기: true, run: async () => {
+      /* 곁에 붙인 것도 함께 지운다. 안 지우면 표는 없는데 기록만 남는다 */
+      delete m.flag; delete m.flagAt; delete m.flagBuild;
+      delete m.flagModel; delete m.flagWhere;
+      delete m.flagVariant; delete m.flagText;
+      await dbPut('messages', m);
       msgNodeCache.delete(m.id); renderMsgs(false); toast('지웠습니다');
     }}
   ]);
+  신고갈래고르기(m);
+}
+/* 갈래를 고르는 자리. 처음 달 때와 고쳐 달 때가 같이 쓴다 —
+   두 벌로 두면 한쪽만 고쳤을 때 조용히 갈라진다 */
+function 신고갈래고르기(m){
   sheet('무엇이 이상한가요', [
     {info: true, html: '<span class="pguide">이 응답에 표를 붙여 둡니다. ' +
       '내보내기 파일에 함께 나오므로 나중에 그 자리를 곧장 찾을 수 있습니다.' +
       '<span class="dim">대화에는 아무 영향이 없습니다 — 프롬프트에도 안 실립니다.</span></span>'},
-    ...FLAG_KIND.map(k => ({label: k, run: async () => {
-      m.flag = k; await dbPut('messages', m);
+    ...FLAG_KIND.map(k => ({label: k, 닫기: true, run: async () => {
+      신고적기(m, k); await dbPut('messages', m);
       msgNodeCache.delete(m.id); renderMsgs(false);
       toast('「' + k + '」 으로 표시했습니다');
     }})),
     /* 여섯 갈래에 안 맞는 것이 늘 있다. 그때 그냥 지나치면 기록이 안 남는다 */
-    {label: '직접 적기', run: async () => {
+    {label: '직접 적기', 닫기: true, run: async () => {
       const v = prompt('무엇이 이상했습니까', m.flag || '');
       if (v === null) return;
       /* 40자에서 자르고 있었다. 「직전에 씬을 취소했어도 씬 표기가 이어지며, 구글키 3.5플래시라이트 응」
@@ -5202,7 +5346,7 @@ function flagSheet(id){
          잘리면 그 자리를 나중에 못 알아본다. 화면에서 길면 줄여 보이면 될 일이다 */
       const t = String(v).trim().slice(0, 300);
       if (!t) return;
-      m.flag = t; await dbPut('messages', m);
+      신고적기(m, t); await dbPut('messages', m);
       msgNodeCache.delete(m.id); renderMsgs(false);
       toast('「' + t + '」 으로 표시했습니다');
     }}
@@ -5944,6 +6088,20 @@ async function syncStatus(text){
   await noteCast(text);
   const moved = await applyCastChanges(text);
   if (moved.length) toast('조연이 바뀌었습니다 — ' + moved.join(' / '), 3500);
+  /* 260903 — 호칭. {{char}} 가 {{user}} 를 뭐라 부르는가.
+     처음에는 인물 카드가 정해 둔 말(「저기요」 같은 것), 없으면 「그쪽」.
+     {{user}} 가 제 이름을 대면 그것으로 바꾼다 — **댄 이름 그대로**.
+     설정한 이름과 달라도 상관없다. 호칭은 「불리는 말」이지 「누구인지」가 아니다 */
+  if (!nextCard[호칭]) nextCard[호칭] = 첫호칭(S.character);
+  {
+    /* 이름을 댄 자리는 {{user}} 쪽 말에 있다. 지문으로 소개한 경우도 있어 턴 전체를 본다 */
+    const 내말 = [...(S.messages || [])].reverse().find(x => x.role === 'user');
+    const 댄것 = 댄이름(내말?.content);
+    if (댄것 && nextCard['호칭'] !== 댄것){
+      nextCard['호칭'] = 댄것;
+      toast('이제 「' + 댄것 + '」 이라고 부릅니다', 3000);
+    }
+  }
   mem.stateCard = nextCard;
   mem.updatedAt = now();
   await dbPut('memory', mem);
@@ -6942,7 +7100,7 @@ const SCENE_KINDS = {
     ask: '이 장면에서 {{user}}는 혼자다. {{char}}는 이 자리에 없다. ' +
          '{{user}}가 무엇을 하면 이 장면이 끝나는지를 하나 정해서 완수 칸에 적는다. ' +
          '거창한 것이 아니라 지금 자리에서 할 수 있는 일이어야 한다.',
-    need: ['완수']
+    need: ['완수', '방식']
   },
   meet: {
     name: '다시 마주한다',
@@ -6950,7 +7108,7 @@ const SCENE_KINDS = {
     ask: '시간이 흐른 뒤 {{user}}와 {{char}}가 다시 마주치는 자리다. ' +
          '그 사이에 무엇이 있었는지가 첫 턴 서술에 한 줄 흘러야 한다. ' +
          '어디에서 언제 만나는지는 두 사람의 사정에 맞게 정한다.',
-    need: []
+    need: ['방식']
   },
   /* 260901 — 새로 더한 것. 내가 없는 자리인데 조연 이야기가 아니라
      **{{char}} 자신의 자리**다. 나 없을 때 무엇을 하는지가 관계를 가장 크게 흔든다 */
@@ -6964,7 +7122,7 @@ const SCENE_KINDS = {
          '이 장면이 끝났을 때 {{char}} 안에서 무엇이 조금 달라져 있어야 한다 — ' +
          '그 달라진 것을 완수 칸에 적는다. 다음에 만날 때 그것이 태도로 드러난다.',
     /* 읽는 사람은 {{user}} 다. 여기서 고를 것이 없으므로 갈래를 안 받는다 */
-    need: ['완수']
+    need: ['완수', '방식']
   },
   /* 260901 — 고르는 것만으로는 하고 싶은 장면이 안 나올 때가 있다.
      적어 넣으면 그것으로 짠다. ask 는 designScene 이 적으신 글로 채운다 */
@@ -6972,7 +7130,7 @@ const SCENE_KINDS = {
     name: '직접 상황 설정',
     hint: '어떤 장면을 열지 직접 적습니다. 적은 것으로 장면을 짭니다.',
     ask: '',
-    need: []
+    need: ['방식']
   },
   third: {
     name: '다른 사람 상황',
@@ -6980,7 +7138,7 @@ const SCENE_KINDS = {
     ask: '{{char}}를 둘러싼 다른 사람이나 바깥 사정 쪽에서 일이 벌어진다. ' +
          '{{user}}가 무엇을 고르느냐에 따라 끝이 갈리도록, **끝을 두셋 미리 잡아** 갈래 칸에 적는다. ' +
          '갈래는 서로 확실히 달라야 하고, 어느 쪽으로 끝나든 그것이 {{user}}와 {{char}} 사이에 무언가를 남겨야 한다.',
-    need: ['갈래']
+    need: ['갈래', '방식']
   },
   tell: {
     name: '시간을 흘린다',
@@ -7006,14 +7164,20 @@ const SCENE_KINDS = {
 };
 
 /* 갈래 수를 매번 같게 두면 두 번째부터 읽힌다. 장면마다 흔든다 */
-const sceneLen = () => 3 + Math.floor(Math.random() * 3);      /* 3~5턴 */
+/* 260903 — 칸 수를 아무렇게나 뽑았더니 **한 칸에 끝날 목표에 다섯 칸**이 붙었다.
+   실제로 「향수를 안 챙기고 나선다」로 다섯 칸을 채우며 같은 생각만 되풀이했다.
+   **{{user}}가 안 나오는 장면은 짧게 둔다** — 칠 말이 없어 매크로만 누르게 된다 */
+const 나없는장면 = ['charAlone'];
+const sceneLen = kind => 나없는장면.includes(kind)
+  ? 2 + Math.floor(Math.random() * 2)          /* 2~3턴 — 내가 못 끼어드는 자리다 */
+  : 3 + Math.floor(Math.random() * 3);         /* 3~5턴 */
 const sceneForks = () => 2 + Math.floor(Math.random() * 2);    /* 2~3갈래 */
 
 async function designScene(kind, 직접글){
   const K = SCENE_KINDS[kind];
   if (!K) throw new Error('알 수 없는 갈래입니다');
   const cn = S.character?.name || '상대';
-  const len = sceneLen();
+  const len = sceneLen(kind);
   const ai = (S.messages || []).filter(inStory).slice(-6)
     .map(m => (m.role === 'user' ? (S.persona?.name || '나') : cn) + ': ' +
               m.content.replace(/\[상태\][^\n]*/g, '').trim().slice(0, 300)).join('\n');
@@ -7071,6 +7235,9 @@ async function designScene(kind, 직접글){
     '', '[규격]',
     '- 이 장면은 ' + len + '턴 안에 끝난다. 그 길이에 맞는 크기로 짠다. 큰 사건을 벌이지 않는다.',
     '- 목표는 **무엇이 이루어져야 이 장면이 닫히는가**다. 한 줄로 쓴다.',
+    '  **첫 칸에 끝나 버릴 목표를 잡지 않는다.** 「집을 나선다」처럼 한 번에 되는 것은 목표가 아니다 —',
+    '  그것을 목표로 삼으면 남은 칸이 같은 생각을 되풀이하는 데 쓰인다. 실제로 그랬다.',
+    '  **' + len + '칸을 다 써야 닿는 크기**로 잡는다. 칸마다 새로 드러날 것이 있어야 한다.',
     '- 여파는 이 장면이 끝났을 때 두 사람 사이에 **무엇이 남는가**다. 한 줄로 쓴다. 반드시 관계에 닿아야 한다.',
     '- 앞선 대화와 어긋나지 않아야 한다. 없던 인물이나 사실을 함부로 만들지 않는다.'
   ];
@@ -7080,7 +7247,9 @@ async function designScene(kind, 직접글){
     L.push('- 갈래는 이 장면이 끝날 수 있는 방식이다. **정확히 ' + sceneForks() + '개**를 한 줄씩 쓴다. 서로 확실히 달라야 한다.');
   if (K.need.includes('방식'))
     L.push('- 방식은 이 이야기를 칸마다 어떻게 풀어낼지다. **' + len + '줄**로, 한 줄에 한 칸씩 「이 칸에서는 무엇이 드러난다」를 적는다. ' +
-      '{{user}}가 아무 말이나 해도 이 순서는 지켜진다 — 다만 어떻게 드러나는지는 {{user}}가 무엇을 하느냐에 달렸다.');
+      '{{user}}가 아무 말이나 해도 이 순서는 지켜진다 — 다만 어떻게 드러나는지는 {{user}}가 무엇을 하느냐에 달렸다.\n' +
+      '  **칸마다 서로 다른 것이 드러나야 한다.** 같은 것을 되풀이하는 줄이 둘 있으면 그 장면은 제자리를 돈다.\n' +
+      '  한 줄로 줄일 수 있는 것을 여러 줄로 늘리지 않는다 — 그럴 바에는 칸을 줄인다.');
   L.push('', '[출력 형식] 아래 구분선을 그대로 쓴다. 다른 말을 덧붙이지 않는다.',
     '===GOAL===', '===WHERE===',
     (K.need.includes('완수') ? '===DONE===' : ''),
@@ -7237,6 +7406,9 @@ function sceneOpenText(sc){
   L.push('이 장면의 목표: ' + sc.goal);
   if (sc.kind === 'alone') L.push('{{user}}는 혼자다. {{char}}는 이 자리에 없다. 그래도 {{char}}가 남긴 것이 이 자리에 있어야 한다.');
   if (sc.kind === 'third') L.push('{{char}}를 둘러싼 다른 사람이나 바깥 사정 쪽에서 연다.');
+  /* 260903 — 칸마다 풀어낼 것은 매 턴 [진행 중인 장면] 에 실린다.
+     여는 자리에서도 그것이 있다고 알려 둬야 첫 칸을 통째로 써 버리지 않는다 */
+  if (sc.way?.length) L.push('칸마다 풀어낼 것이 따로 정해져 있다. **이번 칸의 몫만 쓴다.**');
   L.push('이번 응답 첫 줄 맨 앞에 (1/' + sc.len + ') 를 적고 한 칸 띄운 뒤 서술을 시작한다. 상태 줄에도 「씬=1/' + sc.len + '」 를 적는다.');
   return L.join(' ');
 }
@@ -7295,6 +7467,13 @@ function sceneNowSheet(){
     {info: true, html: '<span class="pguide">' + rows.join('<br>') +
       '<span class="dim">칸은 응답이 실제로 나아갈 때만 오릅니다. ' +
       '이야기와 상관없는 말을 하면 그 턴은 제자리입니다.</span></span>'},
+    /* 260903 — 장면이 도는 동안 {{user}}가 칠 말이 없는 칸이 있다.
+       그때 매크로 「계속」을 미리 만들어 두신 분만 넘길 수 있었다.
+       여기에 두면 누구나 넘긴다 — 이 창은 「다음 장면」 단추로 늘 열린다 */
+    {label: '계속', 닫기: true,
+     html: '<b>▶ 계속</b>' +
+       '<div class="shint">할 말이 없을 때 다음 칸으로 넘깁니다.</div>',
+     run: () => send({text: '*장면이 계속 진행된다.*'})},
     /* 260901 — 고르고도 창이 안 닫혔다. 둘 다 고른 것으로 할 일이 끝나는 자리다 */
     {label: '이 장면을 여기서 끝낸다', 닫기: true,
      html: '<b>이 장면을 여기서 끝낸다</b>' +
@@ -7584,8 +7763,12 @@ function statusChips(spec){
     if (HIDDEN_KEYS.includes(k)) continue;
     /* 260901 — 인물 수치는 우상단 판이 맡는다. 말풍선에는 안 붙인다.
        말풍선마다 열 개씩 붙던 것이 채팅창을 가장 많이 먹었다.
-       장소 · 일시 · 외관 · 내면은 그 자리에서 읽어야 하는 것이라 그대로 둔다 */
+       외관 · 내면은 그 자리에서 읽어야 하는 것이라 그대로 둔다 */
     if (판키 && 판키.includes(k)) continue;
+    /* 260903 — 일시와 장소도 판이 맡는다. 판 맨 위와 맨 아래에 이미 있다.
+       같은 것이 말풍선마다 또 붙어 채팅창을 먹었다.
+       **판을 껐을 때는 남긴다** — 안 그러면 어디인지 알 길이 없다 */
+    if (판키 && (k === '일시' || k === '장소')) continue;
     const d = v.match(/\(([+\-\u25b2\u25bc])/);
     const cls = d ? (/[+\u25b2]/.test(d[1]) ? ' class="up"' : ' class="dn"') : '';
     const row = statChipRow(k, ROWS);
@@ -7625,6 +7808,31 @@ function isName(w){
   /* 낱말이 셋을 넘으면 문장이다 */
   if (t.split(/\s+/).length > 2) return false;
   return true;
+}
+/* 260903 — 지문 속 조연 이름을 눌러 열 수 있게 표를 단다.
+   대사 줄의 이름은 벌써 눌리는데(data-who) 지문은 안 눌렸다 —
+   「태현이 문을 열었다」의 태현을 누를 길이 없었다.
+   **이미 등록된 조연 이름만** 찾는다. 아무 낱말이나 잡으면 글이 어지러워진다.
+   글은 이미 esc() 를 거친 것이라 여기서 다시 감싸지 않는다 */
+function 조연표달기(글){
+  const 것 = (S.chat?.cast || []).map(x => x.name).filter(n => n && n.length >= 2);
+  if (!것.length) return 글;
+  /* 긴 이름부터 바꾼다. 짧은 것이 긴 것의 앞토막이면 먼저 먹어 버린다 */
+  것.sort((a, b) => b.length - a.length);
+  let t = 글;
+  for (const 이름 of 것){
+    /* 이미 표가 달린 자리는 건너뛴다. 태그 안을 건드리면 화면이 깨진다 */
+    t = t.split('<').map((조각, i) => {
+      if (i === 0) return 조각.split(이름).join('\u0000' + 이름 + '\u0001');
+      const j = 조각.indexOf('>');
+      if (j < 0) return 조각;
+      return 조각.slice(0, j + 1) +
+             조각.slice(j + 1).split(이름).join('\u0000' + 이름 + '\u0001');
+    }).join('<');
+    t = t.split('\u0000' + 이름 + '\u0001')
+         .join('<u class="castn" data-who="' + 이름 + '">' + 이름 + '</u>');
+  }
+  return t;
 }
 function fmt(t, role){
   const mine = role === 'user';
@@ -7672,7 +7880,7 @@ function fmt(t, role){
 
     /* 내 입력의 지문은 별표째로 보여주고, 상대의 구버전 별표 서술은 별표를 지운다 */
     return '<span class="nar">' +
-      (mine ? esc(line) : esc(line).replace(/\*([^*]+)\*/g, '$1')) + '</span>';
+      조연표달기(mine ? esc(line) : esc(line).replace(/\*([^*]+)\*/g, '$1')) + '</span>';
   }).join('\n').replace(/\s+$/, '');
   return body + (drift ? '<div class="drift">기준 변화 · ' + esc(drift) + '</div>' : '')
               + (stat ? statusChips(stat) : '');
@@ -7783,6 +7991,13 @@ function msgHTML(m, isLast){
        </span>` : '';
   const regen = (m.role === 'assistant' && isLast)
     ? '<button data-act="regen">재생성</button>' : '';
+  /* 260903 — 중단하면 쓰던 글이 남는데 이어 붙일 길이 없었다.
+     재생성은 처음부터라 쓰던 것이 날아간다 — 다른 일이다.
+     끝이 어중간한 마지막 응답에만 띄운다. 멀쩡히 끝난 글에는 필요 없다 */
+  const 이음 = (m.role === 'assistant' && isLast &&
+                !/[.!?"'」』’\]\)…~]\s*$/.test(String(m.content || '')
+                  .replace(/\[상태\][^\n]*/g, '').trim()))
+    ? '<button data-act="more">이어쓰기</button>' : '';
   const fold = m.imgFold ? ' collapsed' : '';
   const pics = (m.images || []).map(u =>
     `<div class="pic${fold}"><button type="button" class="picfold" data-act="foldpic" title="접기/펴기">▾</button><img src="${u}" alt="장면" loading="lazy"></div>`
@@ -7817,7 +8032,7 @@ function msgHTML(m, isLast){
   return `<div class="msg ${m.role}${m.mark ? ' marked' : ''}" data-id="${m.id}">
     <div class="who">${mk}${tn}${esc(who)}</div>
     <div class="body">${fmt(m.content, m.role)}${pics}</div>${hints}
-    <div class="act">${nav}${regen}${mkimg}${hintBtn}<button data-act="edit">편집</button>${offBtn}${flagBtn}<button data-act="drop">빼기</button><button data-act="cut">롤백</button>${actHelp}</div>
+    <div class="act">${nav}${regen}${이음}${mkimg}${hintBtn}<button data-act="edit">편집</button>${offBtn}${flagBtn}<button data-act="drop">빼기</button><button data-act="cut">롤백</button>${actHelp}</div>
   </div>`;
 }
 /* 말풍선 아래 단추들이 무엇인지. 한 줄씩만 적는다 */
@@ -7846,6 +8061,7 @@ function actHelpSheet(){
 
 const MSG_ACT = {
   copy: copyMsg, cut: cutFrom, drop: dropOne, edit: editMsg, regen: () => regenerate(),
+  more: 이어쓰기,
   off: toggleOff,
   acthelp: actHelpSheet,
   flag: flagSheet,
@@ -10316,8 +10532,11 @@ const CHAT_PICKS = [
   /* 무료 — 쓸 만한 것은 ultra 하나뿐이다. super 는 한글화가 28% 라 알고 골라야 한다 */
   {id:'nvidia/nemotron-3-ultra-550b-a55b:free', good:['연속성'], best:2,
    d:'가장 안정적 결과 · 붐비면 많이 느려짐'},
-  {id:'nvidia/nemotron-3-super-120b-a12b:free', good:['연속성'],
-   d:'빠르고 가벼움 · 스페인어 자주 섞임'},
+  /* 260903 — 추천에서 뺐다. 한글화가 28% 이고 실제로 써 보니 못 쓸 만했다.
+     폴백에 넣어 두면 주력이 막힐 때마다 이쪽으로 떨어져 대화가 망가진다.
+     목록에서 지우지는 않는다 — 고르실 수는 있어야 한다 */
+  {id:'nvidia/nemotron-3-super-120b-a12b:free', bad:['한국어'],
+   d:'권하지 않음 · 한글화 28% · 스페인어 자주 섞임'},
 
   /* 가성비 — ling 은 값과 속도가 최상급인데 열 번에 세 번 실패한다 */
   {id:'inclusionai/ling-3.0-flash', good:['속도'],
@@ -10894,6 +11113,12 @@ $('whoEdit').onclick = () => {
 $('cTitle').onclick = () => { if (S.chat) openWho(); };
 /* 말풍선 안의 이름은 매번 다시 그려지므로 위임으로 받는다 */
 $('msgs').addEventListener('click', e => {
+  /* 260903 — 지문에 붙인 조연 이름. 대사 줄과 같은 자리로 보낸다 */
+  const u = e.target.closest('.msg .nar u.castn');
+  if (u){
+    const i = (S.chat?.cast || []).findIndex(p => p.name === (u.dataset.who || ''));
+    if (i >= 0) return void editCast(i);
+  }
   const b = e.target.closest('.msg.assistant .dlg b');
   if (b){
     /* 조연 이름이면 그 조연을 연다. 태현을 눌렀는데 윤주희가 열리면 안 된다 */
@@ -12269,6 +12494,51 @@ async function send(opts){
   }
 }
 
+/* 260903 — 중단하면 쓰던 글이 그대로 남는데 **이어 붙일 길이 없었다.**
+   다시 뽑으면 처음부터라 쓰던 것이 날아간다 — 이어 붙이는 것과 다시 뽑는 것은 다른 일이다.
+   끊긴 자리에서 이어 쓰게 하고, 받은 것을 뒤에 덧붙인다 */
+async function 이어쓰기(id){
+  if (S.streaming) return toast('아직 받는 중입니다');
+  const m = S.messages.find(x => x.id === id);
+  if (!m || m.role !== 'assistant') return;
+  const 앞 = String(m.content || '').trim();
+  if (!앞) return toast('이어 쓸 글이 없습니다');
+  /* 마지막 말이라야 이어 쓴다. 가운데 것을 늘리면 뒤가 어긋난다 */
+  if (S.messages[S.messages.length - 1]?.id !== id)
+    return toast('마지막 응답만 이어 쓸 수 있습니다');
+  const 뒤것 = document.querySelector('.msg[data-id="' + id + '"] .body');
+  busy('stream', '끊긴 자리에서 이어 쓰는 중');
+  S.streaming = true; $('cSend').textContent = '중지';
+  $('cSend').classList.add('stop'); $('cSend').classList.remove('pri');
+  S.abort = new AbortController();
+  try{
+    /* 앞부분을 그대로 주고 **이어서만** 쓰게 한다. 다시 시작하면 두 벌이 된다 */
+    const CTX = await buildContext();
+    const 이음 = {...CTX};
+    이음.msgs = [...(CTX.msgs || []),
+      {role: 'assistant', content: 앞},
+      {role: 'user', content: '[지시] 방금 글이 중간에 끊겼다. **처음부터 다시 쓰지 말고** ' +
+        '끊긴 자리에서 이어서 쓴다. 앞에 쓴 말을 되풀이하지 않는다. ' +
+        '[상태] 줄은 이어 쓴 끝에 한 번만 붙인다.'}];
+    const 임시 = document.createElement('span');
+    뒤것?.appendChild(임시);
+    const r = await streamInto(임시, 이음, S.abort.signal);
+    임시.remove();
+    const 이어진것 = 앞 + (/[.!?\u201d\u2019」]$/.test(앞) ? ' ' : '') + String(r.out || '').trim();
+    m.content = 이어진것;
+    if (m.variants?.length) m.variants[m.activeVariant || 0] = 이어진것;
+    else m.variants = [이어진것];
+    await dbPut('messages', m);
+    msgNodeCache.delete(m.id); renderMsgs(false);
+    toast('이어 썼습니다');
+  }catch(e){
+    toast(e.name === 'AbortError' ? '중지했습니다' : '이어 쓰지 못했습니다 — ' + e.message);
+  }finally{
+    S.streaming = false; 보내기단추되돌리기();
+    busy(null); S.abort = null;
+  }
+}
+
 /* 수신한 응답을 저장하고 화면을 갱신한다 */
 async function commitReply(r){
   /* 「[이야기 밖]」으로 시작하는 응답은 장면이 아니라 나에게 한 답이다.
@@ -12287,6 +12557,14 @@ async function commitReply(r){
     genre: (!off && genreDue()) ? (S.chat?.genre?.name || '장르') : undefined,
     usage: r.usage ? {prompt_tokens:r.usage.prompt_tokens,
                       completion_tokens:r.usage.completion_tokens, cost:r.usage.cost} : null,
+    /* 260903 — 걸린 시간을 남긴다. 전에는 계기판에 스쳐 지나가고 아무 데도 안 남아서,
+       「구글이 느리다」를 재려면 신고에 손으로 적으셔야 했다.
+       ttft 는 첫 글자까지, total 은 다 받을 때까지. 밀리초를 반올림해 담는다.
+       어느 길로 갔는지도 함께 — 같은 모델이라도 중계와 직통이 다르다 */
+    ms: (r.ttft || r.total)
+      ? {ttft: Math.round(r.ttft || 0), total: Math.round(r.total || 0),
+         길: (onRelay() ? '중계' : '직통')}
+      : undefined,
     createdAt: now()
   };
   await dbPut('messages', aMsg);
@@ -15508,9 +15786,16 @@ function chatToMarkdown(d){
   const flagged = d.messages.filter(m => m.flag);
   if (flagged.length){
     L.push('- **표시해 둔 곳**: ' + flagged.length + '개');
+    /* 260903 — **어느 판에서 언제 눌렀는지**를 함께 적는다.
+       전에는 무엇이 이상했나만 남아서, 그 신고가 고치기 전 것인지
+       고친 뒤에도 난 것인지 갈라볼 수가 없었다 */
     for (const m of flagged.slice(0, 30))
       L.push('  - ' + (m.turnIndex + 1) + '턴 · ' + m.flag +
-             (m.model ? ' · ' + m.model.split('/').pop() : ''));
+             (m.flagBuild ? ' · ' + m.flagBuild : '') +
+             (m.flagAt ? ' · ' + stampSmart(m.flagAt) : '') +
+             (m.flagWhere ? ' · ' + m.flagWhere : '') +
+             ((m.flagModel || m.model)
+               ? ' · ' + String(m.flagModel || m.model).split('/').pop() : ''));
     if (flagged.length > 30) L.push('  - … 그 밖 ' + (flagged.length - 30) + '개');
   }
   const off = d.messages.filter(m => m.mark === '밖').length;
@@ -16767,26 +17052,6 @@ function filterChatsByPersona(pid){
   show('vChats'); renderChats();
 }
 
-/* 꾹 누르면 뜨는 것도 대상 쪽과 같은 얼개다 */
-function personaMenu(id){
-  const p = S.personas.find(x => x.id === id);
-  if (!p) return;
-  const chats = S.chats.filter(x => x.personaId === id);
-  sheet(p.name, [
-    {label:'편집', run: () => { closeSheet(); editPersona(id); }},
-    ...(p.isDefault ? [] : [{label:'기본으로 삼기', run: async () => {
-      for (const o of S.personas){
-        const want = o.id === id;
-        if (!!o.isDefault !== want){ o.isDefault = want; await dbPut('personas', o); }
-      }
-      await loadAll(); renderPersonas(); toast(p.name + ' 을 기본으로 삼았습니다');
-    }}]),
-    {label:'내보내기', run: () => exportPersona(id)},
-    ...(chats.length ? [{label:'이 주인공의 대화 ' + chats.length + '개 보기',
-                         run: () => filterChatsByPersona(id)}] : []),
-    {label:'삭제', danger:true, run: () => deletePersona(id, chats.length)}
-  ]);
-}
 
 /* 주인공 하나를 파일로. 인물 카드와 달리 한 겹이라 그대로 내보낸다 */
 /* 대상 하나를 파일로. 편집 화면 메뉴와 목록 고르기가 같이 쓴다 —
@@ -20275,11 +20540,11 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b156';
-const APP_BUILT = '2026-09-01 17:44';
+const APP_BUILD = 'b160';
+const APP_BUILT = '2026-09-03 14:26';
 const APP_BAKED = true;   /* 이 파일은 구운 것입니다. 손으로 고치지 마십시오 —
                              app/index.html 을 고치고 node 검증/본편굽기.js 를 다시 돌리십시오 */
-const APP_NOTE  = '다음 장면에 직접 상황 설정 추가 · 목록 이름과 여백 손질 · 장면이 맥락과 때를 헤아리고 유저 몫은 안 정함 · 장면 접기는 한 번 물음';
+const APP_NOTE  = '호칭 칸(통성명을 앱이 앎) · 이어쓰기 · 장면 계속 단추 · 신고 고치기 · 걸린 시간 저장 · 지문 속 조연 누르기';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
