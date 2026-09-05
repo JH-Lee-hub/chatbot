@@ -1093,6 +1093,25 @@
          border:1px solid var(--line2);color:var(--tx);padding:9px 15px;border-radius:10px;
          font-size:13px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s;max-width:86vw;text-align:center}
   #toast.on{opacity:1}
+
+/* ── 제타식 화면 ── */
+.znar{color:var(--tx2,#9a9aa0);font-style:italic;font-size:13.5px;margin:13px 2px;
+      padding-left:18px;position:relative;white-space:pre-wrap;line-height:1.62}
+.znar::before{content:'≡';position:absolute;left:0;top:0;opacity:.55;font-style:normal}
+.zblk{display:flex;gap:8px;margin:9px 0;align-items:flex-start}
+.zblk.r{flex-direction:row-reverse}
+.zpic{flex:0 0 auto;width:30px;height:30px;border-radius:50%;
+      background:rgba(128,128,128,.28);display:flex;align-items:center;justify-content:center;
+      font-size:12px;cursor:pointer;user-select:none}
+.zcol{max-width:80%;display:flex;flex-direction:column;min-width:0}
+.zblk.r .zcol{align-items:flex-end}
+.znm{font-size:11.5px;opacity:.6;margin:0 3px 3px;cursor:pointer}
+.zbub{background:rgba(128,128,128,.14);border-radius:14px;padding:9px 13px;
+      white-space:pre-wrap;word-break:break-word}
+.zblk.r .zbub{background:rgba(107,92,231,.22)}
+.zbub p{margin:0}
+.zbub p+p{margin-top:8px}
+.zbub .zact{opacity:.72;font-style:italic;font-size:13.5px}
 </style>
 </head>
 <body>
@@ -1235,8 +1254,14 @@
       </div>
       <div class="fld">
         <label>응답 분량 (한국어 글자 수)</label>
+        <div class="row" id="lenPick" style="display:flex;gap:6px;margin-bottom:6px">
+          <button type="button" class="pill" data-len="300">짧게 300</button>
+          <button type="button" class="pill" data-len="900">보통 900</button>
+          <button type="button" class="pill" data-len="1500">길게 1500</button>
+        </div>
         <input type="number" id="sLen" step="100" min="300" max="3000">
-        <div class="hint">권장 900 — 길수록 비용이 늘고 반복이 잦아집니다</div>
+        <div class="hint">권장 900 — 길수록 비용이 늘고 반복이 잦아집니다.
+          <b>제타 실측은 285자</b>라 제타풍에는 「짧게」가 가깝습니다</div>
         <div class="hint">
           매 요청 끝에서 다시 한번 지시하는 목표 분량입니다. 대화가 길어지면 모델이 앞선 응답의
           길이를 따라 계속 늘리는 성질이 있어, <b>공통 규칙만으로는 제어되지 않습니다.</b>
@@ -2619,6 +2644,20 @@ function actTags(scene, stateCard){
   return out;
 }
 const PALETTE = ['#7c9cff','#5fd08a','#ffb454','#ff8fa3','#b088f9','#4ecdc4'];
+/* ═══════════════ 제타풍 연출 ═══════════════
+   장르가 제타일 때만 위 [공통 규칙] 뒤에 덧붙는다. 다른 장르는 하나도 안 바뀐다.
+
+   제타 로그 1,101턴을 재어 얻은 값을 그대로 목표로 삼는다 —
+     지문 31% · 대사 23% · 내레이션 46% · 지문으로 여는 턴 73% · 3인칭 대명사 0개
+     내레이션이 아예 없는 턴 29% · 한 턴 평균 1.55번
+
+   본편 규칙과 겹치는 것(한 걸음 · 되돌리기 어려운 것)은 여기 다시 안 적는다.
+   **꼴과 결**만 적는다. */
+const ZETA_STYLE = '';
+
+/* 제타풍인가. 장르가 zeta 면 켠다 — 대화마다 따로 걸린다 */
+function zetaOn(){ throw new Error("중계가 짭니다 — " + "zetaOn"); }
+
 const DEFAULT_RULES = '';
 
 /* ── 그 장면에서만 필요한 조항 ──
@@ -7836,6 +7875,83 @@ function 조연표달기(글){
   }
   return t;
 }
+/* ═══════════════ 제타식 화면 ═══════════════
+   ≡ 로 여는 줄은 말풍선 밖, *지문* 과 "대사" 는 말풍선 안에 묶는다.
+   말풍선 옆에 작은 프로필 원이 붙는다.
+
+   **글을 보고** 정한다. 장르를 보지 않는다 — 장르가 제타여도 옛 꼴로 온 응답이
+   섞일 수 있고, 그 반대도 있다. 실제로 그린 대로만 보이는 것이 옳다 */
+function 제타꼴인가(글){
+  const 줄들 = String(글 || '').split('\n').map(x => x.trim()).filter(Boolean);
+  if (줄들.length < 2) return false;
+  /* ≡ 로 여는 줄이 있거나, 이름 한 줄 밑에 *지문* 이나 "대사" 가 오는 꼴 */
+  if (줄들.some(x => x.startsWith('≡'))) return true;
+  for (let i = 0; i < 줄들.length - 1; i++){
+    const 앞 = 줄들[i], 뒤 = 줄들[i + 1];
+    if (/[:：]/.test(앞)) continue;                    /* 옛 「이름 : 대사」 꼴이다 */
+    if (앞.length > 14 || !isName(앞)) continue;
+    if (/^\*[\s\S]*\*$/.test(뒤) || /^["“'][\s\S]*["”']$/.test(뒤)) return true;
+  }
+  return false;
+}
+
+/* 제타 꼴 글을 갈래로 나눈다 — 시험판의 가르기() 와 같은 얼개 */
+function 제타가르기(글){
+  const 것들 = [];
+  let 블록 = null;
+  const 밀기 = () => { if (블록 && 블록.조각.length) 것들.push(블록); 블록 = null; };
+  for (let 줄 of String(글 || '').split('\n')){
+    줄 = 줄.trim();
+    if (!줄) continue;
+    if (줄.startsWith('≡')){
+      const 뒤 = 줄.slice(1).trim();
+      /* 모델이 ≡ 뒤에 지문을 붙이는 일이 있다. 그것은 내레이션이 아니라 지문이다 */
+      if (/^\*[\s\S]*\*$/.test(뒤)) 줄 = 뒤;
+      else { 밀기(); 것들.push({갈래: '나레', 글: 뒤}); continue; }
+    }
+    const 지문 = /^\*[\s\S]*\*$/.test(줄);
+    const 대사 = /^["“'‘][\s\S]*["”'’]$/.test(줄);
+    if (지문 || 대사){
+      if (!블록) 블록 = {갈래: '블록', 이름: '', 조각: []};
+      블록.조각.push({종류: 지문 ? '지문' : '대사',
+                      글: 줄.replace(/^[*"“'‘]|[*"”'’]$/g, '').trim()});
+      continue;
+    }
+    /* 「이름 : "대사"」 가 섞여 들어오면 그것도 받아 준다 */
+    const m = 줄.match(/^\s*([^:：\n]{1,14}?)\s*[:：]\s*(.+)$/);
+    if (m && isName(m[1])){
+      밀기();
+      블록 = {갈래: '블록', 이름: m[1].trim(), 조각: []};
+      const 몸 = m[2].trim();
+      블록.조각.push({종류: /^["“'‘]/.test(몸) ? '대사' : '지문',
+                      글: 몸.replace(/^[*"“'‘]|[*"”'’]$/g, '').trim()});
+      continue;
+    }
+    /* 이름만 있는 줄 — 다음 블록의 임자 */
+    if (줄.length <= 14 && isName(줄)){ 밀기(); 블록 = {갈래: '블록', 이름: 줄, 조각: []}; continue; }
+    밀기(); 것들.push({갈래: '나레', 글: 줄});
+  }
+  밀기();
+  return 것들;
+}
+
+/* 제타 꼴로 그린다. 이름이 비면 말한 쪽 이름을 채운다 */
+function 제타그리기(글, mine){
+  const 임자 = mine ? (S.persona?.name || '나') : (S.character?.name || '');
+  return 제타가르기(글).map(x => {
+    if (x.갈래 === '나레')
+      return '<div class="znar">' + 조연표달기(esc(x.글)) + '</div>';
+    const 이름 = x.이름 || 임자;
+    const 조각 = x.조각.map(c =>
+      '<p class="' + (c.종류 === '지문' ? 'zact' : 'zsay') + '">' +
+      조연표달기(esc(c.글)) + '</p>').join('');
+    return '<div class="zblk' + (mine ? ' r' : '') + '">' +
+      '<div class="zpic" data-who="' + esc(이름) + '">' + esc(이름.slice(0, 1)) + '</div>' +
+      '<div class="zcol"><div class="znm" data-who="' + esc(이름) + '">' + esc(이름) + '</div>' +
+      '<div class="zbub">' + 조각 + '</div></div></div>';
+  }).join('');
+}
+
 function fmt(t, role){
   const mine = role === 'user';
   const meName = S.persona?.name || '나';
@@ -7850,6 +7966,15 @@ function fmt(t, role){
     if (CHARM_RE.test(line)) return false;
     return true;
   });
+  /* 260905 — 제타 꼴로 쓰인 글은 말풍선으로 그린다.
+     옛 꼴은 아래 길을 그대로 탄다 — 지난 대화가 하나도 안 바뀐다 */
+  {
+    const 남은글 = lines.join('\n');
+    if (제타꼴인가(남은글))
+      return 제타그리기(남은글, mine)
+             + (drift ? '<div class="drift">기준 변화 · ' + esc(drift) + '</div>' : '')
+             + (stat ? statusChips(stat) : '');
+  }
   const body = lines.map(line => {
     if (!line.trim()) return '';
     if (/^\s*\[지시\]/.test(line))
@@ -13604,8 +13729,8 @@ const GENRES = [
        앞의 것이 없으면 그냥 반복이고, 뒤의 것이 없으면 무한정 다시 하면 그만이 된다. */
     plot:'{{user}}는 이 시간을 처음 겪는 것이 아니다. {지점}으로 되돌아왔고, ' +
          '앞선 회차에서 {실패}. ' +
-         '되돌아왔다는 것을 아는 사람은 {{user}}뿐이며, 말해도 믿지 않는다. ' +
-         '다만 세계에는 자국이 남는다 — {자국}. ' +
+         '되돌아왔다는 것을 아는 사람은 {{user}}뿐이며, 말해도 믿지 않기도 한다. ' +
+         '다만 세계에는 자국이 남기도 한다 — {자국}. ' +
          '되돌아갈 수 있는 것은 {한도}.',
     goal:'{목표}',
     /* 마지막 막에서만 실린다. 미리 알려 주면 2막에서 다 털어놓는다 */
@@ -13770,6 +13895,106 @@ const GENRES = [
       목표:['{{char}}를 안전한 곳까지 데려가는 것','{{char}}가 잃은 것을 되찾는 것','{{char}}를 노리는 자를 밝히는 것','{{char}}가 스스로 설 수 있게 하는 것','기억을 되돌릴 길을 찾는 것'],
       잃는것:['{{char}}가 {{user}}를 영영 잊는다','적어 둔 규칙이 모두 사라진다','{{char}}가 스스로 규칙을 지운다','{{user}}가 그 자리를 떠나야 한다']
     }
+  }
+,
+  {
+    key:'zeta', name:'제타', desc:'둘만 있는 닫힌 자리에서, 이미 벌어지는 일 한가운데로 들어갑니다',
+    /* 제타 로그 여섯 대화를 뜯어보니 자리가 하나같이 닫혀 있었다 —
+       카페 테이블(소개팅) · 라커룸(목격한 참) · 내 자취방(상대가 침대에 누움) ·
+       상대 방 침대(이미 그 안에서 깸). 일어서면 이야기가 끝나므로 아무도 안 일어선다.
+
+       연애와 다른 점은 **거리가 아니라 자리**가 뼈대라는 것이다.
+       가까워지는 이야기가 아니라, 못 벗어나는 자리에서 벌어지는 이야기다. */
+    plot:'{{char}}와 {{user}}는 이미 아는 사이다. {사이}. ' +
+         '지금 {자리}에 둘뿐이고, {붙잡는것} 때문에 누구도 이 자리를 뜨지 못한다. ' +
+         '{{user}}가 들어섰을 때 이미 {벌어지는일}. ' +
+         '{{char}}는 {감추는것}을 감추려 하는데, 감추려는 것이 오히려 티가 나기도 한다. ' +
+         '{{char}}가 노리는 것은 {노리는것}이기도 하다. 다만 먼저 말을 꺼내지는 못한다.',
+    slots:{
+      사이:['십 년 가까이 붙어 다닌 사이','같은 집에 사는 사이','같은 층에 사는 이웃',
+            '학창 시절부터 얽힌 사이','같은 데서 일하는 사이','서로 옷을 꺼내 입는 사이',
+            '이름은 알지만 긴 말을 나눠 본 적 없는 사이','한쪽이 한쪽을 오래 괴롭혀 온 사이'],
+      자리:['{{char}}의 방','{{user}}의 자취방','둘만 남은 사무실','문 닫은 가게 안',
+            '엘리베이터가 멎은 복도','비를 피해 들어간 처마 밑','마주 앉은 카페 구석 자리',
+            '탈의실 문 안쪽','차 안','새벽 편의점 테이블'],
+      붙잡는것:['밖으로 나갈 길이 막혔다','아침까지 기다려야 하는 일이 있다',
+                '한쪽이 몸을 못 가눈다','되돌려줘야 할 것이 아직 남아 있다',
+                '방금 벌어진 일을 그냥 두고 갈 수가 없다','자리를 뜨면 무례가 되는 자리다',
+                '여기가 {{char}}의 집이고 {{user}}는 이미 안에 있다'],
+      벌어지는일:['{{char}}가 들켜선 안 될 것을 하고 있었다','{{char}}가 곤란한 지경에 빠져 있었다',
+                  '{{char}}가 무언가를 숨기려 서두르고 있었다','{{char}}가 혼자 울고 있었다',
+                  '{{char}}가 {{user}}의 물건을 만지고 있었다','{{char}}가 취해 있었다',
+                  '{{char}}가 자고 있었고 깨는 참이었다'],
+      감추는것:['곤란한 처지','{{user}}에게 품은 마음','방금 한 짓','혼자 감당하던 일',
+                '취한 것','울었다는 사실','기다리고 있었다는 것'],
+      노리는것:['오늘 밤을 넘길 자리','{{user}}를 붙잡아 두는 것','들킨 것을 덮는 것',
+                '먼저 사과받는 것','{{user}}가 먼저 알아채 주는 것','한 번 이겨 보는 것',
+                '이 자리를 조금 더 끄는 것']
+    },
+
+    /* ── 결 ──
+       제타 넷의 자리를 그대로 옮겼다. 무게를 고르게 두어 하나로 굳지 않게 한다 */
+    veins:[
+      {k:'한집', t:'같이 사는 사이', 무게:3,
+       plot:'{{char}}와 {{user}}는 {사이}. 벽 하나를 두고 각자 방을 쓰지만 경계가 없다. ' +
+            '옷을 꺼내 입고, 남의 침대에서 자고, 그것을 이상하게 여기지 않는다. ' +
+            '오늘 {자리}에서 {벌어지는일}. ' +
+            '{{char}}는 {티내는법} {{user}}를 밀어내려 하기도 하는데, 정작 자리를 비켜 주지는 않는다. ' +
+            '{분기}가 오면 서로 모른 척해 온 것을 마주하게 되기도 한다.',
+       slots:{
+         사이:['십 년지기이자 동거 삼 년차다','같이 산 지 얼마 안 된 사이다','한쪽이 얹혀사는 사이다'],
+         자리:['{{char}}의 방','거실 소파','좁은 부엌','같이 쓰는 욕실 앞'],
+         벌어지는일:['{{user}}가 {{char}}의 침대에서 자고 있었다','{{char}}가 {{user}}의 옷을 입고 있었다',
+                     '{{char}}가 혼자 술을 마시고 있었다','{{char}}가 {{user}}의 물건을 뒤지고 있었다'],
+         티내는법:['시비를 걸며','발로 툭툭 차며','욕을 섞어 가며','핀잔을 주며'],
+         분기:['한쪽이 나가겠다고 말하는 날','다른 사람 이야기가 나오는 자리','둘 중 하나가 아픈 밤']
+       }},
+
+      {k:'옛일', t:'묵은 것이 있는 사이', 무게:3,
+       plot:'{{char}}와 {{user}}는 {옛일}로 얽혀 있다. 그 일은 아직 정리되지 않았다. ' +
+            '지금 {자리}에 둘뿐이고, {붙잡는것} 때문에 이 자리를 뜨지 못한다. ' +
+            '{{char}}는 그때 일을 꺼내지 않으려 하는데, {티내는법} 하기도 한다. ' +
+            '{분기}가 오면 둘 중 하나가 먼저 그 이야기를 꺼내게 되기도 한다.',
+       slots:{
+         옛일:['한쪽이 한쪽을 오래 괴롭혔던 일','말없이 사라졌던 일','한쪽이 한쪽을 감싸 준 일',
+               '술김에 오갔던 말','아무에게도 말하지 않기로 한 일'],
+         자리:['둘만 남은 탈의실','문 닫은 가게 안','같이 쓰게 된 일터','멎은 엘리베이터'],
+         붙잡는것:['밖으로 나갈 길이 막혔다','일이 끝나려면 아직 멀었다','한쪽이 몸을 못 가눈다'],
+         티내는법:['자꾸 그 언저리를 맴돈다','평소 안 하던 말을 덧붙인다','괜히 화를 낸다',
+                   '아무렇지 않은 척이 지나치게 태연하다'],
+         분기:['둘만 남는 순간','한쪽이 먼저 이름을 부르는 순간','자리를 뜰 수 있게 되는 순간']
+       }},
+
+      {k:'들킴', t:'들켜선 안 될 것을 봤다', 무게:2,
+       plot:'{{user}}가 {자리}에 들어섰을 때 {{char}}는 {들킨것}을 하고 있었다. ' +
+            '{{char}}는 그것을 못 본 것으로 하고 싶어 하기도 하는데, 이미 늦었다. ' +
+            '{붙잡는것} 때문에 둘 다 이 자리를 뜨지 못한다. ' +
+            '{{char}}는 {수습법} 덮으려 하기도 한다. {분기}가 오면 덮은 것이 다시 벌어진다.',
+       slots:{
+         자리:['탈의실','{{char}}의 방','문 닫힌 사무실','창고 안'],
+         들킨것:['남의 물건에 얼굴을 묻고 있는 것','몰래 찍어 둔 것을 보고 있는 것',
+                 '혼자 울고 있는 것','들키면 안 되는 통화를 하는 것','숨겨 둔 것을 꺼내 보는 것'],
+         붙잡는것:['{{user}}가 두고 온 물건을 가지러 다시 들어온 참이다','밖으로 나갈 길이 막혔다',
+                   '{{char}}가 {{user}}의 앞을 막아섰다'],
+         수습법:['화를 내며','아무 일도 아니라며','되레 {{user}}를 몰아세우며','웃어넘기며'],
+         분기:['{{user}}가 그 이야기를 꺼내는 순간','다른 사람이 올 뻔한 순간','둘만 남는 밤']
+       }},
+
+      {k:'첫자리', t:'오늘 처음 마주 앉았다', 무게:2,
+       plot:'{{char}}와 {{user}}는 {자리}에서 오늘 처음 마주 앉았다. ' +
+            '{붙잡는것} 때문에 자리를 뜨는 것이 무례가 된다. ' +
+            '{{char}}는 애초에 {처음마음}이었다. 그런데 {틈}에서 마음이 흔들리기도 한다. ' +
+            '{{char}}는 그것을 인정하지 않으려 {티내는법} 하기도 한다. ' +
+            '{분기}가 오면 이 자리를 이어 갈지 정해야 한다.',
+       slots:{
+         자리:['마주 앉은 카페 자리','주선자가 자리를 뜬 테이블','합석하게 된 술자리','같은 조가 된 자리'],
+         붙잡는것:['주선한 사람이 곁에 있다','정해진 시간이 아직 남았다','먼저 일어서면 무례가 되는 자리다'],
+         처음마음:['별 기대가 없었다','빨리 끝내고 갈 생각이었다','억지로 나온 자리였다','재고 볼 작정이었다'],
+         틈:['평소와 다른 목소리','생각지 못한 대답','아무에게도 안 하던 이야기','정곡을 찌르는 한마디'],
+         티내는법:['괜히 무심한 척한다','시큰둥하게 굴면서 자리를 안 뜬다','딴 데를 보며 말을 잇는다'],
+         분기:['자리를 파할 시간이 되는 순간','연락처를 주고받을지 정하는 자리','주선자가 돌아오는 순간']
+       }}
+    ]
   }
 ];
 
@@ -14322,6 +14547,112 @@ const WILD = {
            '{{user}}에게 적대적이다','{{user}}에게 흥미를 느낀다','{{user}}를 이용하려 한다']
 };
 
+/* 제타형 — 제타 로그 넷에서 뽑은 결.
+   TASTE · WILD 와 같은 꼴이라 rollSeeds 가 그대로 굴린다.
+   다른 둘과 다른 점은 **이미 붙어 있는 관계**에서 시작한다는 것뿐이다 */
+const ZETA_JOBS = [
+  /* 또래 대학생이 뼈대이되, 요청대로 밖으로 넓힌다 */
+  ['대학생', 19, 26], ['대학원생', 23, 29], ['휴학생', 20, 27],
+  ['편의점 야간 알바', 19, 28], ['카페 알바', 19, 27], ['배달 일을 하는 사람', 20, 33],
+  ['웹툰 어시스턴트', 21, 30], ['인디 밴드 기타리스트', 21, 32],
+  ['게임 회사 신입', 24, 30], ['디자인 회사 사원', 24, 34],
+  ['간호사', 24, 35], ['학원 강사', 25, 36], ['공무원 준비생', 22, 30],
+  ['미용사', 22, 33], ['사진관을 물려받은 사람', 26, 38],
+  ['프리랜서 번역가', 25, 38], ['동네 서점 주인', 28, 42],
+  ['같은 회사 선배', 27, 39], ['옆 가게 사장', 30, 45]
+];
+
+const ZETA_RELS = [
+  /* [관계, 경계, 호감, 반감, (직업 못박기)] — RELS 와 같은 꼴 */
+  /* ── 이미 붙어 있는 사이 (제타 넷의 핵심) ── */
+  ['{{user}}와 십 년지기이자 동거 삼 년차', 20, 40, 15],
+  ['{{user}}와 같이 사는 여사친', 22, 38, 12],
+  ['{{user}}의 자취방에 눌러앉는 여사친', 20, 42, 10],
+  ['{{user}}와 같은 층에 사는 이웃', 45, 20, 8],
+  ['{{user}}와 벽 하나를 두고 사는 사람', 42, 22, 10],
+  ['{{user}}와 방을 나눠 쓰는 사이', 25, 35, 14],
+
+  /* ── 학창 시절부터 얽힌 사이 ── */
+  ['고교 시절 {{user}}를 괴롭히던 사람', 55, 45, 40],
+  ['{{user}}를 따라 같은 대학에 온 동창', 40, 45, 18],
+  ['{{user}}와 같은 과 동기', 35, 25, 10],
+  ['{{user}}의 학창 시절을 아는 후배', 30, 30, 10],
+  ['{{user}}와 오래 라이벌이던 동기', 50, 25, 35],
+
+  /* ── 같은 데서 일하는 사이 ── */
+  ['{{user}}와 같은 데서 알바하는 사람', 35, 28, 12],
+  ['{{user}}를 따라 알바를 옮겨 온 사람', 30, 45, 12],
+  ['{{user}}와 같은 조가 된 사람', 40, 20, 10],
+  ['{{user}}의 사수', 45, 18, 12, 'office'],
+  ['{{user}}가 가르치게 된 신입', 35, 25, 8],
+
+  /* ── 오늘 처음 마주 앉은 사이 (존대형이 여기 있다) ── */
+  ['{{user}}와 소개팅으로 마주 앉은 사람', 60, 18, 12],
+  ['{{user}}와 선을 보게 된 사람', 62, 15, 12],
+  ['{{user}}와 합석하게 된 사람', 50, 20, 12],
+
+  /* ── 넓힌 것 ── */
+  ['{{user}}가 자주 가는 가게의 주인', 40, 22, 8],
+  ['{{user}}의 옛 연인의 친구', 55, 20, 25],
+  ['{{user}}에게 무언가를 맡겨 둔 사람', 40, 25, 10],
+  ['{{user}}의 비밀을 하나 아는 사람', 50, 25, 20]
+];
+
+/* 무너지는 지점 — 제타 카드의 「핵심 약점」 자리.
+   조건 하나와 그때 벌어지는 일을 짝지어 둔다.
+   상태가 아니라 **{{user}}가 쥔 손잡이**라는 것이 요점이다 */
+const ZETA_TRIGGERS = [
+  '{{user}}가 성과 이름을 함께 불러 부르면 방어가 통째로 풀린다',
+  '{{user}}가 존댓말을 쓰면 말문이 막힌다',
+  '{{user}}가 진심으로 걱정하는 말을 하면 화를 내며 자리를 피한다',
+  '{{user}}가 손목이나 어깨를 잡으면 굳어서 아무 말도 못 한다',
+  '{{user}}가 옛일을 꺼내면 목소리가 낮아지고 말수가 준다',
+  '{{user}}가 다른 사람 이야기를 하면 말이 뾰족해진다',
+  '{{user}}가 먼저 자리를 뜨려 하면 붙잡을 핑계를 지어낸다',
+  '{{user}}가 고맙다고 하면 되레 무례하게 군다',
+  '{{user}}가 웃으면 하려던 말을 잊는다',
+  '{{user}}가 이름을 줄여 부르면 반박을 못 한다',
+  '{{user}}에게 들킨 것이 하나 더 있는 줄 알면 말이 빨라진다',
+  '{{user}}가 조용히 기다리면 견디지 못하고 먼저 입을 연다'
+];
+
+const ZETA = {
+  job: ZETA_JOBS,
+  relation: ZETA_RELS,
+  /* 겉은 까칠 · 무심 · 공격적. 제타 넷이 다 그랬다 */
+  surface: ['시끄럽고 거침없음','까칠하고 도도함','무심하고 시크함','장난스럽고 능청스러움',
+            '공격적이고 도발적','시큰둥하고 재고 보는','능글맞고 넉살 좋음',
+            '예의 바르지만 벽이 있음','밝은데 속을 안 보임'],
+  /* 속은 호감. 그것을 인정하지 못하는 것이 이 결의 뼈대다 */
+  lack: ['좋아하는 마음을 절대 인정하지 않음','감정을 전부 공격성으로 표출함',
+         '지는 것을 못 견뎌 논리를 바꿔서라도 이기려 함','먼저 사과하는 법을 모름',
+         '기대고 싶은 마음을 수치스럽게 여김','혼자 있고 싶다면서 정작 내보내지 않음',
+         '아쉬운 소리를 하느니 손해를 보는 쪽을 택함',
+         '{{user}}가 곁에 있는 것을 당연하게 여겨 생각해 본 적이 없음',
+         '들키는 것이 두려워 먼저 화를 냄','부끄러우면 화로 덮음'],
+  /* 제타는 밤과 사적인 시간이 잦았다 */
+  when: ['주말 오후','나른한 오후','저녁 식사 시간','문 닫을 무렵','늦은 밤',
+         '퇴근이 한참 지난 밤','새벽 두세 시','휴일 오전','비가 그치지 않는 저녁',
+         '알바가 끝난 시간','수업이 빈 시간','명절 연휴로 텅 빈 밤'],
+  /* 자리는 닫혀 있다. 이것만은 제타의 뼈대라 넓히지 않는다 */
+  crowd: ['둘만 남는다','둘만 남는다','둘만 남는다',
+          '주변에 사람이 몇 있지만 이쪽 이야기를 듣지는 않는다',
+          '일 때문에 만난 자리라 제3자가 곁에 있다'],
+  frame: ['마른','보통','보통','다부진','글래머'],
+  temper: ['{{user}}에게 흥미를 느낀다','{{user}}에게 무관심한 척한다',
+           '{{user}}를 경계한다','{{user}}에게 호의적이다','{{user}}에게 시비를 건다'],
+  /* 이 셋이 제타형에만 있다 */
+  triggers: ZETA_TRIGGERS,
+  /* 반말이 뼈대이되 존대도 섞는다 — 제타 넷 중 소개팅만 존대였다 */
+  speech: ['서로 반말. 이름을 그대로 부른다. 「야」 로 말을 건다. ㅋㅋ ;; 임 -냐고 같은 인터넷 말씨를 쓴다',
+           '서로 반말. 말끝이 짧고 툭툭 끊긴다. 욕이 섞인다',
+           '서로 반말이지만 {{user}} 쪽이 조금 어렵다',
+           '{{char}}만 반말, {{user}}에게는 존대를 받는다',
+           '서로 존대. 아직 이름을 부르지 않는다',
+           '서로 존대이지만 {{char}} 쪽이 자꾸 말을 놓으려 한다']
+};
+
+
 /* 배포판용 중립판. 「축마다 값을 골라 한 사람을 짠다」는 얼개는 그대로 두고
    나이대·국적 같은 취향 줄만 뺀다. 통째로 비우면 무엇을 써야 할지 모른다 —
    이 칸은 자유 서술이라 빈 채로 두면 아무도 안 쓴다. */
@@ -14353,7 +14684,8 @@ const DEFAULT_TASTE =
 - 과장된 설정을 넣지 않는다. 현실에 있을 법한 사람이어야 한다.`;
 
 function rollSeeds(mode, gender){
-  const POOL = mode === 'taste' ? TASTE : WILD;
+  /* 260905 — 제타형을 더했다. 셋 다 같은 꼴이라 아래는 그대로 돈다 */
+  const POOL = mode === 'zeta' ? ZETA : mode === 'taste' ? TASTE : WILD;
   const lo = Math.max(18, parseInt(localStorage.getItem(LS.ageMin) || '20', 10));
   const hi = Math.max(lo, parseInt(localStorage.getItem(LS.ageMax) || '39', 10));
 
@@ -14406,7 +14738,9 @@ function rollSeeds(mode, gender){
     frame,
     body: bodyRoll.body, bust: bodyRoll.bust, waist: bodyRoll.waist, hip: bodyRoll.hip,
     temper: POOL.temper.length ? pick(POOL.temper) : "",
-    speech: relSpeech(rel[0]),
+    /* 제타형에만 있는 둘. 다른 형은 POOL 에 없으므로 빈 채로 지나간다 */
+    trigger: POOL.triggers ? pick(POOL.triggers) : "",
+    speech: POOL.speech ? pick(POOL.speech) : relSpeech(rel[0]),
     stats: 매력기울이기(
       applyTraitStats(rollStats(mode, rel[1], rel[2], rel[3]), traits), frame),
     imgSeed: randInt(100000, 999999)
@@ -15249,7 +15583,7 @@ async function 카드한장(mode, gender, seed, 바람){
       description: sec.description, personality: sec.personality || '',
       scenario: sec.scenario || '', first_mes: sec.first_mes || '',
       mes_example: sec.mes_example || '', system_prompt:'', post_history_instructions:'',
-      tags: [mode === 'taste' ? '선호형' : '랜덤'],
+      tags: [mode === 'taste' ? '선호형' : mode === 'zeta' ? '제타형' : '랜덤'],
       profile: {
         age: String(seed.age), job: seed.job, body: seed.body, gender,
         /* 프롬프트는 12자를 요구하는데 모델이 잘 안 지킨다.
@@ -15302,7 +15636,7 @@ async function generateCharacter(mode, gender, seed, 몇장, 바람){
   const 셈 = N;
   S.generating = true;
   const genFrom = now();
-  const 결 = (mode === 'taste' ? '선호형' : '무작위');
+  const 결 = (mode === 'taste' ? '선호형' : mode === 'zeta' ? '제타형' : '무작위');
   let 끝난수 = 0;
   /* 카드 한 장에 2,000토큰 안팎이라 무료 모델에서는 20~60초가 걸린다.
      40초로 못 박으니 실제와 자주 어긋났다 — 붐빔에 따라 두 배씩 차이가 난다.
@@ -15720,7 +16054,13 @@ const randCharMenu = (g, reshow) => {
     {label:'완전 랜덤', html:'<b>🎲 완전 랜덤 — 한 번에' + 꼬리 + '</b>' +
       '<span class="ksub">결을 가리지 않고 통째로 뽑습니다</span>',
      run: () => 방향묻기('완전 랜덤으로 ' + N + '명 만듭니다',
-       w => generateCharacter('wild', g, null, N, w))}
+       w => generateCharacter('wild', g, null, N, w))},
+    /* 260905 — 제타 로그 넷에서 뽑은 결. 이미 붙어 있는 사이에서 시작한다 */
+    {label:'제타형', html:'<b>🗝 제타형 — 한 번에' + 꼬리 + '</b>' +
+      '<span class="ksub">이미 아는 사이 · 겉은 까칠하고 속은 호감 · ' +
+      '<b>무너지는 지점</b>이 하나 박힙니다</span>',
+     run: () => 방향묻기('제타형으로 ' + N + '명 만듭니다',
+       w => generateCharacter('zeta', g, null, N, w))}
   ], null, reshow);
 };
 $('bRandChar').onclick = () => {
@@ -17905,6 +18245,7 @@ function loadSettings(){
   $('sMaxTok').value = localStorage.getItem(LS.maxTok) || '2400';
   $('sBudget').value = localStorage.getItem(LS.budget) || '20000';
   $('sLen').value    = localStorage.getItem(LS.len) || '900';
+  칠하기분량();
   showMaxTokRec();
   $('sPen').value    = localStorage.getItem(LS.penalty) ?? '0.3';
   $('sWake').checked = localStorage.getItem(LS.wake) === '1';
@@ -18009,8 +18350,22 @@ if ($('sGgKey')) $('sGgKey').onchange = () => {
 $('sTemp').onchange   = () => localStorage.setItem(LS.temp, $('sTemp').value);
 $('sMaxTok').onchange = () => localStorage.setItem(LS.maxTok, $('sMaxTok').value);
 $('sBudget').onchange = () => localStorage.setItem(LS.budget, $('sBudget').value);
+/* 260905 — 숫자를 손으로 치는 것 말고 갈래로도 고르게 한다.
+   짧게는 제타 실측(285자)에 맞춘 값이다 */
+$('lenPick').onclick = e => {
+  const b = e.target.closest('[data-len]'); if (!b) return;
+  $('sLen').value = b.dataset.len;
+  $('sLen').dispatchEvent(new Event('change'));
+  칠하기분량();
+};
+function 칠하기분량(){
+  const 지금 = String($('sLen').value || '900');
+  $('lenPick').querySelectorAll('[data-len]').forEach(b =>
+    b.classList.toggle('on', b.dataset.len === 지금));
+}
 $('sLen').onchange    = () => {
   localStorage.setItem(LS.len, $('sLen').value);
+  칠하기분량();
   showMaxTokRec();
 };
 /* 목표 분량과 최대 출력이 따로 놀면 규칙이 무력해진다.
@@ -20568,11 +20923,11 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b162';
-const APP_BUILT = '2026-09-05 18:14';
+const APP_BUILD = 'b163';
+const APP_BUILT = '2026-09-05 18:49';
 const APP_BAKED = true;   /* 이 파일은 구운 것입니다. 손으로 고치지 마십시오 —
                              app/index.html 을 고치고 node 검증/본편굽기.js 를 다시 돌리십시오 */
-const APP_NOTE  = '신고 3건 · 굽기 순서 바로잡음';
+const APP_NOTE  = '장르 제타 · 제타풍 연출 · 제타형 인물 · 제타식 화면 · 분량 갈래';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
