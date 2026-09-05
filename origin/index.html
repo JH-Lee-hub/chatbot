@@ -1287,6 +1287,13 @@
           <b>붙을 때마다 값이 나갑니다.</b> 장당 $0.01 안팎입니다.
           <select id="sImgDiceN" style="margin-top:6px"></select>
         </div>
+        <label class="sw"><input type="checkbox" id="sNoKeep">
+          <span>미해결 안 쓰기 (기본 꺼짐)</span></label>
+        <div class="hint">
+          켜 두면 <b>「아직 남아 있는 일」을 아예 안 적고 안 싣습니다.</b>
+          약속이나 갚을 것을 기억하지 않는 대신, 지난 일이 계속 따라다니지 않습니다.<br>
+          끄면 다시 쌓입니다 — 지금까지 쌓인 것은 지워지지 않습니다.
+        </div>
         <label class="sw"><input type="checkbox" id="sJolt">
           <span>이따금 일이 하나 벌어지게 하기 (기본 꺼짐)</span></label>
         <div class="hint">
@@ -1771,6 +1778,11 @@
       <div class="fld"><label>교우관계</label><input type="text" id="ceFriends" placeholder="오래된 친구 둘, 새 사람은 잘 안 사귐"></div>
       <div class="fld"><label>연애이력</label><input type="text" id="ceDating" placeholder="3년 사귄 사람과 2년 전 헤어짐"></div>
 
+      <div class="sect-h"><b>플롯</b></div>
+      <div class="hint" style="margin-top:-6px">이 둘이 장면을 굴립니다. 비워 두면 인사 한 번 하고 할 일이 없어집니다.</div>
+      <div class="fld"><label>이 자리를 뜰 수 없는 까닭</label><input type="text" id="ceHold" placeholder="비를 피해 들어왔는데 우산이 없다"></div>
+      <div class="fld"><label>지금 이루려는 것</label><input type="text" id="ceGoal" placeholder="꺼내지 못한 부탁을 오늘 안에 꺼낸다"></div>
+
       <div class="sect-h"><b>세부 설정</b><button type="button" class="btn autogen" data-sec="detail">✦ 자동생성</button></div>
       <!-- 성격 한 줄은 성장 배경이 아니라 지금의 사람됨이다. 여기가 제자리다.
            옮기면서 성장 배경 화면이 연애이력에서 끝난다 -->
@@ -1921,6 +1933,7 @@
   <section class="view" id="vPersonaEdit">
     <div class="bar">
       <button class="ico" id="peBack">‹</button><h2 id="peTitle">주인공</h2>
+      <button class="ico" id="peDice" title="무작위 생성">🎲</button>
       <button class="ico" id="peMenu">⋯</button>
       <button class="btn pri" id="peSave" style="padding:7px 14px">저장</button>
     </div>
@@ -2172,7 +2185,11 @@ const LS = {
   statAt:'rp_statat',
   /* 한 번에 몇 명을 뽑을지. 여럿 뽑는 사람은 늘 여럿을 뽑는다 */
   genCount:'rp_gencount',
-  nvWarn:'rp_nvwarn', tourDone:'rp_tourdone', chatTour:'rp_chattour', noDice:'rp_nodice', noGen:'rp_nogen', imgDice:'rp_imgdice', imgDiceN:'rp_imgdicen', jolt:'rp_jolt', joltN:'rp_joltn', imgAuto:'rp_imgauto',
+  nvWarn:'rp_nvwarn', tourDone:'rp_tourdone', chatTour:'rp_chattour', noDice:'rp_nodice', noGen:'rp_nogen', imgDice:'rp_imgdice', imgDiceN:'rp_imgdicen', jolt:'rp_jolt', joltN:'rp_joltn', noKeep:'rp_nokeep', imgAuto:'rp_imgauto',
+  /* 260905 — 제타 스타일 일곱과 수위 한 칸. 짝이 없으면 cfgEdit 이
+     getItem(undefined) 로 떨어져 일곱이 같은 키를 나눠 쓴다 */
+  st난이도:'rp_st_diff', st속도:'rp_st_pace', st표현:'rp_st_expr', st시점:'rp_st_pov',
+  st시제:'rp_st_tense', st문체:'rp_st_voice', st분위기:'rp_st_mood', top:'rp_top',
   imgKey:'rp_imgkey', imgModel:'rp_imgmodel', imgSize:'rp_imgsize', imgUnc:'rp_imgunc',
   imgHi:'rp_imghi', imgNsfw:'rp_imgnsfw', imgNsfwHi:'rp_imgnsfwhi',
   imgCen:'rp_imgcen', credBase:'rp_credbase', credLog:'rp_credlog', credLast:'rp_credlast',
@@ -2192,7 +2209,11 @@ if (DIST) for (const k in LS) LS[k] = 'd_' + LS[k];
    대화에 걸린 것이 있으면 그것을, 없으면 기본값을 쓴다.
    대화를 넘나들 때 설정이 따라다니지 않게 하려는 것이다.
    값은 늘 문자열로 다룬다 — localStorage 가 그렇고, 두 겹의 결이 달라지면 곤란하다. */
-const CFG_KEYS = ['len','maxTok','temp','penalty','imgDetail','imgSize','intro','own'];
+/* 260905 — 손으로 적던 목록을 지웠다. 쓰는 데가 없는데 CFG_META 와 따로 놀아서,
+   스타일 일곱을 넣었을 때 이것만 안 따라와 검사가 자빠졌다.
+   무엇을 대화에 걸 수 있는지는 CFG_META 하나가 말한다.
+   대신 지켜야 할 것은 **CFG_META 의 모든 칸이 LS 에 짝을 갖는가**이고,
+   그것은 검사가 본다 — cfg 와 cfgEdit 이 LS[k] 를 부르기 때문이다 */
 function cfg(k, dflt){
   const mine = S.chat?.cfg?.[k];
   if (mine !== undefined && mine !== null && mine !== '') return String(mine);
@@ -2273,6 +2294,8 @@ const RELAY_MARK = {
   '@RULE_CHARM': () => RULE_CHARM,
   '@RULE_SCENE': () => RULE_SCENE,
   '@RULE_LEAD_ON': () => RULE_LEAD_ON,
+  /* 260905 — 제타 연출도 중계로 뽑는다. 빠뜨려 배포판에서 안 실리고 있었다 */
+  '@ZETA_STYLE': () => ZETA_STYLE,
   '@RULE_OWN_ON':  () => RULE_OWN_ON,
   '@RULE_OWN_OFF': () => RULE_OWN_OFF,
   '@TASTE':      () => DEFAULT_TASTE,
@@ -5887,7 +5910,19 @@ const SUMMARY_FIELDS = ['관계','분위기'];
    그렇다고 사라지면 안 되는 것들이 있어 따로 보관해 둔다.
    중요도는 모델이 붙인 ! 와, 실제로 몇 번이나 다시 나왔는지로 가른다.
    여러 턴에 걸쳐 되풀이 언급된다는 것 자체가 그 장면에서 중요하다는 뜻이다. */
-const KEEP_LIFE = e => e.pin ? Infinity : e.n >= 4 ? Infinity : e.n >= 2 ? 20 : 6;
+/* 260905 — 수명을 다시 잡는다.
+   전에는 「네 번 나오면 영생」 이라, 모델이 매 턴 나열하기만 하면 네 턴 만에 안 죽었다.
+   실제 로그에서 「카페 가기!」 가 33턴, 「휴대폰 발신자 확인」 이 27턴을 살아 있었다.
+   나열된 횟수는 중요도가 아니다. **끝나는 조건이 적혀 있는가**가 중요도다 —
+   「이준이 돌아오면 끝남」 처럼 조건이 붙은 것은 436턴 · 727턴을 살아도 뜻이 있었고,
+   조건 없이 이름만 있는 것은 잡일이었다 */
+const KEEP_LIFE = e => {
+  if (e.k !== '미해결') return e.pin ? Infinity : e.n >= 4 ? Infinity : e.n >= 2 ? 20 : 6;
+  /* 끝나는 조건이 있으면 오래 산다. 무거운 표(!)까지 있으면 끝까지 */
+  if (e.끝) return e.pin ? Infinity : 200;
+  /* 조건이 없으면 잡일이다. 몇 번 나왔든 곧 사라진다 */
+  return e.pin ? 24 : 8;
+};
 /* 새 문법(속내와 끝나는 조건)이 없는 것은 옛 대화에서 넘어온 것이다.
    편집하지 않기로 했으므로 짧은 수명을 줘서 자연히 빠지게 한다 */
 const OLD_LIFE = 8;
@@ -10632,7 +10667,7 @@ function paintModel(){
   const id = S.chat?.model || S.character?.preferredModel || localStorage.getItem(LS.model) || '';
   $('mModel').textContent = id ? id.split('/').pop() : '모델 미지정';
 }
-$('mModel').onclick = () => { if (S.chat) chatModelSheet(); };
+$('mModel').onclick = () => { if (S.chat) chatModelSheet(false, null); };
 
 /* 롤플레잉에 쓸 만한 것만 가격대별로 골라 둔다.
    목록에 없거나 사라진 모델은 아래 "전체 목록에서 고르기"로 간다. */
@@ -10952,9 +10987,11 @@ async function setModelAlias(from, to){
   toast('이후로는 ' + to.split('/').pop() + ' 를 씁니다');
 }
 
-function chatModelSheet(reshow){
+/* 260905 — 뒤로가기가 늘 설정 메뉴로 갔다. 상단 이름을 눌러 들어와도 그랬다.
+   부른 쪽이 정하게 받는다 */
+function chatModelSheet(reshow, 뒤로){
   const cur = S.chat?.model || '';
-  const again = () => chatModelSheet(true);
+  const again = () => chatModelSheet(true, 뒤로);
   const items = pickItems(cur, id => setChatModel(id), again);
   sheet('이 대화의 모델', [
     {info: true, html: '<span class="pguide">' + PICK_GUIDE + '</span>'},
@@ -10962,7 +10999,7 @@ function chatModelSheet(reshow){
      keep: again, run: () => setChatModel('')},
     ...items,
     {label:'전체 목록에서 고르기 — 검색', run: () => allModelSheet()}
-  ], chatSettingsMenu, reshow);
+  ], 뒤로 === null ? null : (뒤로 || chatSettingsMenu), reshow);
 }
 
 /* 수백 개를 늘어놓아 봐야 고를 수 없다. 찾아서 고르고, 무엇인지 함께 보여 준다. */
@@ -11655,6 +11692,9 @@ const JOLT_GAP = [
 ];
 const joltOf = k => JOLT_GAP.find(x => x.k === k) || JOLT_GAP[1];
 const joltOn = () => localStorage.getItem(LS.jolt) === '1';
+/* 260905 — 미해결이 지긋지긋하다는 말을 듣고 둔 스위치.
+   켜면 상태 줄에서도 안 받고 프롬프트에도 안 싣는다. 쌓인 것은 안 지운다 */
+const keepOff = () => localStorage.getItem(LS.noKeep) === '1';
 
 /* 무엇을 키울지 고른다. **무거운 미해결 중 오래 조용한 쪽**이 먼저다.
    가벼운 것은 안 고른다 — 「함께 카페 가기」가 돌발로 커지면 우스꽝스럽다 */
@@ -14547,6 +14587,42 @@ const WILD = {
            '{{user}}에게 적대적이다','{{user}}에게 흥미를 느낀다','{{user}}를 이용하려 한다']
 };
 
+/* ═══ 굽히는 폭과 굽힌 값 ═══
+   연구 「요구와 반항」(results/260905_009~011)에서 나온 것.
+
+   수치 열하나는 **상태**다. 「호감 62」 는 지금 어떤지를 말할 뿐,
+   요구를 받았을 때 무엇을 하는지는 안 말한다.
+   그래서 같은 인물이 어떤 턴에는 버티고 어떤 턴에는 순순히 따랐다.
+
+   아래 둘은 **선**이다. 어디까지 봐주고, 굽히면 무엇을 치르는가 */
+const BEND = [
+  '부탁에는 약하고 명령조에는 굳는다',
+  '이유를 대면 들어주지만 그냥 시키면 안 움직인다',
+  '두 번까지는 버티고 세 번째에 꺾인다',
+  '작은 것은 다 들어주되 한 가지만은 절대 안 된다',
+  '먼저 조건을 걸고 나서야 움직인다',
+  '남 앞에서는 다 들어주고 둘만 남으면 따진다',
+  '웃으며 들어주는 척하고 실제로는 안 한다',
+  '싫다고 해 놓고 결국은 해 준다. 다만 티를 낸다',
+  '{{user}}가 곤란해 보이면 말없이 먼저 움직인다',
+  '제 쪽에서 손해 보는 것은 참아도 무시당하는 것은 못 참는다',
+  '가까운 일은 들어주고 앞일을 정하는 것은 미룬다',
+  '몸을 쓰는 부탁은 쉽게, 마음을 여는 일은 어렵게 내준다'
+];
+const BEND_COST = [
+  '져 준 날은 말수가 준다',
+  '들어주고 나서 꼭 한마디를 덧붙인다',
+  '굽힌 뒤에는 한동안 퉁명스럽다',
+  '해 주고 나서 생색을 낸다',
+  '져 놓고 스스로에게 화가 난다',
+  '들어준 것을 나중에 꺼내 갚으라고 한다',
+  '굽히고 나면 그 자리를 먼저 뜬다',
+  '져 준 것을 인정하지 않고 원래 그러려던 것처럼 군다',
+  '한 번 굽히면 다음번에는 더 세게 버틴다',
+  '들어주면서도 끝까지 조건을 붙인다'
+];
+
+
 /* 제타형 — 제타 로그 넷에서 뽑은 결.
    TASTE · WILD 와 같은 꼴이라 rollSeeds 가 그대로 굴린다.
    다른 둘과 다른 점은 **이미 붙어 있는 관계**에서 시작한다는 것뿐이다 */
@@ -14595,7 +14671,59 @@ const ZETA_RELS = [
   ['{{user}}가 자주 가는 가게의 주인', 40, 22, 8],
   ['{{user}}의 옛 연인의 친구', 55, 20, 25],
   ['{{user}}에게 무언가를 맡겨 둔 사람', 40, 25, 10],
-  ['{{user}}의 비밀을 하나 아는 사람', 50, 25, 20]
+  ['{{user}}의 비밀을 하나 아는 사람', 50, 25, 20],
+
+  /* ── 오늘 처음 본 사이 (여기가 뼈대다. 사건이 둘을 엮는다) ── */
+  ['{{user}}와 오늘 처음 마주친 사람', 70, 12, 10],
+  ['{{user}}와 같은 일에 휘말린 낯선 사람', 65, 15, 12],
+  ['{{user}}에게 도움을 청하게 된 낯선 사람', 60, 20, 8],
+  ['{{user}}가 도움을 청하게 된 낯선 사람', 62, 15, 10],
+  ['{{user}}와 같은 것을 찾고 있는 사람', 58, 18, 15],
+  ['{{user}}와 같은 데 발이 묶인 사람', 55, 18, 12],
+  ['{{user}}를 오해하고 찾아온 사람', 68, 12, 35],
+  ['{{user}}를 며칠째 지켜보고 있던 사람', 60, 30, 18],
+  ['{{user}}와 물건이 뒤바뀐 사람', 58, 20, 10],
+  ['{{user}}가 잃어버린 것을 주운 사람', 55, 22, 8],
+  ['{{user}}에게 갚을 것이 있는 사람', 50, 25, 12],
+  ['{{user}}에게 받을 것이 있는 사람', 52, 18, 25]
+];
+
+/* ── 얽힘 — 모르는 사이를 엮은 사건.
+   제타형의 뼈대는 「이미 가까운 사이」가 아니라 **가까워지는 과정**이다.
+   그 과정을 여는 것이 여기 있다 */
+const ZETA_TANGLE = [
+  '같은 자리에서 같은 일을 목격했고, 둘 말고는 본 사람이 없다',
+  '{{user}}가 곤란한 자리에서 얼떨결에 편을 들어 주었다',
+  '{{char}}가 곤란한 자리에서 {{user}}가 얼떨결에 편을 들어 주었다',
+  '둘의 물건이 뒤바뀌었고, 돌려주려면 다시 만나야 한다',
+  '{{user}}가 잃어버린 것을 {{char}}가 주웠는데, 그 안에 봐서는 안 될 것이 있었다',
+  '한밤중에 같은 데 발이 묶여 날이 밝기를 함께 기다리게 되었다',
+  '{{char}}가 급한 일로 {{user}}에게 손을 벌렸고, {{user}}가 받아 주었다',
+  '{{user}}가 급한 일로 손을 벌렸는데 마침 곁에 있던 것이 {{char}}였다',
+  '둘이 같은 사람을 찾고 있었고, 오늘 그것을 알았다',
+  '{{char}}가 {{user}}를 다른 사람으로 알고 찾아왔다',
+  '{{user}}가 무심코 한 일이 {{char}}의 하루를 통째로 바꿔 놓았다',
+  '{{char}}가 저지른 일을 {{user}}가 대신 뒤집어썼다',
+  '{{user}}가 저지른 일을 {{char}}가 알면서도 덮어 주었다',
+  '한 번 지나칠 뻔한 자리에서 {{char}}가 먼저 {{user}}를 불러 세웠다'
+];
+
+/* ── 동기 — 알면서도 못 벗어나는 까닭.
+   ③ 「결국 벗어나지 못한다」를 받치는 것이 이 항목이다.
+   까닭이 없으면 그냥 곁에 붙어 있는 인물이 되고, 그건 설정이지 인물이 아니다 */
+const ZETA_MOTIVE = [
+  '{{user}} 말고는 그 일을 아는 사람이 없다. 말할 데가 여기뿐이다',
+  '{{user}}에게 갚지 못한 것이 있고, 갚기 전에는 물러설 수가 없다',
+  '{{user}} 곁에 있을 때만 스스로가 견딜 만한 사람이 된다',
+  '{{user}}를 놓치면 그때 그 일이 없던 일이 되어 버린다',
+  '{{user}}가 제 정체를 알아챌까 봐 눈을 뗄 수가 없다',
+  '{{user}}에게 아직 못 물어본 것이 하나 남았다',
+  '{{user}}가 저를 어떻게 생각하는지 확인하기 전에는 못 끝낸다',
+  '{{user}}에게 거짓말을 하나 했고, 그것을 지키려면 곁에 있어야 한다',
+  '{{user}}가 없으면 지금 벌인 일을 수습할 방법이 없다',
+  '{{user}}만이 저를 예전 그 사람으로 안 본다',
+  '{{user}}를 걱정하는 것이 습관이 되어 이제 안 하는 법을 모른다',
+  '떠나겠다고 몇 번을 말했고, 그 말을 지킨 적이 한 번도 없다'
 ];
 
 /* 무너지는 지점 — 제타 카드의 「핵심 약점」 자리.
@@ -14613,16 +14741,36 @@ const ZETA_TRIGGERS = [
   '{{user}}가 웃으면 하려던 말을 잊는다',
   '{{user}}가 이름을 줄여 부르면 반박을 못 한다',
   '{{user}}에게 들킨 것이 하나 더 있는 줄 알면 말이 빨라진다',
-  '{{user}}가 조용히 기다리면 견디지 못하고 먼저 입을 연다'
+  '{{user}}가 조용히 기다리면 견디지 못하고 먼저 입을 연다',
+
+  /* 260905 — 위 열둘은 죄다 「{{user}}가 무엇을 하면」 이었다.
+     그건 제타 대화에서 내가 억지로 만든 자리를 보고 베낀 것이다.
+     아래 여덟은 **{{char}} 쪽에서 먼저 새는 것**이다. {{user}}가 안 건드려도 일어난다 */
+  '제 이야기를 하다 말고 멈추는데, 멈춘 자리가 늘 같다',
+  '술이 한 잔 들어가면 묻지도 않은 것을 먼저 말한다',
+  '거짓말을 할 때 말이 오히려 길어진다',
+  '피곤하면 지키던 말투가 무너지고 본래 말씨가 나온다',
+  '{{user}}가 아닌 다른 사람 앞에서는 아주 다른 사람이 된다',
+  '한 가지 일에 대해서만 매번 화제를 돌린다',
+  '고맙다는 말을 못 해서 대신 다른 것을 놓고 간다',
+  '자기가 한 말을 며칠 뒤에 혼자 되짚어 와서 정정한다',
+  '무엇을 부탁받으면 거절을 못 해서 나중에 혼자 무리한다',
+  '칭찬을 들으면 대꾸를 못 하고 화제를 돌린다',
+  '자기 이야기가 길어졌다 싶으면 갑자기 입을 닫는다',
+  '누가 곤란해지는 자리에서는 제 일을 미뤄 두고 나선다'
 ];
 
 const ZETA = {
   job: ZETA_JOBS,
   relation: ZETA_RELS,
   /* 겉은 까칠 · 무심 · 공격적. 제타 넷이 다 그랬다 */
+  /* 260905 — 앞의 아홉은 죄다 까칠하거나 벽이 있었다.
+     제타 넷이 그랬다고 제타형 전체가 그럴 까닭은 없다. 밝은 결을 넣는다 */
   surface: ['시끄럽고 거침없음','까칠하고 도도함','무심하고 시크함','장난스럽고 능청스러움',
             '공격적이고 도발적','시큰둥하고 재고 보는','능글맞고 넉살 좋음',
-            '예의 바르지만 벽이 있음','밝은데 속을 안 보임'],
+            '예의 바르지만 벽이 있음','밝은데 속을 안 보임',
+            '숨김없이 밝고 말이 많음','다정하고 잘 챙김','호기심이 많고 겁이 없음',
+            '차분하고 말수가 적지만 따뜻함','엉뚱하고 태평함'],
   /* 속은 호감. 그것을 인정하지 못하는 것이 이 결의 뼈대다 */
   lack: ['좋아하는 마음을 절대 인정하지 않음','감정을 전부 공격성으로 표출함',
          '지는 것을 못 견뎌 논리를 바꿔서라도 이기려 함','먼저 사과하는 법을 모름',
@@ -14641,8 +14789,10 @@ const ZETA = {
   frame: ['마른','보통','보통','다부진','글래머'],
   temper: ['{{user}}에게 흥미를 느낀다','{{user}}에게 무관심한 척한다',
            '{{user}}를 경계한다','{{user}}에게 호의적이다','{{user}}에게 시비를 건다'],
-  /* 이 셋이 제타형에만 있다 */
+  /* 이 넷이 제타형에만 있다 */
   triggers: ZETA_TRIGGERS,
+  tangle: ZETA_TANGLE,
+  motive: ZETA_MOTIVE,
   /* 반말이 뼈대이되 존대도 섞는다 — 제타 넷 중 소개팅만 존대였다 */
   speech: ['서로 반말. 이름을 그대로 부른다. 「야」 로 말을 건다. ㅋㅋ ;; 임 -냐고 같은 인터넷 말씨를 쓴다',
            '서로 반말. 말끝이 짧고 툭툭 끊긴다. 욕이 섞인다',
@@ -14738,8 +14888,14 @@ function rollSeeds(mode, gender){
     frame,
     body: bodyRoll.body, bust: bodyRoll.bust, waist: bodyRoll.waist, hip: bodyRoll.hip,
     temper: POOL.temper.length ? pick(POOL.temper) : "",
+    /* 연구 「요구와 반항」 — 기준은 선이지 눈금이 아니다. 셋 다 모든 형에 붙인다 */
+    bend: pick(BEND),
+    bendCost: pick(BEND_COST),
     /* 제타형에만 있는 둘. 다른 형은 POOL 에 없으므로 빈 채로 지나간다 */
     trigger: POOL.triggers ? pick(POOL.triggers) : "",
+    /* 제타형의 뼈대 — 무엇이 둘을 엮었고, 왜 못 벗어나는가 */
+    tangle: POOL.tangle ? pick(POOL.tangle) : "",
+    motive: POOL.motive ? pick(POOL.motive) : "",
     speech: POOL.speech ? pick(POOL.speech) : relSpeech(rel[0]),
     stats: 매력기울이기(
       applyTraitStats(rollStats(mode, rel[1], rel[2], rel[3]), traits), frame),
@@ -14753,11 +14909,14 @@ function rollSeeds(mode, gender){
    mes_example 은 모델이 자주 빠뜨리는데 없어도 대화는 도므로 여기 안 넣는다 */
 const CARD_SECTIONS = ['name', 'traits', 'habit', 'look', 'description', 'outfit',
                        'personality', 'scenario', 'first_mes',
-                       'growth', 'edu', 'finance', 'living', 'friends', 'dating'];
+                       'growth', 'edu', 'finance', 'living', 'friends', 'dating',
+                       /* 260905 — 제타의 플롯 두 칸. 이것이 장면을 굴린다 */
+                       'hold', 'goal'];
 const CARD_LABEL = {name:'이름', traits:'성격 한 줄', habit:'습관', look:'외형',
   description:'설정', outfit:'복장', personality:'성격', scenario:'상황',
   first_mes:'첫 대사', growth:'성장배경', edu:'학력', finance:'재정',
-  living:'거주', friends:'교우', dating:'연애이력', startplace:'첫 자리'};
+  living:'거주', friends:'교우', dating:'연애이력', startplace:'첫 자리',
+  hold:'못 뜨는 까닭', goal:'이루려는 것'};
 function parseSections(txt){
   const parts = String(txt || "").split(/^[=\-]{2,}\s*([A-Z_]+)\s*[=\-]{2,}\s*$/m);
   const out = {};
@@ -15020,11 +15179,57 @@ function 주사위글(d){
 /* 260901 — 한 번에 다 받으면 첫 대사가 그릇을 먹고 뒤가 잘린다.
    갈래를 받아 두 번에 나눠 받는다. 앞부분(재료 · 규칙)은 둘이 같이 쓴다 */
 const CARD_사람칸 = ['NAME', 'TRAITS', 'HABIT', 'LOOK', 'OUTFIT', 'DESCRIPTION',
-                     'PERSONALITY', 'GROWTH', 'EDU', 'FINANCE', 'LIVING', 'FRIENDS', 'DATING'];
+                     'PERSONALITY', 'GROWTH', 'EDU', 'FINANCE', 'LIVING', 'FRIENDS', 'DATING',
+                     'HOLD', 'GOAL'];
 const CARD_장면칸 = ['SCENARIO', 'FIRST_MES', 'MES_EXAMPLE', 'STARTPLACE'];
+/* 260905 — 제타형 카드는 첫 장면을 제타 꼴로 쓴다.
+   인물 풀만 갈고 쓰는 지침을 안 갈았더니, 뽑아 놓고도 소설체 카드가 나왔다 */
+const 제타형인가 = mode => mode === 'zeta';
+
 function cardPrompt(){ throw new Error("중계가 짭니다 — " + "cardPrompt"); }
 
 
+
+/* ═══════════════ 제타의 스타일 일곱 ═══════════════
+   시험판에서 옮겨 왔다. 인물의 것이 아니라 **대화의 것**이라
+   아래 CFG_META 에 얹어 대화마다 따로 걸리게 한다.
+   빈 값이 기본이고, 빈 값이면 아무것도 안 싣는다 — 안 고른 것을 시키지 않는다 */
+/* 사적인 데로 어디까지 — 규칙 9-3 이 여기서 시작한다.
+   이것은 **어디서 시작하는가**이고, 그 뒤로 움직이는 것은 {{user}}가 어떻게 답했는가다 */
+const TOP_LEVEL = {
+  '': '',
+  조심스럽게: '{{char}}는 사적인 것을 좀처럼 먼저 묻지 않는다. {{user}}가 먼저 꺼낸 것만 이어 간다.',
+  보통: '{{char}}는 때와 자리를 보아 사적인 것을 묻는다. 받아 주면 한 걸음 더 들어가고, 피하면 물러선다.',
+  거리낌없이: '{{char}}는 사적인 것을 스스럼없이 묻고, 제 사적인 것도 먼저 꺼낸다. 처음 만난 자리에서도 그렇다.'
+};
+
+const PLOT_STYLE = {
+  난이도: {'': '', 쉬운: '{{char}}는 {{user}}에게 호의적이다. 벽이 낮고 금세 마음을 연다.',
+    보통: '{{char}}는 제 성격과 사정에 맞게 움직인다. 억지로 밀지도 막지도 않는다.',
+    어려운: '{{char}}는 쉽게 마음을 열지 않는다. 마음이 가도 한 걸음 물러선다. 가까워지려면 여러 턴이 걸린다.',
+    극한: '{{char}}는 좀처럼 넘어오지 않는다. 다가오면 밀어내고, 밀어낸 자신에게 또 흔들린다. 관계가 나아가는 것 자체가 사건이다.'},
+  속도: {'': '', 빠른: '장면이 빨리 옮겨 간다. 한 턴에 여러 걸음 나아가도 된다.',
+    자연스러운: '이야기에 맞춰 완급을 조절한다.',
+    느린: '한 턴에 한 걸음만 간다. 같은 자리에 오래 머물러도 된다. 서두르지 않는다.'},
+  표현: {'': '', '대화 더하기': '대사를 늘린다. 지문과 내레이션은 줄인다.',
+    기본: '대사와 지문과 내레이션의 균형을 지킨다.',
+    '행동 더하기': '지문을 늘린다. 몸이 무엇을 하는지 자세히 쓴다.'},
+  시점: {'': '', '1인칭': '{{char}}가 「나」로 말한다.',
+    '2인칭': '{{user}}를 「너」로 부르며 서술한다.',
+    '3인칭': '이름으로 부른다. 「그 · 그녀」 는 쓰지 않는다.'},
+  시제: {'': '', 과거: '서술은 「…했다」 로 쓴다.', 현재: '서술은 「…한다」 로 쓴다.'},
+  문체: {'': '', 건조하게: '수식을 걷어낸다. 사실만 짧게 놓는다. 감정을 말하지 않고 행동으로만 보인다.',
+    뜨겁게: '숨과 체온과 맥박을 쓴다. 문장이 짧고 끊긴다. 말끝이 흐려진다.',
+    차갑게: '거리를 둔다. 판정하는 내레이션이 잦다. 인물이 스스로를 밖에서 본다.',
+    느리게: '한 동작을 여러 도막으로 나눈다. 사이와 침묵을 쓴다.',
+    거칠게: '구어와 비속어를 쓴다. 문장이 뚝뚝 끊긴다. 존대가 무너진다.'},
+  분위기: {'': '', 로맨스: '끌림과 망설임이 축이다.', 드라마: '사정과 갈등이 축이다.',
+    힐링: '상처를 건드리되 아물게 한다.', 얀데레: '집착이 사랑의 얼굴을 하고 나온다.',
+    미스터리: '드러나지 않은 것이 장면을 끌고 간다.', 호러: '무엇인가 잘못되어 있다는 감각을 남긴다.',
+    액션: '몸이 부딪는다. 장면이 빨리 움직인다.', 판타지: '이 세계의 규칙이 다르다.'}
+};
+/* 걸어 둔 것만 모아 한 도막으로. 하나도 안 걸었으면 빈 글이다 */
+function plotStyleText(){ throw new Error("중계가 짭니다 — " + "plotStyleText"); }
 
 /* ═══════════════ 이 대화만의 설정 ═══════════════
    여덟 가지를 대화별로 걸 수 있다. 안 걸면 설정의 기본값을 그대로 따른다.  */
@@ -15039,7 +15244,15 @@ const CFG_META = [
    opts: () => [['832x1216','세로 (인물)'], ['1024x1024','정사각'],
                 ['1216x832','가로 (배경)'], ['640x960','세로 · 저용량']]},
   {k:'intro',     t:'첫 장면 생성', d:'카드의 첫 대사 대신 새로 쓴다', kind:'bool', dflt:'1'},
-  {k:'own',       t:'내 지문',     d:'쓴 대로 전부 일어나게 할까',   kind:'bool', dflt:'0'}
+  {k:'own',       t:'내 지문',     d:'쓴 대로 전부 일어나게 할까',   kind:'bool', dflt:'0'},
+  /* 260905 — 사적인 데로 어디까지 들어갈지. 안 고르면 규칙 9-3 만 돈다 */
+  {k:'top', t:'사적인 영역', d:'사적인 것을 어디서부터 묻게 할까', kind:'pick', dflt:'',
+   opts: () => Object.keys(TOP_LEVEL).map(v => [v, v || '안 씀 (대화가 정한다)'])},
+  /* 260905 — 제타의 스타일 일곱. 안 고르면 아무것도 안 싣는다 */
+  ...Object.keys(PLOT_STYLE).map(축 => ({
+    k: 'st' + 축, t: 축, d: '제타 스타일 · 안 고르면 안 싣는다', kind: 'pick', dflt: '',
+    opts: () => Object.keys(PLOT_STYLE[축]).map(v => [v, v || '안 씀'])
+  }))
 ];
 
 /* 값을 사람이 읽는 말로 */
@@ -15602,6 +15815,7 @@ async function 카드한장(mode, gender, seed, 바람){
            편집 화면에서만 채워 주던 것을 여기서도 채운다 */
         startState: '',
         living: sec.living || '', friends: sec.friends || '', dating: sec.dating || '',
+        hold: sec.hold || '', goal: sec.goal || '',
         stats: seed.stats
       },
       accent: pick(PALETTE), preferredModel:'', temperature:null,
@@ -15786,6 +16000,7 @@ const CTX_FIELDS = [
   ['성별','ceGender'], ['이름','ceName'], ['나이','ceAge'], ['직업','ceJob'], ['신체','ceBody'],
   ['성장배경','ceGrowth'], ['학력','ceEdu'], ['재정수준','ceFinance'], ['거주환경','ceLiving'],
   ['교우관계','ceFriends'], ['연애이력','ceDating'],
+  ['못 뜨는 까닭','ceHold'], ['이루려는 것','ceGoal'],
   ['끌어당길 결','ceCharm'], ['성격 한 줄','ceTraits'], ['습관','ceHabit'], ['설정','ceDesc'],
   ['성격','cePers'], ['상황','ceScen'], ['이 캐릭터는 누구인가','ceRel'],
   ['호칭과 말투','ceSpeech'], ['첫 대사','ceFirst'], ['예시 대화','ceEx'],
@@ -15810,6 +16025,7 @@ function currentCharContext(){
   add('이름','ceName'); add('나이','ceAge'); add('직업','ceJob'); add('신체','ceBody');
   add('성장배경','ceGrowth'); add('학력','ceEdu'); add('재정수준','ceFinance');
   add('거주환경','ceLiving'); add('교우관계','ceFriends'); add('연애이력','ceDating');
+  add('못 뜨는 까닭','ceHold'); add('이루려는 것','ceGoal');
   const st = STAT_KEYS.map(k => {
     const v = ($('ceSt' + k[0].toUpperCase() + k.slice(1))?.value || '').trim();
     return v === '' ? null : STAT_LABEL[k] + ' ' + v;
@@ -16988,7 +17204,7 @@ function editChar(id, over){
     id: uid(), spec:'chara_card_v2', name:'', description:'', personality:'', scenario:'',
     first_mes:'', mes_example:'', system_prompt:'', post_history_instructions:'',
     profile:{age:'',job:'',body:'',traits:'',habit:'',relation:'',look:'',outfit:'',seed:'',
-      gender:'f',bust:'',waist:'',hip:'',growth:'',friends:'',stats:null,avatar:'',
+      gender:'f',bust:'',waist:'',hip:'',growth:'',friends:'',hold:'',goal:'',stats:null,avatar:'',
       speech:'',startState:''},
     tags:[], accent: PALETTE[Math.floor(Math.random()*PALETTE.length)],
     preferredModel:'', temperature:null, createdAt: now(), updatedAt: now()
@@ -17015,6 +17231,7 @@ function editChar(id, over){
   $('ceGrowth').value = pf.growth || '';   $('ceEdu').value = pf.edu || '';
   $('ceFinance').value = pf.finance || ''; $('ceLiving').value = pf.living || '';
   $('ceFriends').value = pf.friends || ''; $('ceDating').value = pf.dating || '';
+  $('ceHold').value = pf.hold || '';       $('ceGoal').value = pf.goal || '';
   setStatFields(pf.stats);
   showCeAvatar(pf.avatar || '');
   setCeGender(pf.gender || 'f');
@@ -17082,6 +17299,7 @@ $('ceSave').onclick = async () => {
     growth: tidy($('ceGrowth').value), edu: tidy($('ceEdu').value),
     finance: tidy($('ceFinance').value), living: tidy($('ceLiving').value),
     friends: tidy($('ceFriends').value), dating: tidy($('ceDating').value),
+    hold: tidy($('ceHold').value), goal: tidy($('ceGoal').value),
     speech: tidy($('ceSpeech').value), startState: tidy($('ceStart').value),
     stats: readStatFields(),
     avatar: e.profile?.avatar || ''
@@ -17503,13 +17721,18 @@ async function generatePersona(gender){
       '',
       '[작성 규격]',
       '- NAME 은 한국식 세 글자 이름. 흔하지 않게 짓는다.',
-      '- DESC 는 상대역이 이 사람을 어떻게 인식할지 쓴다. 나이 · 직업 · 성격 · 말투 · 분위기를 담아',
-      '  세 문장에서 다섯 문장, 전체 200자 안팎으로 쓴다. 과장하지 않고 현실에 있을 법한 사람으로.',
+      '- LOOK 은 겉모습. 키 · 체격 · 인상 · 즐겨 입는 것. 두세 문장.',
+      '- SPEECH 는 말투와 호칭. 위 재료의 말투를 살려 어떻게 말하는지 한두 문장.',
+      '- PERS 는 성격. 겉으로 보이는 결과 속에 있는 것. 두세 문장.',
+      '- NOW 는 요즘 사정. 지금 무엇에 매여 있고 무엇이 걸리는지 한두 문장.',
+      '- DESC 는 상대역이 이 사람을 어떻게 인식할지 쓴다. 위 칸들을 되풀이하지 말고',
+      '  **첫인상과 분위기**를 두세 문장, 150자 안팎으로.',
       '- 상대역의 이름이나 관계는 쓰지 않는다. 주인공 자신에 대해서만 쓴다.',
-      '- 한국어로만 쓴다.',
+      '- 과장하지 않고 현실에 있을 법한 사람으로. 한국어로만 쓴다.',
       '',
       '[출력 형식] 아래 구분선을 그대로 쓰고 앞뒤에 다른 말을 붙이지 않는다.',
-      '===NAME===', '===DESC===', '===END==='
+      '===NAME===', '===LOOK===', '===SPEECH===', '===PERS===', '===NOW===',
+      '===DESC===', '===END==='
     ].join('\n') + 방향글(S.genWish);
     const sec = parseSections(await askText(prompt, 900, 1.0));
     let name = (sec.name || '').split('\n')[0].replace(/["'()\[\]{}·]/g, '').trim().slice(0, 12);
@@ -17520,8 +17743,15 @@ async function generatePersona(gender){
       while (S.personas.some(p => p.name === base + ' ' + i)) i++;
       name = base + ' ' + i;
     }
+    /* 260905 — 전에는 NAME 과 DESC 만 받아 나머지 다섯 칸이 늘 비어 있었다.
+       로그에서 자동생성한 주인공 둘이 「채워진 칸 0/6」 이었다 */
+    const 다듬 = 글 => String(글 || '').trim().replace(/^[-·*]\s*/gm, '');
     const p = {
-      id: uid(), name, description: (sec.desc || '').trim(),
+      id: uid(), name,
+      age: String(age), job: job[0],
+      look: 다듬(sec.look), speech: 다듬(sec.speech),
+      personality: 다듬(sec.pers), now: 다듬(sec.now),
+      description: 다듬(sec.desc),
       isDefault: !S.personas.length, createdAt: now(), updatedAt: now()
     };
     await dbPut('personas', p);
@@ -17561,6 +17791,16 @@ function editPersona(id, over){
   if (over) popEdit('vPersonaEdit'); else show('vPersonaEdit');
 }
 $('peGenderRow').querySelectorAll('.gsel').forEach(b => b.onclick = () => setPeGender(b.dataset.pg));
+/* 260905 — 목록에만 있고 편집 화면에는 없어 고칠 때마다 나갔다 들어와야 했다.
+   지금 고르고 있는 성별을 그대로 물려준다 */
+$('peDice').onclick = () => {
+  const 성 = $('peGender').value;
+  if (성 === 'm' || 성 === 'f') return generatePersona(성);
+  sheet('주인공 무작위 생성', [
+    {label:'남성', run: () => generatePersona('m')},
+    {label:'여성', run: () => generatePersona('f')}
+  ]);
+};
 $('peBack').onclick = () => {
   if (popClose()){ renderPersonas(); return; }
   show('vPersonas'); renderPersonas();
@@ -18279,6 +18519,7 @@ function loadSettings(){
     '<option value="' + g.k + '">' + g.t + ' — ' + g.d + '</option>').join('');
   $('sImgDiceN').value = localStorage.getItem(LS.imgDiceN) || 'some';
   $('sJolt').checked = joltOn();
+  $('sNoKeep').checked = keepOff();
   $('sJoltN').innerHTML = JOLT_GAP.map(g =>
     '<option value="' + g.k + '">' + g.t + ' — ' + g.d + '</option>').join('');
   $('sJoltN').value = localStorage.getItem(LS.joltN) || 'some';
@@ -18407,6 +18648,10 @@ $('sImgDiceN').onchange = () => {
   localStorage.setItem(LS.imgDiceN, $('sImgDiceN').value);
   paintMacros();
   toast(diceOf($('sImgDiceN').value).d + ' 붙습니다');
+};
+$('sNoKeep').onchange = () => {
+  localStorage.setItem(LS.noKeep, $('sNoKeep').checked ? '1' : '0');
+  toast($('sNoKeep').checked ? '미해결을 안 씁니다' : '미해결을 다시 씁니다');
 };
 $('sJolt').onchange = () => {
   const on = $('sJolt').checked;
@@ -20923,11 +21168,11 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b163';
-const APP_BUILT = '2026-09-05 18:49';
+const APP_BUILD = 'b169';
+const APP_BUILT = '2026-09-05 22:14';
 const APP_BAKED = true;   /* 이 파일은 구운 것입니다. 손으로 고치지 마십시오 —
                              app/index.html 을 고치고 node 검증/본편굽기.js 를 다시 돌리십시오 */
-const APP_NOTE  = '장르 제타 · 제타풍 연출 · 제타형 인물 · 제타식 화면 · 분량 갈래';
+const APP_NOTE  = '제타풍 실효화 · 제타형 인물 재정의 · 플롯 두 칸과 스타일 일곱 · 예시 베끼기 전수조사';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
