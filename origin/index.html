@@ -94,6 +94,13 @@
   #setTabs button.on{color:var(--acc);border-color:var(--acc);background:#1b2130}
   .spane{display:none}
   .spane.on{display:block}
+  /* 260908 — 어디서나 신고. 어느 화면에도 붙어 있어야 하므로 붙박이로 띄운다.
+     화면을 가리면 안 되므로 작고 옅게 두고, 누를 때만 또렷해진다 */
+  #gripe{position:fixed;right:10px;bottom:calc(58px + var(--safe-b));z-index:60;
+         width:34px;height:34px;border-radius:50%;border:1px solid var(--line);
+         background:var(--panel);color:var(--tx3);font-size:15px;font-weight:700;
+         opacity:.42;display:grid;place-items:center;line-height:1}
+  #gripe:active{opacity:1;color:var(--warn);background:var(--panel2)}
   #nav{
     display:flex;flex:0 0 auto;background:var(--panel);border-top:1px solid var(--line);
     padding-bottom:var(--safe-b);
@@ -643,6 +650,10 @@
          padding:16px;width:100%;max-width:380px;max-height:84vh;overflow-y:auto;position:relative}
   #whoX{position:absolute;top:6px;right:6px;width:40px;height:40px;border-radius:10px;
         color:var(--tx2);font-size:16px;display:grid;place-items:center}
+  /* 260908 — 편집하러 가기. 창 아래까지 내려가야 보이던 것을 위로 올린다 */
+  #whoGo{position:absolute;top:6px;right:90px;width:40px;height:40px;border-radius:10px;
+        color:var(--tx3);font-size:16px;display:grid;place-items:center}
+  #whoGo:active{background:var(--panel2)}
   #whoLock{position:absolute;top:6px;right:48px;width:40px;height:40px;border-radius:10px;
         color:var(--tx3);font-size:15px;display:grid;place-items:center}
   #whoLock:active{background:var(--panel2)}
@@ -651,7 +662,13 @@
         padding:2px 0;background:var(--bg);border:1px solid var(--line2);border-radius:6px}
   .whoStats .ihelp{margin-left:3px;width:13px;height:13px;font-size:8.5px}
   #whoX:active{background:var(--panel2)}
-  .whoHead{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+  /* 260908 — 이름을 맨 위 왼쪽에 홀로 둔다. 그 아래가 사진과 기본정보다 */
+  .whoHeadTop{font-size:19px;font-weight:600;margin:0 0 10px;padding-right:130px;
+              word-break:break-all}
+  .whoMeta{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .whoMeta span{display:block;font-size:12px;color:var(--tx2);line-height:1.5;
+                word-break:break-word}
+  .whoHead{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
   .whoHead .av{width:64px;height:64px;border-radius:14px}
   .whoHead .av img{border-radius:14px}
   .whoHead b{display:block;font-size:17px;font-weight:600}
@@ -1147,13 +1164,18 @@ body.dz-성김{--zgap:12px;--zpadv:11px;--zpadh:15px;--zfs:16px;--zactfs:14.5px;
              --zlh:1.75;--zngap:17px;--znfs:14.5px;--zmsggap:22px}
 
 /* ── 제타식 화면 ── */
-.znar{color:var(--tx2,#9a9aa0);font-style:italic;font-size:var(--znfs);margin:var(--zngap) 2px;
-      padding-left:18px;position:relative;white-space:pre-wrap;line-height:var(--zlh)}
-.znar::before{content:'≡';position:absolute;left:0;top:0;opacity:.55;font-style:normal}
-/* 260905 — 소설체가 통째로 온 턴. 자리는 내레이션이되 본문처럼 읽히게 둔다 */
-.znar.zlong{font-style:normal;font-size:15px;color:var(--tx,inherit);line-height:1.75;
-  margin:14px 2px 14px 0;padding-left:0}
-.znar.zlong::before{content:none}
+/* 260908 — 내레이션은 **대사보다 작고 회색이며 이탤릭이 아니다.**
+   지문(.zact)과 같은 크기로 두어 「말이 아닌 것」이 한눈에 갈리게 한다.
+   앞의 ≡ 딱지가 그 표다 — 제타가 그렇게 한다 */
+.znar{color:var(--tx3,#7d7d85);font-style:normal;font-size:var(--zactfs);
+      margin:var(--zngap) 2px;padding-left:17px;position:relative;
+      white-space:pre-wrap;line-height:var(--zlh)}
+.znar::before{content:'≡';position:absolute;left:0;top:0;opacity:.45;
+              font-size:calc(var(--zactfs) * .95)}
+/* 260905 에 넣었던 .zlong 을 걷어냈다 — 그것이 흠이었다.
+   「여든 자 넘으면 본문 글꼴로」 했는데 실제 내레이션이 죄다 100자 안팎이라
+   **전부** 본문 크기 · 본문 색 · ≡ 없음이 되어 대사보다 커졌다.
+   길든 짧든 내레이션은 내레이션이다 */
 .zblk{display:flex;gap:8px;margin:var(--zgap) 0;align-items:flex-start}
 .zblk.r{flex-direction:row-reverse}
 /* 같은 사람이 이어 말하면 이름과 아바타를 비운다. 자리는 남겨 줄이 안 어긋나게 */
@@ -1163,16 +1185,18 @@ body.dz-성김{--zgap:12px;--zpadv:11px;--zpadh:15px;--zfs:16px;--zactfs:14.5px;
       background:rgba(128,128,128,.28);display:flex;align-items:center;justify-content:center;
       font-size:12px;cursor:pointer;user-select:none}
 .zcol{max-width:80%;display:flex;flex-direction:column;min-width:0}
-/* 260907 — 내 쪽은 아바타를 뺐다. 칸이 하나뿐인 flex 가 되면서 말풍선이
-   한 글자씩 접혔다 (「응.」이 「응」/「.」 두 줄).
-   가로 flex 를 그만두고 블록으로 두어 제 너비를 갖게 한다 */
-.zblk.r{flex-direction:row;justify-content:flex-end}
+/* 260908 — 내 쪽에도 아바타가 돌아왔다. 아바타가 오른쪽에 서도록 되짚는다.
+   260907 에 아바타를 빼면서 「칸 하나짜리 flex」가 되어 말풍선이 한 글자씩
+   접혔던 일이 있다(「응.」이 「응」/「.」). 아바타가 있으면 그 일이 안 생긴다 */
+.zblk.r{flex-direction:row-reverse;justify-content:flex-start}
 .zblk.r .zcol{align-items:flex-end}
 .znm{font-size:11.5px;opacity:.6;margin:0 3px 3px;cursor:pointer}
-.zbub{background:rgba(128,128,128,.14);border-radius:14px;
+/* 260908 — 테두리를 넣는다. 배경만으로는 폰에서 말풍선인지 안 보였다 */
+.zbub{background:rgba(128,128,128,.14);border:1px solid rgba(128,128,128,.30);
+      border-radius:14px;
       padding:var(--zpadv) var(--zpadh);font-size:var(--zfs);line-height:var(--zlh);
-      white-space:pre-wrap;word-break:break-word}
-.zblk.r .zbub{background:rgba(107,92,231,.22)}
+      white-space:pre-wrap;word-break:break-word;cursor:pointer}
+.zblk.r .zbub{background:rgba(107,92,231,.22);border-color:rgba(107,92,231,.42)}
 .zbub p{margin:0}
 .zbub p+p{margin-top:calc(var(--zpadv) * .7)}
 .zbub .zact{opacity:.72;font-style:italic;font-size:var(--zactfs)}
@@ -1375,6 +1399,9 @@ body.dz-성김{--zgap:12px;--zpadv:11px;--zpadh:15px;--zfs:16px;--zactfs:14.5px;
           <b>새 사건을 만들지는 않습니다.</b> 오래 조용했던 것일수록 크게 터집니다.<br>
           값은 따로 나가지 않습니다.
           <select id="sJoltN" style="margin-top:6px"></select>
+          <div id="sJoltOwn" style="display:none;margin-top:6px;color:var(--warn)">
+            지금 보고 있는 대화에는 <b>따로 걸어 둔 값</b>이 있어 여기 것을 안 따릅니다 —
+            ⋯ → 이 대화 설정 에서 봅니다.</div>
         </div>
         <!-- ★ 260907 — 꼴 주사위. 이것이 「방마다 글이 달라지게」 하는 자리다 -->
         <label class="sw"><input type="checkbox" id="sDice" checked>
@@ -1979,7 +2006,7 @@ body.dz-성김{--zgap:12px;--zpadv:11px;--zpadh:15px;--zfs:16px;--zactfs:14.5px;
       <div class="fld"><label>첫 대사 (first_mes)</label>
         <textarea id="ceFirst" rows="3" placeholder="대화를 열 때 캐릭터가 먼저 하는 말"></textarea>
         <div class="hint">비워두면 내가 먼저 말을 겁니다.</div></div>
-      <div class="fld"><label>예시 대화 (mes_example)</label>
+      <div class="fld"><label>예시 대화 (mes_example) — 넷까지</label>
         <textarea id="ceEx" rows="4" placeholder="{{user}} : &quot;안녕하세요&quot;&#10;{{char}} : 고개만 살짝 끄덕이며 &quot;왔어요.&quot;"></textarea>
         <div class="hint">말투를 잡는 데 가장 효과가 큽니다. <code>{{char}}</code>, <code>{{user}}</code>를 쓸 수 있습니다.</div></div>
 
@@ -2056,6 +2083,25 @@ body.dz-성김{--zgap:12px;--zpadv:11px;--zpadh:15px;--zfs:16px;--zactfs:14.5px;
       </div>
       <div class="fld"><label>외형</label>
         <input type="text" id="peLook" placeholder="178에 마른 편, 눈매가 순함"></div>
+      <!-- 260908 — 평소 차림. 한글로만 적는다. 영어 태그는 백단에서 따로 만든다 -->
+      <div class="fld"><label>평소 차림</label>
+        <input type="text" id="peOutfit" placeholder="낡은 후드에 청바지, 계절 상관없이 비슷함">
+        <div class="hint">
+          상대가 <b>평소 이렇게 입는 사람으로</b> 알고 이야기합니다.
+          오늘 무엇을 입었는지는 이야기가 정합니다.
+        </div></div>
+      <!-- 그림. 눌러야 만들어진다 — 열 때마다 값이 나가면 안 된다 -->
+      <div class="fld" id="peImgBox">
+        <label>내 그림</label>
+        <div id="peImgWrap"></div>
+        <div class="row" style="gap:6px;margin-top:6px">
+          <button type="button" class="btn" id="peImgGo" style="flex:1">이미지 만들기</button>
+          <button type="button" class="btn" id="peImgTag" style="flex:1">영어로 바꾸기</button>
+        </div>
+        <div class="hint" id="peImgHint">
+          외형과 평소 차림을 영어 태그로 바꿔 그림을 뽑습니다. 태그는 안 보이는 데 쌓입니다.
+        </div>
+      </div>
       <div class="fld"><label>말투</label>
         <input type="text" id="peSpeech" placeholder="시스템이 내 말을 대신할 때 쓰입니다"></div>
       <div class="fld"><label>성격</label>
@@ -2117,6 +2163,8 @@ body.dz-성김{--zgap:12px;--zpadv:11px;--zpadh:15px;--zfs:16px;--zactfs:14.5px;
     </div>
   </section>
 
+  <!-- 260908 — 어디서나 신고. 화면을 안 가리게 작고 옅게 둔다 -->
+  <button id="gripe" title="불편한 점 적기">!</button>
   <nav id="nav">
     <button data-v="vChars"><i>🎭</i>대상</button>
     <button data-v="vChats" class="on"><i>💬</i>대화</button>
@@ -2171,6 +2219,7 @@ body.dz-성김{--zgap:12px;--zpadv:11px;--zpadh:15px;--zfs:16px;--zactfs:14.5px;
   </div>
 </div></div>
 <div id="whoBox"><div id="whoIn">
+  <button id="whoGo" title="편집하러 가기">✎</button>
   <button id="whoLock" title="수치 직접 수정">🔒</button>
   <button id="whoX" title="닫기">✕</button>
   <div id="whoBody"></div>
@@ -2290,7 +2339,7 @@ const LS = {
   /* 260905 — 제타 스타일 일곱과 수위 한 칸. 짝이 없으면 cfgEdit 이
      getItem(undefined) 로 떨어져 일곱이 같은 키를 나눠 쓴다 */
   st난이도:'rp_st_diff', st속도:'rp_st_pace', st표현:'rp_st_expr', st시점:'rp_st_pov',
-  st시제:'rp_st_tense', st문체:'rp_st_voice', st분위기:'rp_st_mood', top:'rp_top',
+  gripes:'rp_gripes', imgStyle:'rp_imgstyle', tone:'rp_tone', st시제:'rp_st_tense', st문체:'rp_st_voice', st분위기:'rp_st_mood', top:'rp_top',
   /* 260907 — 화면 밀집도(성김·보통·촘촘)와 턴 분량(제타형·중간형·상세형).
      둘 다 앱 기본값이고, 분량은 대화마다 따로 정할 수도 있다 (chat.cfg.분량) */
   dense:'rp_dense', 분량:'rp_len',
@@ -3546,6 +3595,104 @@ function makeEta(total){
 /* ── 알림 ──
    오래 걸리는 작업을 걸어 두고 자리를 뜨면 끝난 줄을 모른다.
    끝난 것을 남겨 두고, 안 본 것의 수를 탭 귀퉁이에 띄운다. */
+/* ── 어디서나 신고 ── 260908
+   회원님은 **무엇이 불편했는지만** 적는다. 어디였는지는 앱이 담는다 —
+   적으라고 하면 안 적게 되고, 안 적힌 신고는 나중에 못 되짚는다 */
+const GRIPE_MAX = 60;
+function gripes(){
+  try{ return JSON.parse(localStorage.getItem(LS.gripes) || '[]'); }catch(_){ return []; }
+}
+/* 지금 어디인가. 대화 안이면 그 대화가 어디까지 왔는지까지 담는다 */
+function 지금자리(){
+  const 것 = {
+    화면: (typeof S !== 'undefined' && S.view) || '',
+    빌드: typeof APP_BUILD !== 'undefined' ? APP_BUILD : '',
+    때: now(),
+    길: (DIST ? '배포판' : '본편') + '·' + (onRelay() ? '중계' : '직통')
+  };
+  try{
+    if (S.chat){
+      것.대화 = S.chat.id;
+      것.제목 = S.chat.title || '';
+      것.장르 = S.chat.genre?.key || '';
+      것.턴 = (S.messages || []).filter(m => m.role === 'assistant').length;
+      것.모델 = typeof chatModel === 'function' ? chatModel() : '';
+      것.상대 = S.character?.name || '';
+      /* 마지막 말풍선을 짚어 둔다. 나중에 「그때 그 말」을 찾을 수 있어야 한다 */
+      const 끝 = [...(S.messages || [])].reverse().find(m => m.role === 'assistant');
+      if (끝){ 것.말 = 끝.id; 것.앞머리 = String(끝.content || '').slice(0, 60); }
+    }
+    if (S.view === 'vCharEdit' && S.editingChar) 것.보던것 = S.editingChar.name || '';
+    if (S.view === 'vPersonaEdit' && S.editingPersona) 것.보던것 = S.editingPersona.name || '';
+  }catch(_){}
+  return 것;
+}
+function 불편적기(글){
+  const t = String(글 || '').trim().slice(0, 500);
+  if (!t) return null;
+  const 것 = {id: uid(), 글: t, ...지금자리()};
+  const list = gripes().concat(것);
+  localStorage.setItem(LS.gripes, JSON.stringify(list.slice(-GRIPE_MAX)));
+  return 것;
+}
+/* 어디서나 누르는 단추 */
+function 불편창(){
+  const 자리 = 지금자리();
+  const 어디 = [자리.화면 === 'vChat' ? ('대화 · ' + (자리.상대 || '') + ' · ' + 자리.턴 + '턴')
+                : VIEW_NAME[자리.화면] || 자리.화면,
+                자리.빌드].filter(Boolean).join(' · ');
+  sheet('불편한 점 적기', [
+    {info: true, html: '<span class="pguide">무엇이 불편했는지만 적으십시오.' +
+      '<span class="dim">어디였는지는 앱이 함께 담습니다 — <b>' + esc(어디) + '</b></span></span>'},
+    {label: '적기', 닫기: true, run: () => {
+      const v = prompt('무엇이 불편했습니까', '');
+      if (v === null) return;
+      const 것 = 불편적기(v);
+      if (것) toast('적었습니다 — 설정 › 기타 에서 모아 봅니다', 2600);
+    }},
+    ...(gripes().length ? [{label: '적어 둔 것 모아 보기 (' + gripes().length + ')',
+                            닫기: true, run: () => 불편모아()}] : [])
+  ]);
+}
+/* 모아 보기. 지우기와 통째 내보내기까지 여기서 한다 */
+function 불편모아(){
+  const list = gripes().slice().reverse();
+  if (!list.length) return sheet('적어 둔 불편', [{label: '아직 없습니다'}]);
+  const 다시 = () => 불편모아();
+  sheet('적어 둔 불편 — ' + list.length + '개', [
+    {info: true, html: '<span class="pguide">눌러서 지웁니다' +
+      '<span class="dim">아래 「통째로 내보내기」로 한꺼번에 옮길 수 있습니다.</span></span>'},
+    ...list.map(g => ({
+      html: '<b>' + esc(g.글.slice(0, 60)) + '</b><span class="ksub">' +
+            esc([g.때, VIEW_NAME[g.화면] || g.화면, g.상대, g.턴 != null ? g.턴 + '턴' : '',
+                 g.빌드].filter(Boolean).join(' · ')) + '</span><em class="kdel">지움</em>',
+      닫기: true,
+      run: () => {
+        localStorage.setItem(LS.gripes,
+          JSON.stringify(gripes().filter(x => x.id !== g.id)));
+        toast('지웠습니다');
+        if (gripes().length) setTimeout(다시, 0);
+      }
+    })),
+    {label: '통째로 내보내기', 닫기: true, run: () => {
+      const 글 = list.map(g =>
+        '- [' + [g.때, VIEW_NAME[g.화면] || g.화면, g.상대, g.턴 != null ? g.턴 + '턴' : '',
+                 g.장르, g.모델, g.길, g.빌드].filter(Boolean).join(' · ') + ']\n  ' +
+        g.글 + (g.앞머리 ? '\n  (그때 그 말: ' + g.앞머리 + '…)' : '')).join('\n');
+      /* 260908 — copyText 는 없다. 앱에 있는 것은 copyMsg(말 하나)뿐이라 여기서 직접 쓴다 */
+      navigator.clipboard?.writeText('# 적어 둔 불편 ' + list.length + '개\n\n' + 글)
+        .then(() => toast('베꼈습니다 — 붙여 넣어 보내십시오', 2600))
+        .catch(() => toast('베끼지 못했습니다'));
+    }}
+  ]);
+}
+/* 화면 이름을 사람이 읽는 말로. 신고에 「vCharEdit」 만 남으면 나중에 못 알아본다 */
+const VIEW_NAME = {
+  vChats:'대화 목록', vChat:'대화', vChars:'대상 목록', vCharEdit:'대상 편집',
+  vPersonas:'내 정보', vPersonaEdit:'주인공 편집', vSettings:'설정',
+  vNovel:'소설', vScenes:'장면'
+};
+
 const NOTE_MAX = 40;
 function notes(){
   try{ return JSON.parse(localStorage.getItem(LS.notes) || '[]'); }catch(_){ return []; }
@@ -6232,6 +6379,12 @@ function fmtKeeps(){ throw new Error("중계가 짭니다 — " + "fmtKeeps"); }
    상태 줄에는 아직 이름이 남아 있으므로 안 막으면 다음 턴에 도로 살아난다.
    모델이 「미해결+」로 새로 내면 그건 뜻이 있는 것이라 받아 준다 */
 const GONE_LIFE = 40;
+/* 사람이 손으로 지운 것인가. **두 갈래(미해결+ · 미해결=)가 같은 것을 봐야 한다.**
+   260908 이전에는 이 식이 한 갈래에만 손으로 적혀 있어 다른 갈래로 되살아났다 */
+function 묻은것인가(묘, t, turn){
+  return (묘 || []).some(g => sameKeep(g.t, t) && turn - g.at <= GONE_LIFE);
+}
+
 function updateKeeps(keeps, stt, turn, 묘){
   const out = Array.isArray(keeps) ? keeps.map(e => ({...e})) : [];
   /* 이번 턴에 「끝났다」고 표시된 이름들.
@@ -6258,6 +6411,11 @@ function updateKeeps(keeps, stt, turn, 묘){
         const pin = /[!！]\s*$/.test(앞 || '');
         const t = String(앞 || '').replace(/[!！]\s*$/, '').trim();
         if (!keepCore(t)) continue;
+        /* 260908 — **여기에 묘 검사가 없었다.** 아래 「미해결=」 갈래에만 있었다.
+           모델은 살아 있는 것을 매 턴 「미해결+」 로 다시 선언하므로,
+           사람이 지워도 다음 턴에 그대로 되살아났다. 실제 로그에서 여섯 턴 내내 그랬다 */
+        if (닫힌것.some(x => sameKeep(x, t))) continue;
+        if (묻은것인가(묘, t, turn)) continue;
         const [속, 끝] = String(뒤 || '').split(/\s*\/\s*/);
         const e = out.find(x => x.k === '미해결' && sameKeep(x.t, t));
         const 새것 = {k: '미해결', t, n: 1, last: turn, first: turn, pin,
@@ -6275,7 +6433,7 @@ function updateKeeps(keeps, stt, turn, 묘){
       /* 260901 — 이번 턴에 닫혔거나, 사람이 손으로 지운 것은 도로 안 넣는다 */
       if (kind === '미해결'){
         if (닫힌것.some(x => sameKeep(x, t))) continue;
-        if ((묘 || []).some(g => sameKeep(g.t, t) && turn - g.at <= GONE_LIFE)) continue;
+        if (묻은것인가(묘, t, turn)) continue;
       }
       const e = out.find(x => x.k === kind && sameKeep(x.t, t));
       if (e){ e.n++; e.last = turn; e.t = t; if (pin) e.pin = true; }
@@ -7059,7 +7217,9 @@ function fillGenre(g, characterId, personaId){
     closeEdit();
     S.pendingGenre = rollGenre(g.key, manual, null,
                                S.characters.find(x => x.id === characterId));
-    newChat(characterId, personaId);
+    /* 260908 — 빈칸을 직접 채우는 갈래로 와도 결은 물어야 한다.
+       한쪽만 이으면 「어떤 길로 열었느냐」에 따라 물었다 안 물었다 한다 */
+    pickTone(characterId, personaId);
   };
 }
 
@@ -7123,11 +7283,30 @@ function pickGenre(characterId, personaId){
       /* 이 대화의 인물을 넘긴다. S.character 는 아직 이 사람이 아니다 */
       S.pendingGenre = rollGenre(g.key, null, null,
                                  S.characters.find(x => x.id === characterId));
-      /* 여기서부터는 새 대화로 화면이 옮겨진다. 접지 않으면 그 위에 남는다 */
-      closeSheet();
-      newChat(characterId, personaId);
+      /* 260908 — 장르 다음에 **결**을 묻는다. 안 고르고 넘어갈 수 있다 */
+      pickTone(characterId, personaId);
     }
   })));
+}
+
+/* 260908 — 서술의 결을 고른다. 장르 바로 다음이다.
+   **안 고르고 넘어갈 수 있다** — 고르는 것이 짐이 되면 대화를 안 열게 된다 */
+function pickTone(characterId, personaId){
+  const 열기 = k => {
+    S.pendingTone = k || '';
+    closeSheet();
+    newChat(characterId, personaId);
+  };
+  sheet('어떤 결로 적을까요', [
+    {info: true, html: '<span class="pguide">같은 이야기라도 <b>적는 법</b>이 다르면 딴 이야기가 됩니다.' +
+      '<span class="dim">인물을 바꾸는 것이 아니라, 그 인물을 <b>어떻게 적을지</b>를 고릅니다.<br>' +
+      '나중에 ⋯ → 이 대화 설정 에서 바꿀 수 있습니다.</span></span>'},
+    ...TONE.filter(x => x.k).map(x => ({
+      html: '<b>' + esc(x.t) + '</b><span class="shint">' + esc(x.d) + '</span>',
+      run: () => 열기(x.k)
+    })),
+    {label: '안 고르고 시작', run: () => 열기('')}
+  ]);
 }
 
 async function newChat(characterId, personaId){
@@ -7138,9 +7317,12 @@ async function newChat(characterId, personaId){
     id: uid(), characterId, personaId: p?.id || null,
     title: c.name, model: c.preferredModel || localStorage.getItem(LS.model) || '',
     genre: S.pendingGenre || null,
+    /* 260908 — 고른 결을 이 대화에만 건다. 안 골랐으면 아무것도 안 건다 */
+    cfg: S.pendingTone ? {tone: S.pendingTone} : {},
     messageCount: 0, createdAt: now(), lastMessageAt: now(),
     charVer: charVerOf(c)   /* 이 대화가 어느 판의 인물로 시작했는지 */
   };
+  S.pendingTone = '';
   /* ★ 260907 — **이 대화의 꼴을 여기서 한 번 굴린다.**
      굴린 값은 대화 내내 안 바뀌므로 문체가 튀지 않는다.
      설정에서 끄면 예전처럼 아무것도 안 걸린 채로 시작한다 */
@@ -7173,12 +7355,20 @@ async function newChat(characterId, personaId){
   }
 
   /* 인트로를 새로 쓸지. 실패하면 조용히 카드의 첫 대사로 돌아간다 */
+  /* 260908 — 새로 만드는 카드에는 first_mes 가 없다. 있으면(옛 카드) 그대로 쓴다 */
   let opening = c.first_mes?.trim() ? fill(c.first_mes, c.name, p?.name) : '';
+  /* 260908 — 여기가 **개인 OpenRouter 키**만 봤다(`LS.key`).
+     중계+코드로 쓰는 기기는 그 키가 비어 있는 것이 정상이라, 조건이 거짓이 되어
+     **첫 장면 생성이 아예 안 돌았다.** 카드의 첫 대사로 조용히 넘어가서 아무도 몰랐다.
+     부를 수 있는 길이 하나라도 있으면 돈다 — 중계 · 개인 키 · 구글 */
   if (cfg('intro', '1') === '1' &&
-      localStorage.getItem(LS.key) && modelChain().length){
+      (onRelay() || localStorage.getItem(LS.key) || 구글쓸수있나()) &&
+      modelChain().length){
     busy('stream', '첫 장면을 쓰는 중  ·  보통 10~30초', {wave: true});
     try{ opening = await makeIntro(c, p, chat); }
-    catch(e){ if (!opening) toast('첫 장면을 쓰지 못했습니다 — ' + e.message); }
+    /* 260908 — 되돌아갈 첫 대사가 없으면 조용히 넘어가지 않는다.
+       무엇을 해야 하는지 한 줄로 알린다 */
+    catch(e){ if (!opening) toast('첫 장면을 쓰지 못했습니다 — 다시 생성해주세요', 3200); }
     finally{ busy(null); }
   }
 
@@ -8302,6 +8492,16 @@ function 제타가르기(글){
 }
 
 /* 제타 꼴로 그린다. 이름이 비면 말한 쪽 이름을 채운다 */
+/* 260908 — 내가 친 말은 `normalizeInput` 이 「이지운 : "…"」 으로 바꿔 **저장**한다.
+   그것은 모델이 읽을 꼴이다. **그릴 때는 뗀다** — 제 말풍선에 제 이름을 또 적는
+   메신저는 없고, 제타도 안 그런다.
+   내 이름일 때만 뗀다. 조연 이름은 그대로 두어야 누구 말인지 남는다 */
+function 내이름떼기(줄, 내이름){
+  const m = String(줄).match(/^\s*([^:：\n]{1,14}?)\s*[:：]\s*([\s\S]+)$/);
+  if (!m) return 줄;
+  return m[1].trim() === String(내이름).trim() ? m[2].trim() : 줄;
+}
+
 function 제타그리기(글, mine){
   const 임자 = mine ? (S.persona?.name || '나') : (S.character?.name || '');
   /* 내가 쓴 글이 제타 꼴이 아니면 통째로 대사 한 도막으로 묶는다.
@@ -8309,6 +8509,7 @@ function 제타그리기(글, mine){
   const 것들 = (mine && !제타꼴인가(글))
     ? [{갈래:'블록', 이름: 임자,
         조각: String(글 || '').split('\n').map(x => x.trim()).filter(Boolean)
+                .map(줄 => 내이름떼기(줄, 임자))
                 .map(줄 => ({종류: /^\*[\s\S]*\*$/.test(줄) ? '지문' : '대사',
                             글: 줄.replace(/^[*"“'‘]|[*"”'’]$/g, '').trim()}))}]
     : 제타가르기(글);
@@ -8324,22 +8525,57 @@ function 제타그리기(글, mine){
       return '<div class="znar' + (x.글.length > 80 ? ' zlong' : '') + '">' +
              조연표달기(esc(x.글)) + '</div>';
     const 이름 = x.이름 || 임자;
-    /* 내 말은 오른쪽에 다른 색으로 붙는다. 누구인지 이미 자명하므로
-       아바타도 이름도 달지 않는다 — 회원님 말씀 「유저도 마찬가지」 */
-    const 이어짐 = mine || 이름 === 앞임자;
+    /* 260908 — 내 쪽에도 아바타와 이름을 단다.
+       회원님 말씀 : 「유저 대사에도 설혜진처럼 유저채팅 우측에 아이콘과 이름 달아주고」.
+       이어 말할 때 비우는 것은 양쪽 다 같다 */
+    const 이어짐 = 이름 === 앞임자;
     앞임자 = 이름;
     const 조각 = x.조각.map(c =>
       '<p class="' + (c.종류 === '지문' ? 'zact' : 'zsay') + '">' +
       조연표달기(esc(c.글)) + '</p>').join('');
     return '<div class="zblk' + (mine ? ' r' : '') + (이어짐 ? ' cont' : '') + '">' +
-      (mine ? ''
-        : 이어짐
-          ? '<div class="zpic hollow" aria-hidden="true"></div>'
-          : '<div class="zpic" data-who="' + esc(이름) + '">' + esc(이름.slice(0, 1)) + '</div>') +
+      (이어짐
+        ? '<div class="zpic hollow" aria-hidden="true"></div>'
+        : '<div class="zpic" data-who="' + esc(이름) + '">' + esc(이름.slice(0, 1)) + '</div>') +
       '<div class="zcol">' +
       (이어짐 ? '' : '<div class="znm" data-who="' + esc(이름) + '">' + esc(이름) + '</div>') +
-      '<div class="zbub">' + 조각 + '</div></div></div>';
+      '<div class="zbub" data-who="' + esc(이름) + '">' + 조각 + '</div></div></div>';
   }).join('');
+}
+
+/* 260908 — 모델이 {{user}} 의 말을 지어냈으면 걷어낸다.
+
+   말로만 시키면 언젠가 또 샌다. 실측에서 한 턴에 셋이 나왔다.
+   **조용히 지우지 않는다** — 무엇이 지워졌는지 알려야 회원님이 판단할 수 있다.
+
+   지우는 것은 두 꼴뿐이다.
+     · 「이지운 : "…"」  이름과 쌍점을 단 줄
+     · 이름만 있는 줄 다음에 오는 도막 (제타 꼴)
+   그 밖에는 안 건드린다 — 지문 안에서 이름이 불리는 것은 정상이다 */
+function 남의말걷기(글, 내이름){
+  const 나 = String(내이름 || '').trim();
+  if (!나 || !글) return {글, 걷은것: []};
+  const 줄 = String(글).split('\n');
+  const 남길것 = [], 걷은것 = [];
+  let 남의도막 = false;
+  for (const l of 줄){
+    const t = l.trim();
+    /* 「이름 : 대사」 꼴 */
+    const m = t.match(/^([^:：\n]{1,14}?)\s*[:：]\s*(.+)$/);
+    if (m && m[1].trim() === 나){ 걷은것.push(t); 남의도막 = false; continue; }
+    /* 이름만 있는 줄 — 제타 꼴에서 아래가 그 사람의 도막이다 */
+    if (t === 나){ 남의도막 = true; 걷은것.push(t); continue; }
+    /* 도막이 이어지는 동안은 지문과 대사를 함께 걷는다 */
+    if (남의도막){
+      if (/^\*[\s\S]*\*$/.test(t) || /^["“'‘][\s\S]*["”'’]$/.test(t)){
+        걷은것.push(t); continue;
+      }
+      남의도막 = false;   /* 다른 것이 나오면 도막이 끝난 것이다 */
+    }
+    남길것.push(l);
+  }
+  if (!걷은것.length) return {글, 걷은것};
+  return {글: 남길것.join('\n').replace(/\n{3,}/g, '\n\n').trim(), 걷은것};
 }
 
 function fmt(t, role){
@@ -9030,8 +9266,31 @@ function renderMsgs(toBottom){
 /* 이미 받은 응답에 그림만 따로 붙인다 */
 /* 입력창 체크박스를 켜 두었다면 이미 비용을 감수하겠다는 뜻이므로 다시 묻지 않는다.
    어느 쪽으로 만들든 모델 계층 · 수위 · 상세도는 같은 설정을 쓴다. */
+/* Venice 잔액이 말랐으면 **누르기 전에** 알린다.
+   260908 — 여태는 눌러서 실패해야 알았다. 그래서 「본편에 키 칸이 없는 줄 알았다」는
+   말씀이 나왔다 — 칸은 있었고 잔액이 0 이었다.
+   0 인 것과 「못 읽었다(null)」는 다르다. 못 읽은 것으로 막지 않는다 */
+function 사진잔액말랐나(){
+  const v = BAL.ve?.left;
+  return typeof v === 'number' && v <= 0;
+}
+function 충전안내(){
+  sheet('Venice 잔액이 0입니다', [
+    {info: true, html: '<span class="pguide">' +
+      '이미지는 <b>Venice</b> 크레딧으로 나갑니다. 지금 잔액이 <b>$0.00</b> 이라 ' +
+      '무엇을 눌러도 그림이 안 나옵니다.<br><br>' +
+      '<b>키가 없어서가 아닙니다.</b> 키는 걸려 있고 모델 목록도 옵니다 — 돈만 없습니다.<br><br>' +
+      '가장 싼 것이 <b>venice-sd35 · 한 장 $0.01</b> 입니다.</span>'},
+    {label: '내 키를 따로 넣기 — 설정 › 이미지', run: () => {
+      closeSheet(); go('settings');
+      setTimeout(() => { try{ setPane('img'); $('sImgKey')?.focus(); }catch(_){} }, 120);
+    }}
+  ]);
+}
+
 function askImageFor(msg){
   if (API_HALT) return haltNotice();
+  if (사진잔액말랐나()) return 충전안내();
   if ($('cImgAuto')?.checked) return attachImage(msg);
   const eff = effLevel(msg.content, {});
   const m = liveModel(eff.key);
@@ -9041,7 +9300,9 @@ function askImageFor(msg){
     : '수위 ' + set + ' → 이 장면은 ' + eff.name;
   if (!confirm('이 장면의 이미지를 생성합니다.\n' +
                '모델 ' + (m?.model_spec?.name || '미지정') +
-               ' · 예상 비용 $' + imgPrice(m).toFixed(3) + '\n' +
+               ' · 예상 비용 $' + imgPrice(m).toFixed(3) +
+               /* 260908 — 잔액을 함께 보인다. 「예상 비용」만 있으면 얼마 남았는지 모른 채 누른다 */
+               (typeof BAL.ve?.left === 'number' ? ' · 남은 잔액 $' + BAL.ve.left.toFixed(2) : '') + '\n' +
                line + ' · 상세도 ' + imgDetail().name +
                ' · ' + (imgCen() ? '검열' : '무검열'))) return;
   attachImage(msg);
@@ -11504,6 +11765,45 @@ const WHO_GRID = ['hp','int','cha', 'amb','brv','des', 'aff','ant','grd', null,'
 const WHO_GRID_DIST = ['ten','brv','des', 'aff','ant','grd'];
 const whoGrid = () => (typeof DIST !== 'undefined' && DIST) ? WHO_GRID_DIST : WHO_GRID;
 /* 채팅 중에 이름을 누르면 인물 요약을 띄운다. 화면을 벗어나지 않는다. */
+/* 260908 — 주인공 카드. 상대 카드와 **같은 창**을 쓰되 안쪽만 다르게 짠다.
+   창을 새로 만들면 닫기 · 뒤로가기 · 꾸밈을 두 벌로 관리하게 된다 */
+function openMe(){
+  const p = S.persona;
+  if (!p) return;
+  const pf = p.profile || p;
+  const av = pf.avatar
+    ? '<div class="av pic0"><img src="' + pf.avatar + '" alt=""></div>'
+    : '<div class="av" style="background:' + (p.accent || PALETTE[1]) + '">' +
+      esc(initial(p.name)) + '</div>';
+  const cap = [pf.gender === 'm' ? '남' : pf.gender === 'f' ? '여' : '',
+               pf.age && (String(pf.age).replace(/세$/, '') + '세'),
+               pf.job].filter(Boolean).join(' · ');
+  /* 비어 있어도 자리를 보인다 — 빈칸이 있다는 것을 알아야 채울 마음이 생긴다 */
+  const 줄들 = [
+    pf.look    && ['외형', pf.look],
+    pf.outfit  && ['평소 차림', pf.outfit],
+    pf.speech  && ['말투', pf.speech],
+    pf.personality && ['성격', pf.personality],
+    pf.now     && ['지금 사정', pf.now],
+    (p.description || pf.description) && ['그 밖', p.description || pf.description]
+  ].filter(Boolean);
+  const 몸 = 줄들.length
+    ? '<div class="whoBrief">' + 줄들.map(([k, v]) =>
+        '<b>' + k + '</b><span>' + esc(String(v).trim()) + '</span>').join('') + '</div>'
+    : '<div class="whoLine dim">아직 적은 것이 없습니다. ✎ 로 채울 수 있습니다.</div>';
+
+  $('whoBody').innerHTML =
+    '<div class="whoHeadTop">' + esc(p.name) + '</div>' +
+    '<div class="whoHead">' + av +
+      '<div class="whoMeta"><span>' + esc(cap || '주인공') + '</span></div></div>' + 몸;
+  $('whoBox').classList.add('on');
+  /* 주인공에게는 수치가 없다. 자물쇠와 저장은 감춘다 */
+  S.whoIsMe = true;
+  $('whoLock').style.display = 'none';
+  $('whoSave').style.display = 'none';
+  $('whoEdit').textContent = '편집하기';
+}
+
 async function openWho(){
   const c = S.character;
   if (!c) return;
@@ -11587,12 +11887,23 @@ async function openWho(){
     ? '<div class="whoLine"><b>★ ' + esc(up.name) + '</b> 이(가) 나를 보는 눈 — ' +
       UP_STATS.map(k => k + ' ' + (ucs[k] ?? '?')).join(' · ') + '</div>'
     : '';
+  /* 260908 — 회원님 안대로 짠다.
+       좌상단   이름
+       그 아래  프로필 사진 · 그 오른쪽에 기본정보
+     편집 단추는 창 오른쪽 위에 따로 붙는다(#whoGo) */
   $('whoBody').innerHTML =
-    '<div class="whoHead">' + av + '<div><b>' + esc(c.name) + '</b><span>' + esc(cap) + '</span></div></div>' +
-    (p.relation ? '<div class="whoLine">' + esc(fill(p.relation, c.name, S.persona?.name)) + '</div>' : '') +
+    '<div class="whoHeadTop">' + esc(c.name) + '</div>' +
+    '<div class="whoHead">' + av +
+      '<div class="whoMeta"><span>' + esc(cap) + '</span>' +
+      (p.relation ? '<span>' + esc(fill(p.relation, c.name, S.persona?.name)) + '</span>' : '') +
+      (p.speech ? '<span>' + esc(p.speech) + '</span>' : '') +
+      '</div></div>' +
     (p.traits ? '<div class="whoLine">' + esc(p.traits) + '</div>' : '') +
     note + chips + upHTML + briefHTML;
   $('whoBox').classList.add('on');
+  /* 260908 — 주인공 카드가 감춰 둔 것을 되돌린다 */
+  S.whoIsMe = false;
+  $('whoLock').style.display = '';
   $('whoLock').textContent = S.whoEdit ? '🔓' : '🔒';
   $('whoLock').classList.toggle('on', !!S.whoEdit);
   $('whoSave').style.display = S.whoEdit ? 'block' : 'none';
@@ -11643,7 +11954,25 @@ $('whoEdit').onclick = () => {
   editChar(S.character.id, true);
 };
 /* 상대를 확인하려고 말풍선 이름을 찾아 내려가야 했다. 머리의 이름으로도 연다. */
+$('gripe').onclick = () => 불편창();
 $('cTitle').onclick = () => { if (S.chat) openWho(); };
+/* 260908 — 우상단 ✎ 는 아래 「편집하기」와 같은 일을 한다.
+   같은 일을 두 자리에 두는 것이지 두 벌로 적는 것이 아니다 — 그 단추를 그대로 누른다 */
+$('whoGo').onclick = () => $('whoEdit').click();
+/* 260908 — 주인공 카드에서 누르면 주인공 편집으로 간다.
+   `whoEdit` 의 본래 일(상대 편집)은 그대로 두고, 앞에서 갈래만 낸다 */
+{
+  const 본래 = $('whoEdit').onclick;
+  $('whoEdit').onclick = ev => {
+    if (S.whoIsMe){
+      $('whoBox').classList.remove('on');
+      S.whoIsMe = false;
+      $('whoLock').style.display = '';
+      return void editPersona(S.persona?.id);
+    }
+    return 본래 ? 본래.call($('whoEdit'), ev) : undefined;
+  };
+}
 /* 말풍선 안의 이름은 매번 다시 그려지므로 위임으로 받는다 */
 $('msgs').addEventListener('click', e => {
   /* 260903 — 지문에 붙인 조연 이름. 대사 줄과 같은 자리로 보낸다 */
@@ -11656,6 +11985,18 @@ $('msgs').addEventListener('click', e => {
   if (b){
     /* 조연 이름이면 그 조연을 연다. 태현을 눌렀는데 윤주희가 열리면 안 된다 */
     const 누구 = b.dataset.who || '';
+    const i = (S.chat?.cast || []).findIndex(p => p.name === 누구);
+    return void (i >= 0 ? editCast(i) : openWho());
+  }
+  /* 260908 — 제타 꼴의 말풍선 · 아바타 · 이름. 여태 이름만 눌렸는데
+     정작 넓은 것은 말풍선이라 「안 눌린다」는 말씀이 나왔다.
+     **내 말풍선은 안 연다** — 내 카드는 여기서 볼 것이 아니다 */
+  const z = e.target.closest('.msg .zbub[data-who], .msg .zpic[data-who], .msg .znm[data-who]');
+  if (z){
+    /* 260908 — 내 쪽 말풍선은 **주인공 카드**를 연다.
+       회원님 말씀 : 「내 말풍선도 열려야함」 */
+    if (z.closest('.zblk.r')) return void openMe();
+    const 누구 = z.dataset.who || '';
     const i = (S.chat?.cast || []).findIndex(p => p.name === 누구);
     return void (i >= 0 ? editCast(i) : openWho());
   }
@@ -11681,7 +12022,13 @@ async function openKeeps(kind){
   const turn = S.messages.length;
   const list = (mem.keeps || []).filter(e => e.k === kind)
     .sort((a, b) => (KEEP_LIFE(b) === Infinity) - (KEEP_LIFE(a) === Infinity) || b.last - a.last);
-  if (!list.length) return sheet(kind, [{label: '남아 있는 것이 없습니다'}]);
+  /* 260908 — 그냥 「없습니다」 만 뜨면 「눌러도 아무것도 없다」 가 된다.
+     말풍선의 표는 **그 턴의 기록**이고 여기는 **지금 살아 있는 것**이다. 그 말을 해 준다 */
+  if (!list.length) return sheet(kind + ' — 지금 남은 것', [
+    {info: true, html: '<span class="pguide">지금 살아 있는 ' + esc(kind) + '이 없습니다.' +
+      '<span class="dim">말풍선에 붙은 표는 <b>그 턴의 기록</b>입니다. ' +
+      '지우거나 이야기에서 끝나도 옛 말풍선의 표는 그대로 남습니다.</span></span>'}
+  ]);
   const 다시 = () => openKeeps(kind);
   sheet(kind + ' — 아직 남아 있는 것', [
     /* 260901 — 전에는 보여 주기만 했다. 한번 막히면 손쓸 길이 없어
@@ -11699,7 +12046,11 @@ async function openKeeps(kind){
       return {
         html: '<b>' + esc(e.t) + '</b><span class="ksub">' + esc(note) + '</span>' +
               '<em class="kdel">지움</em>',
-        다시: true, keep: 다시,
+        /* 260908 — 전에는 `다시` 와 `keep: 다시` 를 함께 걸었다.
+           `keep` 이 openKeeps 를 **새로 쌓아** 창이 안 닫혔고,
+           뒤로가면 그 아래 깔린 **지우기 전** 창이 나왔다.
+           이제 닫고 나서, 남은 것이 있을 때만 새로 연다 */
+        닫기: true,
         run: async () => {
           const m2 = await getMem(S.chat.id);
           m2.keeps = (m2.keeps || []).filter(x => !(x.k === kind && sameKeep(x.t, e.t)));
@@ -11709,6 +12060,8 @@ async function openKeeps(kind){
           await dbPut('memory', m2);
           if (S.mems) S.mems[S.chat.id] = m2;
           toast('지웠습니다 — 「' + e.t + '」', 2500);
+          /* 남은 것이 있으면 이어서 지울 수 있게 다시 연다. 없으면 닫힌 채로 둔다 */
+          if ((m2.keeps || []).some(x => x.k === kind)) setTimeout(() => openKeeps(kind), 0);
         }};
     })
   ]);
@@ -12066,7 +12419,10 @@ const JOLT_GAP = [
   {k:'often',  t:'가끔',       turns:50,  d:'쉰 턴에 한 번쯤'}
 ];
 const joltOf = k => JOLT_GAP.find(x => x.k === k) || JOLT_GAP[1];
-const joltOn = () => localStorage.getItem(LS.jolt) === '1';
+/* 260908 — 대화마다 따로 걸 수 있다. 안 걸었으면 설정의 기본값을 따른다.
+   cfg() 는 「이 대화에 걸린 것 → 설정 기본값」 차례로 본다 */
+const joltOn = () => cfg('jolt', localStorage.getItem(LS.jolt) === '1' ? '1' : '0') === '1';
+const joltKey = '';
 /* 260905 — 미해결이 지긋지긋하다는 말을 듣고 둔 스위치.
    켜면 상태 줄에서도 안 받고 프롬프트에도 안 싣는다. 쌓인 것은 안 지운다 */
 const keepOff = () => localStorage.getItem(LS.noKeep) === '1';
@@ -12542,11 +12898,34 @@ async function veniceUpscale(dataUri, scale){
                사용자가 묶음을 바꿔 두 개가 같아지면 하나로 줄인다.
      steps   — 기본 25, 고급 40. 모델이 허용하는 상한은 veniceImage 가 다시 자른다.
      upscale — 고급이면서 설정에서 켜 두었을 때만. 실패해도 원본은 남긴다. */
+/* ═══ 그림풍 ═══ 260908
+   **수위 축과 다른 축이다.** 수위는 「무엇까지 그리나」이고 이것은 「어떤 그림체인가」다.
+   안 고르면(빈 값) 여태 하던 대로 수위 축이 정한 모델로 간다.
+
+   값은 260908 에 실제로 뽑아 보고 적었다. 짐작이 아니다 */
+const IMG_PUNG = [
+  {k:'',    t:'안 고름',  m:'',                 값:0,    d:'수위 설정이 정하는 대로'},
+  {k:'ani', t:'애니풍',   m:'wai-Illustrious',  값:0.01, d:'선이 굵고 색이 평평하다'},
+  {k:'ill', t:'그림풍',   m:'chroma',           값:0.01, d:'붓이 보이는 그림체'},
+  {k:'pho', t:'사진풍',   m:'flux-2-pro',       값:0.03, d:'피부 결과 천 주름이 산다'},
+  {k:'fast',t:'가장 빠름', m:'z-image-turbo',   값:0.01, d:'몇 초면 나온다'},
+  {k:'bare',t:'노출 잘됨', m:'lustify-v8',      값:0.01, d:'수위가 높은 자리에 맞다'}
+];
+/* 260908 — 이름을 IMG_PUNG 으로 뒀다. IMG_STYLE 은 이미 있다 —
+   그쪽은 SDXL 에 붙이는 사실감 태그 글이라 뜻이 아주 다르다 */
+const imgStyleOf = k => IMG_PUNG.find(x => x.k === k) || IMG_PUNG[0];
+/* 지금 걸린 그림풍의 모델. 안 골랐으면 빈 글이라 아래에서 그냥 지나간다 */
+const imgStyleModel = () => imgStyleOf(cfg('imgStyle', '')).m;
+
 function imgPlan(levelKey, cen){
   const key = LEVEL_ORDER.includes(levelKey) ? levelKey : 'eco';
   const M = levelModels(key, cen);
   const D = IMG_LEVEL[key][cen ? 'cen' : 'unc'];
   const chain = [];
+  /* 260908 — 그림풍을 골랐으면 그것을 **맨 앞**에 둔다.
+     안 되면 아래 것들로 내려가므로 고장 나지 않는다 */
+  const 풍 = imgStyleModel();
+  if (풍) chain.push(풍);
   for (const id of [M.m, M.fb, D.m, D.fb]) if (id && !chain.includes(id)) chain.push(id);
   /* 스텝은 40 으로 두되 모델이 받는 만큼만 간다. veniceImage 가 상한을 다시 깎는다.
      업스케일은 뺐다 — 모바일에서 2048px 은 값만 세 배다. */
@@ -13112,6 +13491,18 @@ async function commitReply(r){
   const raw0 = r.out;
   if (off) r.out = String(r.out).replace(OFF_TAG, '').trim();
   else     r.out = await clampStatusInText(r.out);
+  /* 260908 (F) — 모델이 주인공의 말을 지어냈으면 걷어낸다.
+     실측에서 한 턴에 셋이 나왔고 없는 직함(팀장)까지 지어냈다.
+     **조용히 지우지 않는다** — 무엇이 지워졌는지 알아야 회원님이 판단하실 수 있다.
+     이야기 밖(@:) 응답은 안 건드린다 — 거기서는 앱이 대신 말하는 것이 맞다 */
+  if (!off){
+    const 걷 = 남의말걷기(r.out, S.persona?.name);
+    if (걷.걷은것.length){
+      r.out = 걷.글;
+      S.걷은남의말 = 걷.걷은것;
+      toast('내 말을 대신 지어낸 ' + 걷.걷은것.length + '줄을 걷어냈습니다', 3000);
+    } else S.걷은남의말 = null;
+  }
   const aMsg = {
     id: uid(), chatId: S.chat.id, turnIndex: S.messages.length, role:'assistant',
     content: r.out, variants:[r.out], activeVariant:0, model: r.model,
@@ -14616,7 +15007,9 @@ function rollGenre(key, manual, keep, 그인물){
     /* 장르를 다시 굴려도 여태 온 길은 잃지 않는다 */
     act: keep?.act || 0, ended: keep?.ended || null,
     target: keep?.target || ['char'],
-    pace:   keep?.pace   || 'normal',
+    /* 260908 — 여기가 'normal' 을 손으로 적고 있었다. PACE_DEF 를 바꿔도 안 따라왔다.
+       기본값은 한 곳에서만 정한다 — 두 벌로 두면 반드시 어긋난다 */
+    pace:   keep?.pace   || PACE_DEF,
     lock:   keep?.lock   || {}
   };
 }
@@ -14635,7 +15028,10 @@ const GENRE_PACE = [
   {k:'normal', t:'1번/10턴', tick:'1/10',    turns:10, d:'열 턴에 한 번쯤 한 걸음 나아갑니다'},
   {k:'fast',   t:'1번/5턴',  tick:'1/5',     turns:5,  d:'다섯 턴에 한 번쯤 한 걸음 나아갑니다'}
 ];
-const PACE_DEF = 'normal';
+/* 260908 — 기본을 「1번/10턴」에서 「1번/40턴」으로 내렸다.
+   회원님 말씀 : 「기본적으로 사건 발생 턴은 10턴이 아닌 40턴으로」.
+   열 턴마다 막이 한 걸음씩 나아가면 이야기가 아니라 진도표가 된다 */
+const PACE_DEF = 'rare';
 const paceOf = k => GENRE_PACE.find(p => p.k === k) ||
                     GENRE_PACE.find(p => p.k === PACE_DEF) || GENRE_PACE[0];
 const paceIdx = k => Math.max(0, GENRE_PACE.findIndex(p => p.k === k));
@@ -14940,11 +15336,24 @@ const TASTE = {
   relation: RELS_TASTE,
   surface: ['차분하고 말수가 적음','밝고 붙임성 좋음','유능하고 단호함','자유분방하고 거침없음',
             '사려 깊고 조심스러움','무심하고 시크함','장난스럽고 능청스러움','다정하지만 거리를 둠'],
+  /* 260908 — 열 개가 **전부 상처와 결핍**이었다. 공포 · 공허 · 강박 · 후회 · 검열.
+     이것이 카드마다 하나씩 뽑혀 「속에 있는 결핍」으로 실리니
+     어느 인물을 뽑아도 아픈 사람이 되었다. 회원님이 「연애」와 「장르없음」을
+     가장 많이 쓰시므로, 실제로 느끼신 우중충함은 여기서 왔을 것이다.
+
+     지우지는 않는다 — 그 결도 있어야 한다. 다만 **기울어진 것**을 절반 넣어
+     한쪽으로 안 쏠리게 한다. 사람의 속이 늘 상처인 것은 아니다 */
   lack: ['인정받고 싶은 마음을 들키기 싫어함','버려지는 것에 대한 공포',
          '사랑받기 어려운 사람이라는 자기 규정','기대고 싶은 마음을 나약함으로 검열함',
          '아무도 자신을 진짜로 모른다는 공허','하지 못한 말이 그대로 남아 있음',
          '완벽하지 않으면 가치가 없다는 강박','늦었다는 후회와 늦지 않기를 바라는 마음의 공존',
-         '늘 자기 몫을 혼자 감당해 온 습관','거절당할까 봐 먼저 선을 긋는 버릇'],
+         '늘 자기 몫을 혼자 감당해 온 습관','거절당할까 봐 먼저 선을 긋는 버릇',
+         /* 아래 열은 아픈 것이 아니라 **기울어진 것**이다 */
+         '좋으면 티가 다 나는데 스스로만 모름','재미있는 쪽으로 먼저 발이 가서 일이 커짐',
+         '남을 챙기는 것이 버릇이라 안 챙기면 손이 심심함','한번 정한 것은 안 바꿔서 스스로 곤란해짐',
+         '궁금한 것을 못 참고 물어봐서 분위기를 깸','좋아하는 것 이야기가 나오면 말이 길어짐',
+         '남의 말을 곧이곧대로 믿어 자주 놀람','지는 것도 이기는 것도 별로 안 따짐',
+         '기분이 얼굴에 다 나와서 숨길 수가 없음','고마우면 그 자리에서 갚아야 마음이 편함'],
   /* 밤과 새벽만 넣어 두었더니 첫 장면이 늘 새벽이었다.
      아침 · 낮 · 저녁을 절반 넘게 채우고, 밤은 여러 개 중 하나로만 남긴다. */
   when: ['이른 아침 출근길','아침 햇살이 드는 시간','오전 열한 시쯤','점심시간 직후',
@@ -14977,6 +15386,23 @@ const WILD = {
   temper: ['{{user}}에게 호의적이다','{{user}}에게 무관심하다','{{user}}를 경계한다',
            '{{user}}에게 적대적이다','{{user}}에게 흥미를 느낀다','{{user}}를 이용하려 한다']
 };
+
+/* ── 지금 곁에 누가 있는가 ── 260908
+   D-4. 카드가 「맨 위에 정해져 있다. 그것을 그대로 따른다」 고 시키는데
+   **정해 둔 자리가 없었다.** 그래서 모델이 매번 지어냈고,
+   회원님이 「나를 짝사랑」 을 넣어도 카드에는 「연애 중인 상대가 있다」 가 나왔다.
+
+   {{user}}를 향한 마음과 부딪히지 않게, **{{user}} 말고 다른 사람**만 다룬다 */
+const DATING_NOW = [
+  ['지금 곁에 아무도 없다', 46],
+  ['지금 곁에 아무도 없다. 마지막 연애가 꽤 지났다', 14],
+  ['지금 곁에 아무도 없다. 얼마 전에 끝났고 아직 자국이 남았다', 10],
+  ['연애를 해 본 적이 없다', 8],
+  ['소개를 받아 보는 자리가 몇 번 있었으나 이어지지 않았다', 8],
+  ['가끔 연락하는 사람이 있으나 사귀는 것은 아니다', 8],
+  /* 「사귀는 사람이 있다」 는 드물게만 둔다 — {{user}}와의 이야기를 막는다 */
+  ['사귀는 사람이 있으나 마음이 식은 지 오래다', 6]
+];
 
 /* ═══ 굽히는 폭과 굽힌 값 ═══
    연구 「요구와 반항」(results/260905_009~011)에서 나온 것.
@@ -15114,7 +15540,23 @@ const ZETA_MOTIVE = [
   '{{user}}가 없으면 지금 벌인 일을 수습할 방법이 없다',
   '{{user}}만이 저를 예전 그 사람으로 안 본다',
   '{{user}}를 걱정하는 것이 습관이 되어 이제 안 하는 법을 모른다',
-  '떠나겠다고 몇 번을 말했고, 그 말을 지킨 적이 한 번도 없다'
+  '떠나겠다고 몇 번을 말했고, 그 말을 지킨 적이 한 번도 없다',
+
+  /* 260908 — 위 열둘이 죄다 「감춤 · 결핍」이었다(어두움 92% · 밝음 0%).
+     사람이 안 떠나는 까닭은 그것 말고도 많다. 아래 열둘은 **밝거나 담담한** 쪽이다.
+     어두운 것을 지우지 않는다 — 쏠린 것이 문제였지 그 결이 잘못은 아니다 */
+  '{{user}} 곁에 있으면 하루가 덜 지겹다. 그것 말고 다른 까닭은 없다',
+  '{{user}}랑 있을 때 나오는 제 모습이 마음에 든다',
+  '{{user}}가 하는 일이 재미있어 보여서 끝까지 보고 싶다',
+  '{{user}}와 시작한 것이 있고, 그것을 끝내는 것을 좋아한다',
+  '{{user}}에게 갚을 것이 아니라 **주고 싶은 것**이 있다',
+  '{{user}}가 저를 웃게 만드는데, 그렇게 되는 사람이 드물다',
+  '{{user}}랑 있으면 말이 잘 나온다. 다른 데서는 그렇지 않다',
+  '{{user}}가 어디까지 가는지 옆에서 보고 싶다',
+  '한 번 마음에 들이면 안 내보내는 사람이다. 까닭은 그것뿐이다',
+  '{{user}}와 다투는 것조차 다른 사람과 잘 지내는 것보다 낫다',
+  '{{user}}에게 아직 안 보여 준 것이 있어서 보여 주고 싶다',
+  '여기가 편해졌다. 편한 자리를 스스로 버리는 사람이 아니다'
 ];
 
 /* 무너지는 지점 — 제타 카드의 「핵심 약점」 자리.
@@ -15163,12 +15605,16 @@ const ZETA = {
             '숨김없이 밝고 말이 많음','다정하고 잘 챙김','호기심이 많고 겁이 없음',
             '차분하고 말수가 적지만 따뜻함','엉뚱하고 태평함'],
   /* 속은 호감. 그것을 인정하지 못하는 것이 이 결의 뼈대다 */
+  /* 260908 — 결핍만 열이라 인물이 늘 무언가 모자란 사람이 되었다.
+     「모자란 것」이 아니라 **「기울어진 것」**도 결이다. 뒤에 넷을 더한다 */
   lack: ['좋아하는 마음을 절대 인정하지 않음','감정을 전부 공격성으로 표출함',
          '지는 것을 못 견뎌 논리를 바꿔서라도 이기려 함','먼저 사과하는 법을 모름',
          '기대고 싶은 마음을 수치스럽게 여김','혼자 있고 싶다면서 정작 내보내지 않음',
          '아쉬운 소리를 하느니 손해를 보는 쪽을 택함',
          '{{user}}가 곁에 있는 것을 당연하게 여겨 생각해 본 적이 없음',
-         '들키는 것이 두려워 먼저 화를 냄','부끄러우면 화로 덮음'],
+         '들키는 것이 두려워 먼저 화를 냄','부끄러우면 화로 덮음',
+         '좋으면 티가 다 나는데 스스로만 모름','챙기는 것이 버릇이라 안 챙기면 손이 심심함',
+         '재미있는 쪽으로만 가서 일이 커짐','한번 정한 것은 안 바꿔서 스스로 곤란해짐'],
   /* 제타는 밤과 사적인 시간이 잦았다 */
   when: ['주말 오후','나른한 오후','저녁 식사 시간','문 닫을 무렵','늦은 밤',
          '퇴근이 한참 지난 밤','새벽 두세 시','휴일 오전','비가 그치지 않는 저녁',
@@ -15284,6 +15730,8 @@ function rollSeeds(mode, gender){
     bendCost: pick(BEND_COST),
     /* 제타형에만 있는 둘. 다른 형은 POOL 에 없으므로 빈 채로 지나간다 */
     trigger: POOL.triggers ? pick(POOL.triggers) : "",
+    /* 260908 — 지금 곁에 누가 있는가. 카드가 「맨 위에 정해 둔 것」이라 부르던 자리다 */
+    datingNow: pickWeighted(DATING_NOW),
     /* 제타형의 뼈대 — 무엇이 둘을 엮었고, 왜 못 벗어나는가 */
     tangle: POOL.tangle ? pick(POOL.tangle) : "",
     motive: POOL.motive ? pick(POOL.motive) : "",
@@ -15557,7 +16005,7 @@ function 주사위글(d){
        「기분이 오르내린다」 를 눌러 카드가 통째로 무난해진다 — 실측에서 한 글자도 안 배었다 */
     L.push("  **이것이 이 인물의 뼈대다.** 아래 「겉으로 보이는 성향」 이나 「속에 있는 결핍」 과");
     L.push("  어긋나면 이쪽을 따르고, 그 두 줄을 이것과 어울리게 고쳐 읽는다.");
-    L.push("  드러날 자리: TRAITS · 성장배경 · 가치관과 기준 · 주도적으로 하는 행동 · FIRST_MES");
+    L.push("  드러날 자리: TRAITS · 성장배경 · 가치관과 기준 · 주도적으로 하는 행동 · MES_EXAMPLE");
     /* 그늘이 직업이면 위의 고정 직업과 부딪힌다. 실측에서 「카페 사장」 이 「남의 돈을 굴린다」 를
        눌러 세 번 중 한 번만 배었다. 둘 다 살리려면 겉과 속으로 나누어야 한다 */
     L.push("  성격 칸에 한 줄 적고 마는 것이 아니라, 이 사람의 하루가 그 위에 짜여 있어야 한다.");
@@ -15572,7 +16020,10 @@ function 주사위글(d){
 const CARD_사람칸 = ['NAME', 'TRAITS', 'HABIT', 'LOOK', 'OUTFIT', 'DESCRIPTION',
                      'PERSONALITY', 'GROWTH', 'EDU', 'FINANCE', 'LIVING', 'FRIENDS', 'DATING',
                      'HOLD', 'GOAL'];
-const CARD_장면칸 = ['SCENARIO', 'FIRST_MES', 'MES_EXAMPLE', 'STARTPLACE'];
+/* 260908 — FIRST_MES 를 뺐다. 「첫 장면 생성」이 매번 새로 쓰므로 거의 안 쓰였고,
+   그 한 칸이 1,200~1,500자를 먹어 다른 칸이 잘렸다. 그 자리를 예시 넷에 준다.
+   이미 있는 카드의 첫 대사는 그대로 둔다 — 새로 만들 때만 안 만든다 */
+const CARD_장면칸 = ['SCENARIO', 'MES_EXAMPLE', 'STARTPLACE'];
 /* 260905 — 제타형 카드는 첫 장면을 제타 꼴로 쓴다.
    인물 풀만 갈고 쓰는 지침을 안 갈았더니, 뽑아 놓고도 소설체 카드가 나왔다 */
 const 제타형인가 = mode => mode === 'zeta';
@@ -15593,6 +16044,68 @@ const TOP_LEVEL = {
   보통: '{{char}}는 때와 자리를 보아 사적인 것을 묻는다. 받아 주면 한 걸음 더 들어가고, 피하면 물러선다.',
   거리낌없이: '{{char}}는 사적인 것을 스스럼없이 묻고, 제 사적인 것도 먼저 꺼낸다. 처음 만난 자리에서도 그렇다.'
 };
+
+/* ═══════════════ 결 — 서술의 분위기 ═══════════════ 260908
+   **장르가 아니다.** 장르는 「무슨 이야기인가」이고 결은 「어떻게 적는가」다.
+   같은 연애라도 달달하게 적으면 달달한 연애, 툭툭 끊어 적으면 츤데레,
+   거칠게 적으면 깡패가 하는 사랑이 된다. 인물이 아니라 **적는 법**이 다르다.
+
+   결마다 **말투 · 몸 · 서술** 셋을 적는다. 형용사로 적으면 모델이 못 따른다 —
+   「분위기가 과격하다」가 아니라 「말을 끝까지 안 듣는다」라야 따른다 */
+const TONE = [
+  {k:'', t:'안 고름', d:'인물과 장르가 정하는 대로 갑니다',
+   글: ''},
+
+  {k:'단', t:'달달함', d:'감추지 않고 다가갑니다',
+   글: ['말끝이 부드럽고 물음이 잦다. 좋다는 말을 돌려 하지 않는다.',
+        '몸이 먼저 가까워진다 — 소매를 잡거나, 옆자리에 앉거나, 먼저 손을 내민다.',
+        '서술이 온도와 빛을 자주 짚는다. 나쁜 일도 나쁘게만 적지 않는다.']},
+
+  {k:'츤', t:'츤데레', d:'속과 겉이 늘 어긋납니다',
+   글: ['말은 툭툭 끊고 대꾸는 짧다. **좋다는 말을 절대 그 말로 하지 않는다.**',
+        '몸이 말과 반대로 간다 — 가라고 하면서 자리를 비켜 주고, 됐다면서 이미 하고 있다.',
+        '서술은 그 어긋남을 **설명하지 않는다.** 어긋난 채로 놓고 지나간다.',
+        '{{char}}는 제 어긋남을 스스로 못 알아챈다.']},
+
+  {k:'과', t:'과격함', d:'말보다 몸이 먼저 나갑니다',
+   글: ['말이 짧고 거칠다. 존대가 무너지고 욕이 섞인다. 말을 끝까지 안 듣는다.',
+        '몸이 먼저 움직인다 — 팔을 잡고, 문을 막고, 자리를 옮겨 세운다. 다만 다치게는 안 한다.',
+        '서술이 짧게 끊긴다. 형용사를 거의 안 쓴다. 소리와 힘이 자주 나온다.',
+        '**부드러운 자리가 하나쯤 있어야 한다.** 전부 거칠면 사람이 아니라 벽이다.']},
+
+  {k:'서', t:'서늘함', d:'거리를 두고 재고 봅니다',
+   글: ['말이 정중하되 차다. 물음이 아니라 확인을 한다. 웃어도 눈이 안 웃는다.',
+        '몸이 좀처럼 안 움직인다. 다가오면 그만큼 물러선다.',
+        '서술이 판정하듯 적힌다. 온도가 낮고 사이가 길다.']},
+
+  {k:'능', t:'능청', d:'농으로 넘기고 진담을 숨깁니다',
+   글: ['말끝을 농으로 돌린다. 진지한 것을 물으면 딴소리를 한다.',
+        '몸짓이 크고 태연하다. 곤란할수록 더 태연해진다.',
+        '서술이 가볍게 흐른다. 그 가벼움 밑에 안 꺼낸 말이 있다는 것만 남긴다.']},
+
+  {k:'담', t:'담담함', d:'크게 흔들리지 않습니다',
+   글: ['말이 짧고 고르다. 목소리가 잘 안 올라간다.',
+        '몸짓이 적고 느리다. 하던 것을 마저 하면서 말한다.',
+        '서술이 사실만 놓는다. 감정을 이름으로 부르지 않는다.']},
+
+  {k:'애', t:'애틋함', d:'다가가고 싶은데 못 갑니다',
+   글: ['말이 자꾸 끊긴다. 하려던 말을 삼키고 다른 말을 한다.',
+        '손이 갔다가 멈춘다. 닿을 뻔하고 안 닿는다.',
+        '서술이 못 한 것을 짚는다 — 안 한 말, 안 잡은 손, 지나간 자리.']},
+
+  {k:'노', t:'노골적', d:'바라는 것을 숨기지 않습니다',
+   글: ['바라는 것을 말로 꺼낸다. 돌려 말하지 않는다.',
+        '몸이 거리낌 없다. 눈을 오래 맞추고 먼저 닿는다.',
+        '서술이 몸을 자주 적는다 — 숨 · 체온 · 닿은 자리.']},
+
+  {k:'무', t:'무심함', d:'관심 없는 척이 몸에 뱄습니다',
+   글: ['대꾸가 늦고 짧다. 되묻지 않는다. 「그래」 「알았어」 로 끊는다.',
+        '몸이 잘 안 돌아간다. 하던 것에서 눈을 잘 안 뗀다.',
+        '서술이 건조하다. 다만 **아주 가끔** 무심하지 않은 것이 한 줄 새어 나온다.']}
+];
+const toneOf = '';
+/* 프롬프트에 실릴 글. 안 골랐으면 빈 글이라 아무것도 안 실린다 */
+function toneText(){ throw new Error("중계가 짭니다 — " + "toneText"); }
 
 const PLOT_STYLE = {
   난이도: {'': '', 쉬운: '{{char}}는 {{user}}에게 호의적이다. 벽이 낮고 금세 마음을 연다.',
@@ -15704,7 +16217,19 @@ const CFG_META = [
                 ['1216x832','가로 (배경)'], ['640x960','세로 · 저용량']]},
   {k:'intro',     t:'첫 장면 생성', d:'카드의 첫 대사 대신 새로 쓴다', kind:'bool', dflt:'1'},
   {k:'own',       t:'내 지문',     d:'쓴 대로 전부 일어나게 할까',   kind:'bool', dflt:'0'},
+  /* 260908 — 돌발. 대화마다 다르게 걸 수 있게 여기 얹는다.
+     기본은 「드물게(일흔 턴)」다 — 회원님 말씀 「기본은 70으로」 */
+  {k:'jolt',  t:'돌발', d:'걸려 있던 일 하나가 이따금 커집니다', kind:'bool', dflt:'0'},
+  {k:'joltN', t:'돌발 빈도', d:'얼마나 뜸하게 터질까', kind:'pick', dflt:'some',
+   opts: () => JOLT_GAP.map(g => [g.k, g.t + ' · ' + g.d])},
   /* 260905 — 사적인 데로 어디까지 들어갈지. 안 고르면 규칙 9-3 만 돈다 */
+  /* 260908 — 그림풍. 값이 함께 뜨므로 고르면서 얼마인지 안다 */
+  {k:'imgStyle', t:'그림풍', d:'어떤 그림체로 뽑을까', kind:'pick', dflt:'',
+   opts: () => IMG_PUNG.map(x => [x.k,
+     x.k ? x.t + ' (' + x.m + ') $' + x.값.toFixed(2) + ' · ' + x.d
+         : x.t + ' · ' + x.d])},
+  {k:'tone', t:'결', d:'같은 이야기를 어떻게 적을까', kind:'pick', dflt:'',
+   opts: () => TONE.map(x => [x.k, x.t + (x.d ? ' · ' + x.d : '')])},
   {k:'top', t:'사적인 영역', d:'사적인 것을 어디서부터 묻게 할까', kind:'pick', dflt:'',
    opts: () => Object.keys(TOP_LEVEL).map(v => [v, v || '안 씀 (대화가 정한다)'])},
   /* 260905 — 제타의 스타일 일곱. 안 고르면 아무것도 안 싣는다 */
@@ -15752,6 +16277,23 @@ function chatCfgSheet(reshow){
 }
 
 /* 한 가지를 이 대화에만 건다. 「기본값 따르기」로 언제든 풀 수 있다 */
+/* 260908 — 「돌발이 뭔지」를 그 자리에서 읽을 수 있어야 한다.
+   설정 화면까지 찾아가야 알 수 있으면 고르는 뜻이 없다 */
+const CFG_HELP = {
+  jolt:
+    '이미 걸려 있던 일 하나가 <b>이따금 커집니다.</b><br>' +
+    '갚기로 한 돈, 하기로 해 놓고 안 한 것, 들킬 뻔한 것 같은 것들입니다.<br><br>' +
+    '<b>새 사건을 만들지는 않습니다.</b> 「미해결」에 쌓인 것 가운데 ' +
+    '<b>무거운 것(!)</b> 이면서 <b>오래 조용했던 것</b>을 골라 키웁니다.<br>' +
+    '오래 묻혀 있을수록 크게 터집니다.<br><br>' +
+    '어디서 오는지는 앱이 굴립니다 — 밖에서 · 상대 안에서 · 무엇을 보고 · 몸에서.<br>' +
+    '값은 따로 나가지 않습니다. 프롬프트에 한 줄이 더 붙을 뿐입니다.',
+  joltN:
+    '간격입니다. <b>절반이 지나기 전에는 무조건 쉽니다</b> — 붙자마자 또 붙으면 성가십니다.<br>' +
+    '간격을 넘긴 뒤로도 <b>키울 만한 것이 있을 때만</b> 터집니다. ' +
+    '쌓인 것이 없으면 아무 일도 안 일어납니다.'
+};
+
 function cfgEdit(m, reshow){
   const cur = cfg(m.k, m.dflt), own = cfgOwn(m.k);
   /* 고르면 **이 창**을 다시 그려 ✓ 를 옮긴다.
@@ -15764,6 +16306,9 @@ function cfgEdit(m, reshow){
   const head = {info: true, html: '<span class="pguide">' + esc(m.d) + '<br>' +
     '지금 <b>' + esc(cfgLabel(m, cur)) + '</b> · ' + (own ? '이 대화에만 걸려 있습니다' :
      '설정 기본값(' + esc(cfgLabel(m, localStorage.getItem(LS[m.k]) || m.dflt)) + ')을 따르는 중입니다') +
+    /* 260908 — 무엇을 고르는 것인지 그 자리에서 읽게 한다 */
+    (CFG_HELP[m.k] ? '<span class="dim" style="margin-top:8px;display:block;line-height:1.65">' +
+                     CFG_HELP[m.k] + '</span>' : '') +
     '</span>'};
   const loose = own ? [{label: '기본값 따르기 — 걸어 둔 것을 풉니다',
                         run: () => put(null), keep: 다시}] : [];
@@ -18308,11 +18853,15 @@ function setPeGender(g){
 }
 function editPersona(id, over){
   const p = id ? S.personas.find(x=>x.id===id) : null;
-  S.editingPersona = p ? {...p} : {id:uid(), name:'', description:'', isDefault:!S.personas.length,
+  S.editingPersona = p ? {...p} : {id:uid(), name:'', description:'', outfit:'',
+    imgTags:'', avatar:'', isDefault:!S.personas.length,
                                     createdAt:now(), updatedAt:now()};
   const e = S.editingPersona;
   $('peTitle').textContent = p ? p.name : '새 주인공';
   $('peName').value = e.name; $('peDesc').value = e.description || '';
+  /* 260908 — 평소 차림과 그림 */
+  $('peOutfit').value = e.outfit || '';
+  peImgPaint();
   for (const [el, k] of PE_FIELDS) $(el).value = e[k] || '';
   setPeGender(e.gender || '');
   /* 앱이 깔아 준 주인공이 빈 채로 남아 있으면 채운다.
@@ -18337,6 +18886,106 @@ $('peBack').onclick = () => {
   if (popClose()){ renderPersonas(); return; }
   show('vPersonas'); renderPersonas();
 };
+/* ═══════════════ 주인공 그림 ═══════════════ 260908
+   회원님은 **한글만** 적으신다. 영어 태그는 여기서 만들어 백단에 둔다 */
+
+/* 한글 → 영어 태그. 무료 모델로 돌린다.
+   ULTRA 를 먼저 쓰고 한 번 더 시도한 뒤, 그래도 안 되면 다른 무료로 내려간다.
+   SUPER 는 안 쓴다 — 이 앱이 잰 값으로 한국어 28% 라 한글을 못 읽는다 */
+/* 260908 — **재 보고 정했다.** 짐작으로 두지 않았다.
+   같은 한글 셋을 셋에게 시켜 본 값 —
+
+     solar-pro4   쓸 만함 3/3 · 1,825ms   ← 태그만 깔끔하게 낸다
+     ULTRA:free   쓸 만함 0/3            ← 「The user wants me to convert…」 생각을 그대로 뱉는다
+     ling-3.0     쓸 만함 0/3            ← 빈 답
+
+   ULTRA 는 글은 잘 쓰지만 **시키는 꼴로 짧게 내는 일**에는 안 맞았다.
+   그래서 solar 를 앞에 두고, 한 번 더 시도한 뒤 ULTRA 로 내려간다 */
+const TAG_MODELS = ['upstage/solar-pro4',
+                    'upstage/solar-pro4',
+                    'nvidia/nemotron-3-ultra-550b-a55b:free'];
+async function 태그로바꾸기(){
+  const e = S.editingPersona; if (!e) return null;
+  const 한글 = [$('peLook').value.trim(), $('peOutfit').value.trim()].filter(Boolean).join(' / ');
+  if (!한글) { toast('외형이나 평소 차림을 먼저 적어 주십시오'); return null; }
+  const 성 = $('peGender').value === 'm' ? 'man' : $('peGender').value === 'f' ? 'woman' : 'person';
+  const 물음 = [
+    'Convert the Korean description below into English image-generation tags.',
+    'Rules:',
+    '- Output ONLY comma-separated tags. No sentences, no explanation, no quotes.',
+    '- Start with "1' + 성 + '".',
+    '- Include body, hair, eyes, face, then clothing.',
+    '- 20 words or fewer. Do not invent anything not implied by the Korean.',
+    '',
+    'Korean: ' + 한글
+  ].join('\n');
+  for (let i = 0; i < TAG_MODELS.length; i++){
+    try{
+      const r = await askTextEx(물음, 220, 0.4, TAG_MODELS[i]);
+      const t = String(r.text || '').replace(/[\n"']/g, ' ').replace(/\s+/g, ' ').trim();
+      /* 한글이 섞여 오면 실패로 본다 — 그러면 그림이 엉뚱해진다 */
+      if (t && t.length > 8 && !/[가-힣]/.test(t)) return t.slice(0, 300);
+    }catch(_){}
+    if (i === 0) toast('한 번 더 시도합니다');
+    else if (i === 1) toast('다른 모델로 바꿔 시도합니다');
+  }
+  return null;
+}
+
+/* 그림과 시드를 그린다 */
+function peImgPaint(){
+  const e = S.editingPersona; if (!e) return;
+  const 있 = !!e.avatar;
+  $('peImgWrap').innerHTML = 있
+    ? '<div class="pic0" style="border-radius:12px;overflow:hidden"><img src="' + e.avatar +
+      '" alt="내 그림" style="width:100%;display:block"></div>' +
+      '<div class="row" style="gap:6px;margin-top:6px;align-items:center">' +
+      '<label style="flex:0 0 auto;font-size:11.5px;color:var(--tx3)">시드</label>' +
+      '<input type="text" id="peSeed" value="' + esc(String(e.imgSeed ?? '')) +
+      '" style="flex:1" placeholder="비우면 매번 다르게">' +
+      '<button type="button" class="btn" id="peImgAgain">다시</button></div>'
+    : '<div class="hint dim">아직 없습니다.</div>';
+  const a = $('peImgAgain'); if (a) a.onclick = () => 주인공그림(true);
+}
+
+/* 그림을 뽑는다. 태그가 없으면 먼저 만든다 */
+async function 주인공그림(다시){
+  const e = S.editingPersona; if (!e) return;
+  if (!그림그릴수있나()) return toast('이미지를 쓰려면 설정에서 키나 코드를 넣어 주십시오');
+  busy('once', '그림을 만드는 중  ·  보통 20~60초');
+  try{
+    if (!e.imgTags || 다시 !== true){
+      const t = await 태그로바꾸기();
+      if (t) e.imgTags = t;
+    }
+    if (!e.imgTags) throw new Error('영어 태그를 못 만들었습니다');
+    const 시드칸 = $('peSeed');
+    const 준시드 = 시드칸 ? parseInt(시드칸.value, 10) : NaN;
+    const seed = Number.isFinite(준시드) ? 준시드 : randInt(100000, 999999);
+    const plan = imgPlan(imgLevelKey(), true);
+    const 모델 = plan.chain[0];
+    if (!모델) throw new Error('이미지 모델이 지정되지 않았습니다');
+    const url = await veniceImage(e.imgTags + ', portrait, upper body, plain background',
+                                  모델, undefined, seed);
+    e.avatar = url; e.imgSeed = seed;
+    peImgPaint();
+    toast('만들었습니다 — 저장을 눌러야 남습니다', 3000);
+  }catch(err){
+    toast('그림을 못 만들었습니다 — ' + err.message, 3200);
+  }finally{ busy(null); }
+}
+$('peImgGo').onclick  = () => 주인공그림(false);
+$('peImgTag').onclick = async () => {
+  const e = S.editingPersona; if (!e) return;
+  busy('once', '영어로 바꾸는 중');
+  try{
+    const t = await 태그로바꾸기();
+    if (!t) return toast('바꾸지 못했습니다 — 잠시 뒤 다시 눌러 주십시오');
+    e.imgTags = t;
+    toast('바꿨습니다 — 그림에 쓰입니다', 2600);
+  }finally{ busy(null); }
+};
+
 $('peSave').onclick = async () => {
   const e = S.editingPersona;
   e.name = $('peName').value.trim();
@@ -18344,6 +18993,10 @@ $('peSave').onclick = async () => {
   e.description = $('peDesc').value;
   for (const [el, k] of PE_FIELDS) e[k] = $(el).value.trim();
   e.gender = $('peGender').value;
+  /* 260908 — 평소 차림은 한글, 영어 태그와 시드는 백단 */
+  e.outfit = $('peOutfit').value.trim();
+  { const el = $('peSeed'); if (el){ const n = parseInt(el.value, 10);
+      if (Number.isFinite(n)) e.imgSeed = n; else delete e.imgSeed; } }
   e.isDefault = $('peDef').checked; e.updatedAt = now();
   if (e.isDefault) for (const o of S.personas) if (o.id !== e.id && o.isDefault){
     o.isDefault = false; await dbPut('personas', o);
@@ -19058,6 +19711,13 @@ function loadSettings(){
   $('sJoltN').innerHTML = JOLT_GAP.map(g =>
     '<option value="' + g.k + '">' + g.t + ' — ' + g.d + '</option>').join('');
   $('sJoltN').value = localStorage.getItem(LS.joltN) || 'some';
+  /* 260908 — 이 대화에만 따로 걸어 두었으면 그렇다고 알린다.
+     설정에서 아무리 만져도 그 대화는 안 바뀌므로, 모르면 헤맨다 */
+  {
+    const 걸림 = cfgOwn('jolt') || cfgOwn('joltN');
+    const el = $('sJoltOwn');
+    if (el) el.style.display = 걸림 ? '' : 'none';
+  }
   $('sPreHint').checked = localStorage.getItem(LS.preHint) === '1';
   $('sTaste').value  = localStorage.getItem(LS.taste) || 기본취향();
   $('sAgeMin').value = localStorage.getItem(LS.ageMin) || '20';
@@ -21720,11 +22380,11 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b173';
-const APP_BUILT = '2026-09-07 18:01';
+const APP_BUILD = 'b176';
+const APP_BUILT = '2026-09-08 00:34';
 const APP_BAKED = true;   /* 이 파일은 구운 것입니다. 손으로 고치지 마십시오 —
                              01. 최종 결과물/index.html 을 고치고 node 03. 빌드·테스트 도구/1. 자주 쓰는 스크립트/본편굽기.js 를 다시 돌리십시오 */
-const APP_NOTE  = '화면 개편 · 꼴 주사위 · 규칙 손질 · 랜덤생성 입력 보존';
+const APP_NOTE  = '내레이션 줄 수 못 박기 · 도막 셈 45자 · 예시 되돌림';
 
 /* ── 배포판 표시 ──
    번호를 원본과 따로 센다. 원본은 하루에도 여러 번 올라가지만
