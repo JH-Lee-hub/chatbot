@@ -8,6 +8,9 @@
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#0f1115">
 <link rel="apple-touch-icon" href="./icon-512.png">
+<!-- ★ 261006 화면 — 글꼴을 Pretendard 로 고정한다. 제타가 쓰는 글꼴이고, 기기 기본 글꼴(맑은 고딕 · 삼성 글꼴 · 애플 글꼴)마다 달리 보이던 것을 하나로.
+     못 받아오면 아래 font-family 의 기기 글꼴로 떨어진다 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
   :root{
     --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2a2f3a; --line2:#363c49;
@@ -20,7 +23,7 @@
   html,body{height:100%;margin:0;overflow:hidden}
   body{
     background:var(--bg); color:var(--tx);
-    font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+    font:15px/1.65 "Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
   }
   button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;padding:0}
   input,select,textarea{
@@ -62,6 +65,9 @@
     cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   /* 주인공 이름은 상대 이름 오른쪽에 잇는다. 줄을 따로 쓰면 머리가 두꺼워진다 */
   .bar .sub{font-size:11px;color:var(--tx2);font-weight:400;margin-left:5px}
+  /* ★ b198 — 방 머리의 문체 표시(📖 / 💬). 폰 폭에서 제목 칸이 66px 뿐이라 「💬 안…」처럼 이름이 한 글자만 남았다.
+     작게 · 띄어쓰기 없이 붙이고, 이름 글자(firstChild)는 건드리지 않는다 */
+  #cTitle[data-fmt]::before{content:attr(data-fmt);font-size:11px;margin-right:2px;vertical-align:1px}
   /* 34px 은 손끝보다 작다. 안드로이드 권장은 48dp 이고, 화면이 빽빽해 42 로 잡는다 */
   .ico{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;font-size:17px;color:var(--tx2)}
   .ico:active{background:var(--panel2)}
@@ -228,7 +234,8 @@
   .shint b{color:var(--tx2);font-weight:600}
 
   /* ── 대화 ── */
-  #msgs{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 12px 6px}
+  /* ★ 261006 화면 — 회원님 「둘 다 말풍선때문에 로스되는 면적이 크다」. 좌우 여백을 줄인다 */
+  #msgs{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 8px 6px}
   .msg{margin-bottom:13px;display:flex;flex-direction:column}
   .msg .who{font-size:10.5px;color:var(--tx3);margin-bottom:4px;font-weight:600}
   /* 이야기 밖 · 앱이 채움 — 흐리게 두되 지우지는 않는다. 읽을 수는 있어야 한다 */
@@ -244,8 +251,9 @@
   /* 260907 — 말머리에서 이름을 뺐다(msgHTML). 남는 것은 표와 턴 번호뿐이라
      뒤에 콜론을 붙이면 「(1) :」 같은 꼴이 된다. 콜론을 뗀다 */
   .msg .who{font-size:11.5px;opacity:.55}
+  /* ★ 261006 화면 — 소설체 줄 사이를 좁힌다(1.65 → 1.5). 제타 사진과 같은 자로 재니 제타는 줄 사이 약 19.5px · 우리는 25px 였다 */
   .msg .body{padding:10px 13px;border-radius:13px;white-space:pre-wrap;word-break:break-word;
-             border:1px solid var(--line)}
+             border:1px solid var(--line);line-height:1.5}
   /* ★ 260907 — **감싸는 큰 말풍선을 없앤다.**
      회원님 말씀 : 「그것들을 감싸는 통합 풍선은 필요가 없다」.
      안쪽이 이미 제 말풍선(.zblk)과 내레이션(.znar)을 갖고 있으므로
@@ -259,7 +267,7 @@
        (「응.」이 「응」/「.」 두 줄). 오른쪽 정렬은 .zblk.r 이 맡는다 */
     width:100%!important;align-self:stretch!important}
   .msg.user{align-items:flex-end}
-  .msg.user .body{background:var(--user);border-bottom-right-radius:4px;max-width:88%}
+  .msg.user .body{background:var(--user);border-bottom-right-radius:4px;max-width:92%}
   .msg.assistant .body{background:var(--ai);border-bottom-left-radius:4px}
   .msg.sys .body{background:transparent;border-style:dashed;color:var(--tx3);font-size:12.5px}
   .msg.err .body{background:#2a1a1c;border-color:#5c2b2f;color:#ffc9c9;font-size:13px}
@@ -317,6 +325,8 @@
   .srow.it span{background:transparent;border-style:dashed;white-space:normal}
   .stat span.up{border-color:#2f5c40;color:var(--ok)}
   .stat span.dn{border-color:#5c3a2f;color:var(--warn)}
+  /* ★ 261006 화면 — 회원님 「외관/내면이 너무 길어질 때도 있더라. 화면 밖으로 넘어간다던지」. 칩은 두 줄까지만 */
+  .srow:not(.it) span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:100%}
   .nar{color:var(--tx2);font-style:italic}
   .dlg{color:var(--tx)}
   .dlg b{color:var(--acc);font-weight:600;font-style:normal;cursor:pointer}
@@ -327,6 +337,10 @@
   #cBal{display:flex;flex-direction:column;align-items:flex-end;gap:1px;line-height:1.3;height:auto}
   #cBal .bl1{font-size:10px;color:var(--tx2)}
   #cBal .bl2{font-size:9.5px;color:var(--tx3)}
+  /* ★ 261006 — 회원님 「돋보기와 ... 간격 좁히고. 그러면 방 제목 덜 짤리게」. 방 머리의 단추 사이와 폭을 줄인다(높이는 손끝 크기 그대로) */
+  #vChat .bar{gap:2px}
+  #vChat .bar .ico{width:34px}
+  #vChat .bar #cBal{padding:0 4px}
   /* 260901 — 말풍선 위에 겹쳐 떠서 뒤의 글을 가렸다. **반쯤 비친 채로 둔다.**
      손을 댈 때만 또렷해지게 해 봤더니 깜빡이는 것처럼 보였다 — 하나로 못 박는다.
      누르는 자리는 그대로다. 흐린 것과 안 눌리는 것은 다른 일이다 */
@@ -349,6 +363,12 @@
   body.dz-촘촘 #msgs{padding:8px 12px 4px}
   #meter b{color:var(--tx2);font-weight:600}
   #meter button{font-size:10.5px;color:var(--tx3);padding:0}
+  /* ★ 261006 — 회원님 「? 줄 글자 크기 더 줄여. 모델 이름 더 길어져도, 해당 줄이 2줄로 넘어오지 않도록」.
+     한 줄로 못 박고, 넘치면 맨 끝(모델 이름)만 줄임표로 */
+  #meter, body.dz-촘촘 #meter{flex-wrap:nowrap;white-space:nowrap;overflow:hidden;font-size:8.5px;gap:8px}
+  #meter span{flex:0 0 auto;min-width:0}
+  #meter span:last-child{flex:0 1 auto;overflow:hidden;text-overflow:ellipsis}
+  #meter button, body.dz-촘촘 #meter button{font-size:8.5px}
   /* 모델명은 여기 한 곳에만 둔다. 눌러서 바로 바꾼다 */
   #mModel{max-width:35vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
           text-decoration:underline;text-underline-offset:2px}
@@ -1158,8 +1178,9 @@
   --znfs:13.5px;   /* 내레이션 글자 */
   --zmsggap:16px;  /* 턴과 턴 사이 */
 }
-body.dz-촘촘{--zgap:5px;--zpadv:7px;--zpadh:11px;--zfs:14.5px;--zactfs:13px;
-             --zlh:1.5;--zngap:8px;--znfs:13px;--zmsggap:10px}
+/* ★ 261006 화면 — 회원님 「일반 대사가 아직도 너무 이질적으로 큰 느낌」. 대사와 지문을 같은 크기(14px)로 두고 대사는 굵기로만 가른다(제타가 그렇다) */
+body.dz-촘촘{--zgap:5px;--zpadv:7px;--zpadh:10px;--zfs:14px;--zactfs:14px;
+             --zlh:1.5;--zngap:8px;--znfs:13.5px;--zmsggap:10px}
 body.dz-성김{--zgap:12px;--zpadv:11px;--zpadh:15px;--zfs:16px;--zactfs:14.5px;
              --zlh:1.75;--zngap:17px;--znfs:14.5px;--zmsggap:22px}
 
@@ -1173,30 +1194,41 @@ body.dz-성김{--zgap:12px;--zpadv:11px;--zpadh:15px;--zfs:16px;--zactfs:14.5px;
    모델은 문장마다 ≡ 줄을 따로 쓰고, 한 줄이 .znar 하나라 문장마다 딱지 + 벌어진 간격이 붙었다.
    ≡ 는 **모델이 쓰는 표**로는 그대로 둔다(말풍선 밖으로 가르는 데 쓴다) — 화면에서만 안 보인다.
    색 · 크기로 대사와 갈리므로 딱지 없이도 내레이션인 줄 안다 */
-.znar{color:var(--tx3,#7d7d85);font-style:normal;font-size:var(--zactfs);
-      margin:var(--zngap) 2px;padding-left:2px;position:relative;
+/* ★ 261006 화면 — 회원님 「k, 내레이션과 인물지문의 차이점이 없다」. 제타 사진(261006 다시 봄)에서 내레이션은
+   **말풍선 밖 · 기울임 · 회색 · 앞에 ≡ 하나**다. 덩이 맨 앞에만 ≡ 를 두고(문장마다 안 붙임 — 260930 이미소 [13]),
+   기울임으로 돌리고 색을 한 단 밝혀 지문(말풍선 안)과 갈리게 한다 */
+/* 회원님 16:00 「내레이션 역시 왼쪽의 햄버거마크만큼 들여쓴 것처럼 우측도 그만큼의 공간」 — 양쪽 17px */
+.znar{color:var(--tx2,#9aa3b2);opacity:.85;font-style:italic;font-size:var(--znfs);
+      margin:var(--zngap) 2px;padding:0 17px;position:relative;
       white-space:pre-wrap;line-height:var(--zlh)}
+.znar::before{content:'≡';position:absolute;left:1px;top:0;font-style:normal;opacity:.55}
 .znar + .znar{margin-top:calc(var(--zngap) * .3)}
+.znar + .znar::before{content:none}
 /* 260905 에 넣었던 .zlong 을 걷어냈다 — 그것이 흠이었다.
    「여든 자 넘으면 본문 글꼴로」 했는데 실제 내레이션이 죄다 100자 안팎이라
    **전부** 본문 크기 · 본문 색 · ≡ 없음이 되어 대사보다 커졌다.
    길든 짧든 내레이션은 내레이션이다 */
-.zblk{display:flex;gap:8px;margin:var(--zgap) 0;align-items:flex-start}
-.zblk.r{flex-direction:row-reverse}
+.zblk{display:flex;gap:6px;margin:var(--zgap) 0;align-items:flex-start}
+.zblk.r{flex-direction:row}
 /* 같은 사람이 이어 말하면 이름과 아바타를 비운다. 자리는 남겨 줄이 안 어긋나게 */
 /* 260909 — 이어 말하면 말풍선이 여러 개 붙어 내려온다. 사이를 좁게 둔다.
    빈 아바타(hollow)는 없앴다 — 회원님이 오류처럼 보인다고 하셨다 */
 .zbub + .zbub{margin-top:calc(var(--zgap) * .55)}
 .zblk.many .zcol{gap:0}
-.zpic{flex:0 0 auto;width:30px;height:30px;border-radius:50%;
+.zpic{flex:0 0 auto;width:26px;height:26px;border-radius:50%;
       background:rgba(128,128,128,.28);display:flex;align-items:center;justify-content:center;
       font-size:12px;cursor:pointer;user-select:none}
-.zcol{max-width:80%;display:flex;flex-direction:column;min-width:0}
+/* ★ 261006 화면 — 말풍선 폭 80% → 아바타 한 칸(26 + 6px)만 남기고 다 쓴다. 회원님 16:00 「말풍선은 캐릭터나 유저나 위치와 크기가
+   동일했으면 … 서로의 썸네일 영역까지 넘어가지 않게끔」 — 내 말풍선도 왼쪽에 아바타를 두고 같은 자리 · 같은 폭으로 그린다. 빛깔만 다르다 */
+.zcol{max-width:calc(100% - 64px);display:flex;flex-direction:column;min-width:0}
+.zblk.r{flex-direction:row;justify-content:flex-start}
+.zblk.r .zcol{align-items:flex-start}
 /* 260908 — 내 쪽에도 아바타가 돌아왔다. 아바타가 오른쪽에 서도록 되짚는다.
    260907 에 아바타를 빼면서 「칸 하나짜리 flex」가 되어 말풍선이 한 글자씩
    접혔던 일이 있다(「응.」이 「응」/「.」). 아바타가 있으면 그 일이 안 생긴다 */
-.zblk.r{flex-direction:row-reverse;justify-content:flex-start}
-.zblk.r .zcol{align-items:flex-end}
+/* ★ 261006 — 내 말풍선도 왼쪽에 아바타 · 같은 자리(회원님 16:00). 위의 row-reverse 를 여기서 되돌린다 */
+.zblk.r{flex-direction:row;justify-content:flex-start}
+.zblk.r .zcol{align-items:flex-start}
 .znm{font-size:11.5px;opacity:.6;margin:0 3px 3px;cursor:pointer}
 /* 260908 — 테두리를 넣는다. 배경만으로는 폰에서 말풍선인지 안 보였다 */
 .zbub{background:rgba(128,128,128,.14);border:1px solid rgba(128,128,128,.30);
@@ -1207,6 +1239,9 @@ body.dz-성김{--zgap:12px;--zpadv:11px;--zpadh:15px;--zfs:16px;--zactfs:14.5px;
 .zbub p{margin:0}
 .zbub p+p{margin-top:calc(var(--zpadv) * .7)}
 .zbub .zact{opacity:.72;font-style:italic;font-size:var(--zactfs)}
+/* ★ 261006 화면 — 대사는 크기가 아니라 굵기로 선다. 말풍선 바탕도 한 단 진하게 — 말풍선 안(지문)과 밖(내레이션)이 갈려 보이게 */
+.zbub .zsay{font-weight:600}
+.zbub{background:rgba(128,128,128,.19)}
 /* 턴 번호는 모서리로. 한 줄을 통째로 먹을 값이 아니다 (260907) */
 .msg{position:relative}
 .msg .tnoab{position:absolute;top:-2px;right:2px;font-size:10px;opacity:.3;
@@ -2326,7 +2361,7 @@ const DIST_KEY = '';   /* 비워 둔다 — 구울 때 넣는다. node 검증/�
 const DIST_IMGKEY = '';   /* 비워 둔다 — 구울 때 넣는다. node 검증/배포굽기.js --키 <파일> */
 /* 배포판은 프롬프트가 빠진 판이라 중계 없이는 못 돈다.
    구울 때 심는다 — node 검증/배포굽기.js --중계 <주소> <초대코드> */
-const DIST_RELAY = 'https://b198-rp-relay.amuselk.workers.dev';
+const DIST_RELAY = 'https://b199-rp-relay.amuselk.workers.dev';
 const DIST_CODE  = '';
 
 /* ═══════════════ 내 판 ═══════════════
@@ -3394,9 +3429,10 @@ function paintChatBal(){
   const left = ['글 ' + (BAL.or?.left != null ? usd(BAL.or.left) : '—'),
                 '사진 ' + (BAL.ve?.left != null ? usd(BAL.ve.left) : '—')].join(' · ');
   const c = Number(S.chat.cost) || 0, ci = Number(S.chat.imgCost) || 0;
-  const used = '글 $' + c.toFixed(c >= 0.01 ? 3 : 4) + ' · 사진 $' + ci.toFixed(ci >= 0.01 ? 3 : 4);
-  el.innerHTML = '<span class="bl1"><em>잔여</em>' + esc(left) + '</span>' +
-                 '<span class="bl2"><em>소진</em>' + esc(used) + ' <span style="opacity:.6">(현 채팅)</span></span>';
+  /* ★ 261006 — 회원님 「잔여: ~~~ (전체) · 소진: 글 $0.02 사진 $0.00 (현재) 이렇게 수정. 그래서 딱 떨어지게」 — 소수 둘째 자리까지 */
+  const used = '글 $' + c.toFixed(2) + ' · 사진 $' + ci.toFixed(2);
+  el.innerHTML = '<span class="bl1"><em>잔여:</em> ' + esc(left) + ' <span style="opacity:.6">(전체)</span></span>' +
+                 '<span class="bl2"><em>소진:</em> ' + esc(used) + ' <span style="opacity:.6">(현재)</span></span>';
   el.style.display = '';
 }
 /* 시간 칸을 원하는 단위로 묶는다. h 는 'YYYY-MM-DDTHH' 꼴이다 */
@@ -5148,8 +5184,10 @@ async function maybeVolume(chatId, mem){
 
   const key = localStorage.getItem(LS.key);
   /* 요약과 성격이 같다 — 문장력이 아니라 정확한 압축이 필요하다 */
+  /* ★ b198 — 모델을 한 번도 안 고른 새 대화에서는 여기가 비어 조용히 건너뛰었다. 대화 턴은 예비 사슬로 도는데
+     이것만 안 돌았다(260930 시험 프로필에서 봄). 대화 턴과 같은 예비 모델을 마지막 자리에 둔다 */
   const model = 요약모델() ||
-    S.chat?.model || S.character?.preferredModel || localStorage.getItem(LS.model);
+    S.chat?.model || S.character?.preferredModel || localStorage.getItem(LS.model) || getFallbacks()[0];
   /* ★ 260930 첫앱개선 — maybeSummarize 와 같은 병. 중계면 키가 없어도 된다 */
   if ((!key && !onRelay()) || !model) return mem;
 
@@ -5931,7 +5969,15 @@ function 댄이름(글){
 function 첫호칭(c){
   const 글 = [c?.description, c?.personality, c?.scenario].join('\n');
   const m = 글.match(/\{\{user\}\}\s*(?:를|을)\s*[「'"]([^」'"\n]{1,8})[」'"]\s*(?:라고|로)?\s*부/);
-  return (m && m[1]) ? m[1].trim() : '그쪽';
+  if (m && m[1]) return m[1].trim();
+  /* ★ 261006 — **서로 아는 사이면 이름으로 부른다.** 통성명 전 기본값 「그쪽」이 10년 친구에게도 붙어
+     정예원이 「그쪽 진짜 돌았어?」 했다(261006 다듬은 규칙 판 2턴). 카드의 관계 · 설정에 처음 만나는 사이라는
+     말이 없고 아는 사이라는 말이 있으면 주인공 이름을 쓴다. 둘 다 없으면 전처럼 「그쪽」 */
+  const 사이 = [c?.profile?.relation, c?.description, c?.profile?.speech, c?.scenario].join('\n');
+  const 처음 = /처음 (?:보|만나|본)|모르는 사람|낯선|초면|새로 이사|이사 온|오늘 만난|인사 한 번|이름(?:을|도) 모르/.test(사이);
+  const 아는사이 = /친구|동창|소꿉|동거|연인|가족|남매|오빠|누나|동생|룸메|동료|선배|후배|동기|년째|년 만에|같이 사는|함께 사는/.test(사이);
+  if (!처음 && 아는사이 && typeof S !== 'undefined' && S?.persona?.name) return S.persona.name;
+  return '그쪽';
 }
 function fixKey(k){
   if (KNOWN_KEYS.includes(k)) return k;
@@ -7477,7 +7523,7 @@ async function maybeSummarize(oldestKept, silent){
      이 부름은 답이 끝나자마자 **뒤에서** 나가므로, 같은 모델이면
      구글 분당 횟수를 대화와 나눠 쓰게 된다 */
   const model = 요약모델() ||
-    S.chat.model || S.character.preferredModel || localStorage.getItem(LS.model);
+    S.chat.model || S.character.preferredModel || localStorage.getItem(LS.model) || getFallbacks()[0];   /* ★ b198 — 위 회차 묶기 주석과 같은 까닭 */
   /* ★ 260930 첫앱개선 — **중계를 쓰면 이 기기에 키가 없는 것이 정상이다**(readBalOR 주석과 같은 사정).
      여기만 `!key` 로 막혀 있어서, **키 없이 중계 코드만 넣은 기기**에서는 요약이 조용히 안 돈다
      (시험판에서 「지금 요약하기」를 눌러도 부름이 0 이었다 — 260930 실측).
@@ -8113,7 +8159,8 @@ async function pickStart(characterId, personaId){
   if (!past.length) return pickGenre(characterId, personaId);
   const cn = S.characters.find(x => x.id === characterId)?.name || '이 사람';
   sheet('어떻게 시작할까요', [
-    {info: true, html: '<span class="pguide">' + esc(cn) + ' 와 나눈 이야기가 있습니다.' +
+    /* ★ b198 — 「최다솜 와」처럼 받침을 안 봤다(260930 화면). 앱의 조사 맞춤(fixJosa)을 쓴다 */
+    {info: true, html: '<span class="pguide">' + esc(cn) + fixJosa(cn, '와') + ' 나눈 이야기가 있습니다.' +
       '<span class="dim">이어서 하면 그 이야기를 안고 새 자리에서 다시 만납니다. ' +
       '쌓인 사이는 그대로 가되, 시간이 흐른 만큼 조금 물러난 자리에서 시작합니다.</span></span>'},
     {label: '처음부터', html: '<b>처음부터</b><div class="shint">서로 모르는 사이로 시작합니다</div>',
@@ -8131,6 +8178,8 @@ async function pickStart(characterId, personaId){
    **이름에 저장하지 않는다** — 저장하면 이름을 고칠 때 겹치고, 앞 판으로 되돌렸을 때 이름에 그대로 남는다.
    제타 · 제타2 는 말풍선 꼴이라 💬. 문체 값이 없는 옛 대화는 채팅체로 굴러가므로 💬 */
 function 문체표(ch){
+  /* ★ b198 — 메멘토는 문체를 안 고르지만 1인칭 서술 글이다(말풍선이 아니다) */
+  if ((ch?.genre?.key || '') === 'memento') return '📖';
   return (ch && ch.cfg?.fmt === 'novel' && !['zeta', 'zeta2'].includes(ch.genre?.key || '')) ? '📖' : '💬';
 }
 function pickGenre(characterId, personaId){
@@ -8309,7 +8358,7 @@ async function newChat(characterId, personaId){
    첫 장면은 한참 뒤에야 본다. 첫 장면이 나오자마자 한 번 물어 「아직 밝혀지지 않은 것」을 물음 꼴로 받는다.
    할 일 목록형은 전개를 막으므로(4.3) 요약기와 같은 꼴 · 같은 거르개(유저만 쥔 줄 빼기)를 쓴다 */
 async function 첫장면떡밥(글, chat, c, p){
-  const model = 요약모델() || chat.model || c.preferredModel || localStorage.getItem(LS.model);
+  const model = 요약모델() || chat.model || c.preferredModel || localStorage.getItem(LS.model) || getFallbacks()[0];   /* ★ b198 — 요약기와 같은 까닭 */
   if ((!localStorage.getItem(LS.key) && !onRelay()) || !model) return;
   const 물음 = fill(
     '아래는 롤플레잉 대화의 첫 장면이다. 이 장면에 깔려 있는데 **아직 밝혀지지 않은 것**을 한 줄씩 적는다. 없으면 빈 배열로 둔다.\n' +
@@ -8318,7 +8367,9 @@ async function 첫장면떡밥(글, chat, c, p){
     '    꼴 — △△은 누구인가 (아무도 모른다)\n' +
     '- {{user}}의 속마음이나 {{user}}가 할 일은 적지 않는다. 할 일 목록을 만들지 않는다. 걸려 있는 것이 없으면 적지 않는다.\n' +
     '- 세 줄을 넘기지 않는다.\n' +
-    '- 오직 JSON만 출력한다. {"열린것":["..."]}\n\n[첫 장면]\n' + 글, c.name, p?.name);
+    /* ★ b198 — 장소도 함께 받는다(아래 첫장소채우기) */
+    '- 장소 에는 이 장면이 벌어지는 곳을 장면에 적힌 말로 짧게 적는다. 장면에 없으면 빈 글로 둔다.\n' +
+    '- 오직 JSON만 출력한다. {"열린것":["..."],"장소":"..."}\n\n[첫 장면]\n' + 글, c.name, p?.name);
   const res = await apiFetch('or', '/chat/completions', {
     method: 'POST',
     body: JSON.stringify({model, messages: [{role: 'user', content: 물음}],
@@ -8327,13 +8378,51 @@ async function 첫장면떡밥(글, chat, c, p){
   if (!res.ok) return;
   const txt = scrubOut((await res.json()).choices?.[0]?.message?.content || '');
   const m = txt.match(/\{[\s\S]*\}/); if (!m) return;
-  const 새것 = (JSON.parse(m[0]).열린것 || []).map(x => String(x || '').trim()).filter(Boolean)
+  const 받은것 = JSON.parse(m[0]);
+  await 첫장소채우기(chat, 받은것.장소).catch(e => console.warn('첫 장면 장소', e));
+  const 새것 = (받은것.열린것 || []).map(x => String(x || '').trim()).filter(Boolean)
     .filter(x => !유저만쥔줄(x, p?.name, c.name)).slice(0, 3);
   if (!새것.length) return;
   const mem = await getMem(chat.id);
   mem.열린것 = [...new Set([...(mem.열린것 || []), ...새것])].slice(0, 8);
   mem.updatedAt = now();
   await dbPut('memory', mem);
+}
+
+/* ★ b198 — **첫 장면 지시에 시각 · 장소를 알린다.** 앱은 첫 장면 뒤에 카드 · 상황 글에서 뽑은 시각으로 상태 줄을 붙이는데,
+   지시문은 그 시각을 모델에게 알리지 않았다. 그래서 본문은 「오전 열한 시 · 11시 5분」, 상태 줄은 「9:20 am」으로 어긋났다
+   (260930 최다솜 새 대화 · b196 부터 있던 얼개). 같은 계산(newChat 의 start0 과 같은 식)으로 뽑아 꼬리에 한 줄로 준다.
+   장소가 자리표시면 장소는 빼고 모델에게 맡긴다(뒤에 첫장소채우기가 받아 적는다). 중계는 이어서끝 을 그대로 잇는다 */
+function 첫장면때줄(c){
+  try{
+    const 칸 = readStatus('[상태] ' + 때맞추기(c.profile?.startState || guessStartState(c), c)) || {};
+    const 때 = String(칸['일시'] || '').trim(), 곳 = String(칸['장소'] || '').trim();
+    if (!때) return '';
+    return '\n- 이 장면이 열리는 때는 ' + 때 + '다.' +
+      (곳 && 곳 !== 자리표시장소 ? ' 곳은 ' + 곳 + '다.' : '') +
+      ' 장면 속 시각 · 요일 · 곳은 이것을 따른다.';
+  }catch(_){ return ''; }
+}
+
+/* ★ b198 — **첫 장면 상태 줄의 자리표시 장소를 실제 장소로.** 카드에 시작 자리가 없고 상황 글 첫 문장에 「~에서」가 없으면
+   guessStartState 가 「두 사람이 있는 곳」을 넣었다. 첫 장면은 재활 센터인데 상태 줄 · 판은 「두 사람이 있는 곳」이었다
+   (260930 윤주희 새 대화 · b196 부터 있던 것). 떡밥 뽑기가 첫 장면 전문을 읽는 김에 장소도 받아 **자리표시일 때만** 바꾼다.
+   모델이 적어 준 자리 · 카드의 시작 자리는 건드리지 않는다 */
+const 자리표시장소 = '두 사람이 있는 곳';
+async function 첫장소채우기(chat, 장소){
+  const 곳 = String(장소 || '').replace(/["'「」|=\n\r]/g, '').trim();
+  if (!곳 || 곳.length > 24 || 곳 === 자리표시장소) return;
+  if (S.chat?.id !== chat.id) return;   /* 그새 다른 방으로 갔으면 두지 않는다 — 다음 턴에 모델이 제 장소를 쓴다 */
+  const m0 = (S.messages || []).find(m => m.turnIndex === 0 && m.role === 'assistant');
+  if (!m0 || !String(m0.content).includes('장소=' + 자리표시장소)) return;
+  m0.content = String(m0.content).replace('장소=' + 자리표시장소, '장소=' + 곳);
+  await dbPut('messages', m0);
+  const mem = await getMem(chat.id);
+  if (mem.stateCard && mem.stateCard['장소'] === 자리표시장소){
+    mem.stateCard['장소'] = 곳; mem.updatedAt = now();
+    await dbPut('memory', mem);
+  }
+  renderMsgs();
 }
 
 /* 첫 장면만은 값을 아끼지 않는다. 여기서 잡힌 문체를 뒤가 내내 따라간다 */
@@ -8384,6 +8473,17 @@ const INTRO_ASK_제타 = [
 /* ★ 260930 첫앱개선 — 채팅체로 연 대화(시작할 때 고름)는 첫 장면도 도막 꼴로.
    옛 지시문의 「서술 대여섯 문단에 대사 서넛」이 채팅체 규칙 1번(도막 꼴)과 부딪혀
    첫 장면이 앞 두 문단은 소설체 · 뒤는 말풍선으로 섞여 나왔다(260930 정다현 채팅체 시험) */
+/* ★ 261006 — 첫 장면에 **턴과 같은 결**을 준다. 회원님이 15:00 에 읽어 짚으신 것(첫 장면이 길고 · 지문 과함 ·
+   속마음 괄호가 따로 놂 · 내레이터가 모르는 척 · 되풀이 · 유저가 칠 것이 안 보임)은 첫 장면에서 가장 크게 났고,
+   첫 장면에는 공통 규칙이 안 실린다(중계가 짐만 받아 제 지시로 짠다). 그래서 여기 직접 둔다. 막는 보기 없이 방향으로 */
+const INTRO_결 = [
+  '- **카드의 [현재 상황]에 적힌 그대로 연다** — 누가 어디에 있고 무엇을 하고 있는지를 바꾸지 않는다. 자고 있다고 적혀 있으면 자고 있는 데서 시작한다.',
+  '- 지문은 한 도막에 한두 줄, **현재시제**다. 더 적고 싶으면 내레이션으로 뺀다. 속으로 하는 말은 {{char}}가 제 머릿속으로 하는 1인칭 말일 때만 (괄호)로 **그 말풍선 안, 지문 바로 뒤**에 둔다.',
+  '- 내레이션은 일어난 일을 아는 쪽이 **과거시제로 단정해** 적는다. 「~인지도 모른다」처럼 모르는 투로 쓰지 않는다. 한 장면에 한두 덩이면 된다.',
+  '- 같은 몸짓 · 같은 낱말을 한 장면 안에서 두 번 쓰지 않는다. 차림새는 한 번만 그린다. 냄새 · 온기 · 기억은 그 자리에서 실제로 났을 때만 쓴다.',
+  '- 대사는 그 나이의 한국 사람이 지금 입으로 하는 말이다. 입에 얹어 보아 어색하면 다시 쓴다.',
+  '- **끝에서 {{user}}가 무엇을 하게 될지가 서 있어야 한다** — 내민 손 · 하다 만 말 · 방금 달라진 상황. {{char}}가 {{user}}를 보며 기다리는 자리로 닫는다.'
+].join('\n');
 const INTRO_ASK = '';
 
 async function makeIntro(c, p, chat, carry){
@@ -8398,9 +8498,10 @@ async function makeIntro(c, p, chat, carry){
       '\n\n[앞선 이야기 — {{char}}와 {{user}}는 이미 이만큼 지나왔다]\n' + carry.text +
       ((carry.mem?.고정 || []).length ? '\n' + carry.mem.고정.map(x => '- ' + x).join('\n') : ''),
       c.name, p?.name) : '';
-    const 이어서끝 = carry ? fill(
+    /* ★ b198 — 꼬리에 **앱이 상태 줄에 붙일 시각 · 장소**를 한 줄로 알린다(첫장면때줄 주석). 이어서가 아니어도 실린다 */
+    const 이어서끝 = (carry ? fill(
       '\n- **이번은 이어서 여는 자리다.** 처음 만나는 장면을 되풀이하지 않는다. [앞선 이야기] 뒤로 시간이 조금 흐른 **새 자리**에서, 둘이 이미 서로를 아는 사이로 연다. 앞선 일이 둘 사이에 무엇을 남겼는지가 첫 몸짓과 첫마디에 묻어난다.',
-      c.name, p?.name) : '';
+      c.name, p?.name) : '') + 첫장면때줄(c);
     /* 중계를 쓰면 이 글은 그쪽이 짠다. 여기서는 누구의 첫 장면인지만 알린다.
        ★ 260930 — 앞선 이야기(이어서 · 이어서끝)도 함께 싣는다. 안 실으면 중계가 짜는 본편에서만
        「이 이야기를 안고 새로」가 처음 만나는 장면을 되풀이한다(중계 turn.js 가 이 둘을 이어 붙인다) */
@@ -8419,7 +8520,9 @@ async function makeIntro(c, p, chat, carry){
       .replace(/\n*\[상태\][^\n]*$/g, '').trim()).글.trim();   /* ★ 260930 첫앱개선 — 내부 표시 걷기 */
     /* 260905 — 제타 인트로는 300~450자다. 400 문턱에 걸려 통째로 버려지고
        카드의 옛 첫 대사로 되돌아가고 있었다. 되돌아간 그것이 소설체였다 */
-    if (txt.length < (zetaOn() ? 200 : 400)) throw new Error('너무 짧습니다');
+    /* ★ 261006 — 채팅체 첫 장면은 600~900자를 청하므로 문턱을 300 으로. 400 에 걸리면 카드의 옛 첫 대사(「이름 : 대사」 꼴)로 조용히 되돌아가
+       새 지시가 통째로 버려진다(261006 정예원 eb1ed7e6 에서 그랬다) */
+    if (txt.length < (zetaOn() ? 200 : 소설체인가() ? 400 : 300)) throw new Error('너무 짧습니다');
     return txt;
   } finally { S.chat = prev; }
 }
@@ -9115,7 +9218,8 @@ async function openChat(id){
   S.stick = false;
   msgNodeCache.clear();   /* 다른 대화의 캐시된 노드가 섞이지 않게 비운다 */
 
-  $('cTitle').firstChild.textContent = 문체표(S.chat) + ' ' + S.character.name;
+  $('cTitle').firstChild.textContent = S.character.name;
+  $('cTitle').dataset.fmt = 문체표(S.chat);   /* 앞의 작은 표시는 CSS(#cTitle[data-fmt]::before)가 그린다 */
   /* 모델명은 아래 계기판 한 곳에만 둔다. 주인공은 이름 옆에 「- 준」으로 붙인다 */
   $('cSub').textContent = S.persona ? '- ' + S.persona.name : '';
   paintModel();
@@ -9619,7 +9723,11 @@ function fmt(t, role){
      옛 꼴은 아래 길을 그대로 탄다 — 지난 대화가 하나도 안 바뀐다 */
   {
     const 남은글 = lines.join('\n');
-    if (제타로그릴까(남은글))
+    /* ★ 261006 화면 — 회원님 「유저 입력 지문 역시, 봇 출력 지문 형태와 같길 바란다. *라던지 폰트사이즈라던지」.
+       채팅체 방에서는 내 말도 상대와 같은 말풍선 꼴로 그린다 — 별표 지문은 기울임, 대사는 대사 꼴.
+       전에는 상대만 제타 꼴이고 내 말은 별표째 · 「이름 : 대사」째 보였다 */
+    const 채팅체 = (S.chat?.cfg?.fmt === 'chat');
+    if (제타로그릴까(남은글) || (mine && 채팅체))
       return 제타그리기(남은글, mine)
              + (drift ? '<div class="drift">기준 변화 · ' + esc(drift) + '</div>' : '')
              + (stat ? statusChips(stat) : '');
@@ -9654,9 +9762,9 @@ function fmt(t, role){
              esc(mine ? meName : (S.character?.name || '')) + '</b> ' +
              esc(line.trim()) + '</span>';
 
-    /* 내 입력의 지문은 별표째로 보여주고, 상대의 구버전 별표 서술은 별표를 지운다 */
+    /* ★ 261006 화면 — 내 입력의 지문도 상대와 같이 별표를 떼고 기울임으로. 저장은 별표째 그대로다(모델이 읽는 꼴) */
     return '<span class="nar">' +
-      조연표달기(mine ? esc(line) : esc(line).replace(/\*([^*]+)\*/g, '$1')) + '</span>';
+      조연표달기(esc(line).replace(/\*([^*]+)\*/g, '$1')) + '</span>';
   }).join('\n').replace(/\s+$/, '');
   return body + (drift ? '<div class="drift">기준 변화 · ' + esc(drift) + '</div>' : '')
               + (stat ? statusChips(stat) : '');
@@ -12409,7 +12517,7 @@ function saveSheet(reshow){
      run: () => { closeSheet(); 새로하기(false); }},
     {label: '이 이야기를 안고 새로', html: '<b>⇢ 이 이야기를 안고 새로</b><div class="shint">쌓인 기억 · 꼭 남길 것을 안고 새 자리에서 다시 만납니다</div>',
      run: () => { closeSheet(); 새로하기(true); }},
-    ...(목록.length ? [{info: true, html: '<span class="pguide">이어하기 — ' + esc(S.character.name) + '와 나눈 다른 대화</span>'}] : []),
+    ...(목록.length ? [{info: true, html: '<span class="pguide">이어하기 — ' + esc(S.character.name) + fixJosa(S.character.name, '와') + ' 나눈 다른 대화</span>'}] : []),
     ...목록.map(c => ({label: c.title,
       html: '<b>' + esc(c.title || S.character.name) + '</b><div class="shint">' +
             Math.round((c.messageCount || 0) / 2) + '턴 · ' + esc(relTime(c.lastMessageAt)) + '</div>',
@@ -16018,9 +16126,11 @@ const GENRES = [
   },
   {
     key:'memento', name:'메멘토', desc:'내가 하루를 못 넘깁니다. 팔뚝에 새긴 것만 남습니다 · 7일 · 1인칭',
-    more:['상대가 하루를 넘기면 그날 일을 거의 잊습니다',
-          '내가 적어 준 규칙만 남고, 상대는 그것을 자기 것으로 믿고 따릅니다. 칸이 모자라 무엇을 지울지가 곧 선택입니다',
-          '난이도를 먼저 고르고, 7일 · 네 막으로 끝이 납니다'],
+    /* ★ b198 — 처음 쓴 세 줄은 줄거리 틀 글만 보고 「상대가 잊는다」로 적었다. 실제로 겪어 보니(260930 민세영)
+       잊는 쪽은 **나(주인공)** 이고 상대역이 없는 1인칭 혼자 이야기였다. 겪은 대로 고친다 */
+    more:['내가 하루를 넘기면 어제를 잊습니다. 아는 것은 팔뚝에 새긴 문장뿐입니다',
+          '밤마다 무엇을 새길지 고르고, 칸이 차면 하나를 지워야 새것을 적을 수 있습니다 — 무엇을 버리느냐가 곧 선택입니다',
+          '상대역 없이 혼자 읽는 이야기입니다. 대사를 치는 대신 「눈을 뜬다 · 밤」으로 하루를 굴리고, 7일 · 네 막으로 끝납니다'],
     closed:true, memento:true, solo:true,
     plot:'{{char}}는 {까닭} 오래 기억하지 못한다. 하루가 지나면 그날의 일이 거의 사라진다. ' +
          '남는 것은 {{user}}가 {매체} 적어 준 규칙뿐이며, {{char}}는 그것을 하루에도 몇 번씩 들여다보고 자기 것으로 믿고 따른다. ' +
@@ -16390,7 +16500,11 @@ function rollGenre(key, manual, keep, 그인물){
     vein = 이미 || veinPick(g0, 인물, 지난결(인물?.id));
     if (vein && !이미) 지난결적기(인물?.id, vein.k);
   }
-  const g = vein ? {...g0, plot: vein.plot, slots: vein.slots} : g0;
+  /* ★ 261006 — 결(vein)에 제 빈칸 목록이 없으면 **장르의 빈칸 목록**을 쓴다.
+     제타2 의 결 셋(덮기 · 되치기 · 멈춤)은 plot 만 있고 slots 가 없어, 여기서 slots 가 undefined 가 되고
+     아래 굴리기가 통째로 건너뛰어 「조금 전 {벌어진일}」이 **빈칸 글자 그대로** 모델에게 나갔다.
+     260909 부터 그랬고 백업의 제타2 방 열아홉 전부가 그 꼴이었다(261006 확인). 탈이 안 나서 아무도 못 봤다 */
+  const g = vein ? {...g0, plot: vein.plot, slots: vein.slots || g0.slots} : g0;
   const picked = {};
   const def = genreSlotDefaults()[key] || {};
   let text = g.plot, goal = g.goal || '', finale = g.finale || '';
@@ -18446,7 +18560,11 @@ const SECTION_DEFS = {
     'EX 는 예시 대화(mes_example). 반드시 정확히 두 줄만 쓴다:\n' +
       '    {{user}} : "실제 대사 문장"\n' +
       '    {{char}} : 지문으로 반응을 짧게 묘사한 뒤 대사가 있다면 큰따옴표로 잇는다.\n' +
-      '  다른 줄을 섞지 않는다. 이름 뒤 콜론만 찍고 따옴표 없는 지문을 붙이는 형식은 쓰지 않는다.'
+      '  다른 줄을 섞지 않는다. 이름 뒤 콜론만 찍고 따옴표 없는 지문을 붙이는 형식은 쓰지 않는다.',
+    /* ★ 261006 — 회원님 「'너는 이런 데서 다 뭐야' 가 맞는 표현이야?」. 카드 예시의 말이 어색하면 모델이 그 말을 그대로 베낀다
+       (장예린 다섯 방 가운데 둘에서 토씨까지 같게 나옴). 막는 보기를 주지 않고 방향만 준다(규칙 28 · 85) */
+    'FIRST 와 EX 의 대사는 **그 사람이 그 자리에서 실제로 입으로 할 말**로 짓는다. 입에 얹어 보아 어색하면 다시 짓는다 — ' +
+      '글에서만 보는 말투가 아니라 그 나이의 한국 사람이 친구 · 동료에게 하는 말투다. 조사 하나, 어순 하나가 어긋나면 그 말이 열 방에 되풀이된다.'
   ]},
   look: { label:'인물 외형', fields:['look','outfit'], instr:[
     'LOOK 은 이미지 생성용 영어 태그. "korean woman" 또는 "korean man"(성별에 맞춰)으로 시작해 나이 · 체형 · 머리 · 눈매 · 피부처럼 변하지 않는 것만 쉼표로. 복장 · 표정은 넣지 않는다. 25단어 이내. 뻔한 미인형 공식을 반복하지 않고 개성 있는 디테일을 최소 1개 넣는다.',
@@ -19447,8 +19565,8 @@ function deleteChar(id){
     await loadAll(); renderChars(); renderChats();
     closeSheet();   /* 「대화가 N개 있습니다」 창이 남아 있으면 안 된다 */
     show('vChars');
-    toast(alsoChats ? c.name + '과 대화 ' + chats.length + '개를 삭제했습니다'
-                    : c.name + '을 삭제했습니다. 대화는 남겼습니다', 3000);
+    toast(alsoChats ? c.name + fixJosa(c.name, '과') + ' 대화 ' + chats.length + '개를 삭제했습니다'
+                    : c.name + fixJosa(c.name, '을') + ' 삭제했습니다. 대화는 남겼습니다', 3000);
   };
   if (!chats.length){
     if (confirm('"' + c.name + '"을 삭제합니다.')) wipe(false);
@@ -19967,10 +20085,43 @@ function 때맞추기(start, c){
       }
     }
   }
-  const 때 = 상황때(c);
+  /* ★ b198 — 상황 글이 **요일**을 말하면 날짜를 그 요일로 옮긴다(앞뒤 가운데 가까운 날).
+     「비가 그치지 않는 화요일 밤」인데 상태 줄은 「8/19 수」였고, 시각 줄로 알려 줘도 모델은 상황 글을 따라 「화요일」이라 썼다(260930 문가을 회차) */
+  {
+    const 요 = String((c && c.scenario) || '').match(/([월화수목금토일])요일/);
+    const 날 = String(start || '').match(/(\d{1,2})\/(\d{1,2})\s*([일월화수목금토])/);
+    if (요 && 날 && 요[1] !== 날[3]){
+      const 순 = '일월화수목금토';
+      const d = new Date(new Date().getFullYear(), +날[1] - 1, +날[2]);
+      let 차 = (순.indexOf(요[1]) - d.getDay() + 7) % 7;
+      if (차 > 3) 차 -= 7;   /* 앞뒤 가운데 가까운 날 — 계절 · 날짜를 덜 흔든다 */
+      d.setDate(d.getDate() + 차);
+      start = String(start).replace(날[0], (d.getMonth() + 1) + '/' + d.getDate() + ' ' + 순[d.getDay()]);
+    }
+  }
   const m = String(start || '').match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
+  /* ★ 261006 — 상황 글에 **시각이 숫자나 한글로 적혀 있으면 그것이 먼저다.**
+     b198 은 「오전 열한 시」를 때표의 「오전 → 9:20」으로 덮어, 본문은 11시인데 상태 줄은 9:20 이 됐다(261006 장예린 방 다섯 모두).
+     「오후 1시 반」 · 「열한 시」 · 「새벽 두 시」처럼 적힌 때를 읽어 그 시각으로 둔다. 적힌 때가 없을 때만 때표를 쓴다 */
+  const 적힌때 = 한글시각(String((c && c.scenario) || ''));
+  if (적힌때 && m){ return 적힌때 === m[0] ? start : String(start).replace(m[0], 적힌때); }
+  const 때 = 상황때(c);
   if (!때 || !m || 때.맞나(hourOf(start))) return start;
   return String(start).replace(m[0], 때.시);
+}
+/* 상황 글에서 시각을 읽는다 — 「오전 11시」 「오후 1시 반」 「열한 시」 「새벽 두 시 반」 「11:30」. 못 읽으면 빈 글 */
+function 한글시각(글){
+  const 수 = {한:1,두:2,세:3,네:4,다섯:5,여섯:6,일곱:7,여덟:8,아홉:9,열:10,열한:11,열두:12};
+  /* 「2시간째」 「세 시절」은 시각이 아니다 — 「시」 뒤에 간·절·작·험이 붙으면 넘긴다 */
+  const m = String(글 || '').match(/(오전|오후|아침|낮|저녁|밤|새벽)?\s*(\d{1,2}|열두|열한|열|아홉|여덟|일곱|여섯|다섯|네|세|두|한)\s*(?::|시(?![간절작험]))\s*(반|\d{1,2}\s*분?|\d{1,2})?/);
+  if (!m) return '';
+  let h = /^\d/.test(m[2]) ? +m[2] : 수[m[2]];
+  if (!h || h > 24) return '';
+  const 분 = m[3] === '반' ? 30 : parseInt(m[3] || '0', 10) || 0;
+  const 앞말 = m[1] || '';
+  const 뒤 = /오후|낮|저녁|밤/.test(앞말) ? true : /오전|아침|새벽/.test(앞말) ? false : h >= 12;
+  if (h > 12) h -= 12; if (h === 0) h = 12;
+  return h + ':' + String(분).padStart(2, '0') + ' ' + (뒤 ? 'pm' : 'am');
 }
 /* ★ 260930 첫앱개선 — 첫 장면에 술이 없으면 취기는 0 에서 시작한다.
    정예원 9/6 · 기준선에서 첫 턴 취기 5(오전 11시 · 술 없음) → 계획서 4.5 「없던 취기 65 … 없던 술자리를 만들어 냄」 */
@@ -23759,6 +23910,10 @@ async function memNew(characterId, personaId, lv){
                          updatedAt: now(), stateCard:{}});
   await loadAll();
   S.chat = chat; S.character = c; S.persona = p; S.messages = [];
+  /* ★ b198 — 공용 길(openChat)을 안 거쳐 방 머리가 **앞 방 이름 그대로** 남았다(260930 문가을 방 다음 민세영 메멘토). 여기서 칠한다 */
+  $('cTitle').firstChild.textContent = c?.name || '';
+  $('cTitle').dataset.fmt = 문체표(chat);
+  $('cSub').textContent = p ? '- ' + p.name : '';
   show('vChat'); renderMsgs(); paintMem();
   /* 대장은 판당 한 번. 여기서 세우지 않으면 이후 7일이 기댈 것이 없다 */
   await memLedger('');
@@ -23954,11 +24109,11 @@ async function distSeed(){
 }
 
 /* ═══════════════ 버전 ═══════════════ */
-const APP_BUILD = 'b198';
-const APP_BUILT = '2026-09-30 08:16';
+const APP_BUILD = 'b199';
+const APP_BUILT = '2026-10-06 16:20';
 const APP_BAKED = true;   /* 이 파일은 구운 것입니다. 손으로 고치지 마십시오 —
                              01. 최종 결과물/index.html 을 고치고 node 03. 빌드·테스트 도구/1. 자주 쓰는 스크립트/본편굽기.js 를 다시 돌리십시오 */
-const APP_NOTE  = 'b197 뒤 — 큰 사건 폭을 앱 상한에 맞춤 · 소설 칸 그림 📕';
+const APP_NOTE  = '화면(글꼴·말풍선 같은 자리·내레이션 양쪽 여백·머리 줄) · 규칙 방향 39~40 · 상태줄 외관·내면 · 첫 장면 결과 분량 · 제타2 빈자리 · 시작 시각 · 첫 호칭 · 카드 대사 방향';
 
 /* ★ 260930 첫앱개선 — **새 판 띠**(계획서 4.8 「버전 번호 · 구버전 알림 배너 — 가장 먼저」 · 미적용 장부 4-4).
    260918 델타 — 회원님이 시험하신 판이 고침이 안 들어간 판이었고 둘 다 몰랐다.
